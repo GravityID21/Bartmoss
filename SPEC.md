@@ -163,9 +163,9 @@ Legend: `[x]` done · `[ ]` not started · `[~]` in progress. Each phase has an 
 ### Phase 0: Foundations
 - [x] **P0.1** Write project specification (this document)
 - [x] **P0.2** Repository skeleton: package layout, `pyproject.toml` with optional extras, `.gitignore`, `.env.example`, `CLAUDE.md`
-- [~] **P0.3** `git init`, first commit, push to GitHub (public), choose licence. *2026-10-24: repo initialised on `main` with no commits. Sensitive-info sweep is clean (no keys, paths or emails); `.env`, `idea.txt` and eval output folders are ignored; commits use the GitHub no-reply email. MIT `LICENSE` added. Still to do: first commit, push.*
-- [ ] **P0.4** Install a modern Python (`brew install python@3.12`) and recreate `.venv` (system Python 3.9 is end-of-life)
-- [ ] **P0.5** Install free simulators: Verilator ✅ (already installed), Icarus Verilog (`brew install icarus-verilog`), optionally GHDL for VHDL
+- [x] **P0.3** `git init`, first commit, push to GitHub (public), choose licence. *2026-10-24: public at github.com/GravityID21/Bartmoss under MIT. Sensitive-info sweep was clean before publishing; `.env`, `idea.txt` and eval output folders are ignored; commits use the GitHub no-reply email.*
+- [x] **P0.4** Install a modern Python (`brew install python@3.12`) and recreate `.venv` (system Python 3.9 is end-of-life). *The code still supports 3.9; CI tests both.*
+- [x] **P0.5** Install free simulators: Verilator 5.050, Icarus Verilog 13.0, and NVC 1.23 for VHDL (`brew install nvc`). The Homebrew GHDL cask was disabled on 2026-09-01 because it fails Gatekeeper, so GHDL is supported where it installs cleanly (e.g. Linux CI).
 
 **Exit:** `python -m bartmoss --help` runs; `python -m unittest` passes with no network.
 
