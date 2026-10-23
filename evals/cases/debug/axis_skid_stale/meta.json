@@ -1,0 +1,24 @@
+{
+  "mode": "debug",
+  "file": "axis_register_slice.sv",
+  "context": [
+    "axis_if.sv"
+  ],
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "when draining the skid entry, main_data is loaded from the input bus instead of skid_data, corrupting data under backpressure",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/axis/axis_register_slice.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "axi-stream",
+    "skid-buffer",
+    "backpressure",
+    "interface",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "                if (skid_valid) begin\n                    main_data  <= s_axis.tdata;",
+      "                if (skid_valid) begin\n                    main_data  <= skid_data;"
+    ]
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "mode": "tb",
+  "file": "alu8.sv",
+  "top": "alu8",
+  "mutants": ["mutant_borrow.sv", "mutant_shr.sv", "mutant_and.sv"],
+  "source": "hand-written",
+  "tags": ["combinational", "alu", "flags"]
+}

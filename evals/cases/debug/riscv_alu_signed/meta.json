@@ -1,0 +1,29 @@
+{
+  "mode": "debug",
+  "file": "riscv_alu.sv",
+  "context": [
+    "riscv_pkg.sv"
+  ],
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "two bugs: a_signed lost its `signed` qualifier (breaks SRA and SLT), and SLL shifts by all of operand_b instead of shamt",
+  "source": "RTL_projects_public/riscv_piplined/rtl/riscv_alu.sv (MIT, Elliot Stevenson), bugs injected",
+  "tags": [
+    "risc-v",
+    "alu",
+    "signedness",
+    "multi-bug",
+    "package",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "logic        [XLEN-1:0] a_signed;",
+      "logic signed [XLEN-1:0] a_signed;"
+    ],
+    [
+      "result = operand_a << operand_b;",
+      "result = operand_a << shamt;"
+    ]
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "mode": "debug",
+  "file": "sync_fifo.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "full asserts at DEPTH-1 entries, wasting one slot",
+  "source": "hand-written",
+  "tags": [
+    "fifo",
+    "flags",
+    "off-by-one"
+  ],
+  "fix": [
+    [
+      "count == DEPTH - 1)",
+      "count == DEPTH)"
+    ]
+  ]
+}

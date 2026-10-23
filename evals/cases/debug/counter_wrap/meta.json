@@ -1,0 +1,19 @@
+{
+  "mode": "debug",
+  "file": "mod_counter.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "wrap compare uses N instead of N-1, so the counter reaches N",
+  "source": "hand-written",
+  "tags": [
+    "counter",
+    "off-by-one",
+    "beginner"
+  ],
+  "fix": [
+    [
+      "count == N)",
+      "count == N - 1)"
+    ]
+  ]
+}

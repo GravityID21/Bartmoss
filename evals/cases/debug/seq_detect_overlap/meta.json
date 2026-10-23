@@ -1,0 +1,19 @@
+{
+  "mode": "debug",
+  "file": "seq1011.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "from S101 an input 0 returns to IDLE instead of S10, so overlapping matches like 1010110 -> ...1011 are missed",
+  "source": "hand-written",
+  "tags": [
+    "fsm",
+    "sequence-detector",
+    "overlap"
+  ],
+  "fix": [
+    [
+      "S101:  next = din ? S1011 : IDLE;",
+      "S101:  next = din ? S1011 : S10;"
+    ]
+  ]
+}

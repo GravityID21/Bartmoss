@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "crc32_eth.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "input byte XORed without the LSbit-first bit reversal, so the CRC matches no standard vector",
+  "source": "RTL_projects_public/UDP/rtl/mac/crc32_eth.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "crc",
+    "ethernet",
+    "bit-order",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "crc_reg[31:24] ^ data_in;",
+      "crc_reg[31:24] ^ data_rev;"
+    ]
+  ]
+}

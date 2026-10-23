@@ -1,0 +1,19 @@
+{
+  "mode": "debug",
+  "file": "mac8.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "product is declared unsigned, so acc + product zero-extends negative products",
+  "source": "hand-written",
+  "tags": [
+    "arithmetic",
+    "signedness",
+    "systemverilog-semantics"
+  ],
+  "fix": [
+    [
+      "logic [15:0] product;",
+      "logic signed [15:0] product;"
+    ]
+  ]
+}

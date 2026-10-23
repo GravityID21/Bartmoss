@@ -1,0 +1,8 @@
+{
+  "mode": "tb",
+  "file": "axis_fifo.sv",
+  "top": "axis_fifo",
+  "mutants": ["mutant_last_dropped.sv", "mutant_rdptr.sv", "mutant_rd_addr.sv"],
+  "source": "RTL_projects_public/UDP/rtl/axis/axis_fifo.sv (MIT, Elliot Stevenson)",
+  "tags": ["fifo", "axi-stream", "handshake", "own-project"]
+}

@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "ipv4_checksum.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "second end-around carry fold dropped, so sums whose first fold overflows come out wrong",
+  "source": "RTL_projects_public/UDP/rtl/net/ipv4_checksum.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "checksum",
+    "ones-complement",
+    "networking",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "fold2     = fold1[15:0];",
+      "fold2     = fold1[15:0] + {15'd0, fold1[16]};"
+    ]
+  ]
+}

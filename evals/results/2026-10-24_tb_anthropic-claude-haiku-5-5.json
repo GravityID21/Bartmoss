@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-24",
+  "mode": "tb",
+  "model": "anthropic:claude-haiku-5-5",
+  "simulator": "verilator",
+  "mean_score": 1.0,
+  "usage": "5 calls \u00b7 8,511 in \u00b7 89,639 out \u00b7 4,140 cache-read \u00b7 est. $0.0457",
+  "cases": [
+    {
+      "verdict": "pass",
+      "attempts": 1,
+      "truncated": false,
+      "score": 1.0,
+      "mutants_caught": "3/3",
+      "case": "alu8",
+      "seconds": 38.4,
+      "input_tokens": 1562,
+      "output_tokens": 7745
+    },
+    {
+      "verdict": "pass",
+      "attempts": 1,
+      "truncated": false,
+      "score": 1.0,
+      "mutants_caught": "3/3",
+      "case": "async_fifo_gray",
+      "seconds": 131.5,
+      "input_tokens": 4223,
+      "output_tokens": 29152
+    },
+    {
+      "verdict": "pass",
+      "attempts": 1,
+      "truncated": false,
+      "score": 1.0,
+      "mutants_caught": "3/3",
+      "case": "axi4_arbiter_rr",
+      "seconds": 63.3,
+      "input_tokens": 2134,
+      "output_tokens": 13208
+    },
+    {
+      "verdict": "pass",
+      "attempts": 1,
+      "truncated": false,
+      "score": 1.0,
+      "mutants_caught": "3/3",
+      "case": "axis_fifo_udp",
+      "seconds": 87.4,
+      "input_tokens": 2847,
+      "output_tokens": 19191
+    },
+    {
+      "verdict": "pass",
+      "attempts": 1,
+      "truncated": false,
+      "score": 1.0,
+      "mutants_caught": "3/3",
+      "case": "debounce_btn",
+      "seconds": 93.5,
+      "input_tokens": 1885,
+      "output_tokens": 20343
+    }
+  ]
+}

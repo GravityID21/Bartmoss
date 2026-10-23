@@ -1,0 +1,23 @@
+{
+  "mode": "debug",
+  "file": "shift4.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "blocking assignments in always_ff make din fall through all stages in one clock",
+  "source": "hand-written",
+  "tags": [
+    "shift-register",
+    "blocking-vs-nonblocking",
+    "beginner"
+  ],
+  "fix": [
+    [
+      "q = 4'b0;",
+      "q <= 4'b0;"
+    ],
+    [
+      "q[0] = din;\n            q[1] = q[0];\n            q[2] = q[1];\n            q[3] = q[2];",
+      "q <= {q[2:0], din};"
+    ]
+  ]
+}

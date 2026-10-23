@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bartmoss"
+version = "0.1.0.dev0"
+description = "Open-source, model-agnostic AI assistant for RTL design and verification"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+# The core has no runtime dependencies. Install only the provider extras you use.
+dependencies = []
+
+[project.optional-dependencies]
+claude = ["anthropic>=0.125,<1"]
+openai = ["openai>=1.40"]
+all = ["anthropic>=0.125,<1", "openai>=1.40"]
+
+[project.scripts]
+bartmoss = "bartmoss.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["bartmoss*"]
+
+[tool.setuptools.package-data]
+bartmoss = ["prompts/*.md"]
