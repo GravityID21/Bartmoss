@@ -227,6 +227,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="run each case N times and report mean, min/max and full passes (default 1)")
     p_eval.add_argument("--prompt", metavar="NAME", help="prompt variant to test, e.g. debug.v2 (prompts/debug.v2.md)")
     p_eval.add_argument("--judge", metavar="PROVIDER:MODEL", help="judge model for vplan/uvmplan rubrics")
+    p_lb = sub.add_parser("leaderboard", help="summarise saved eval results by model")
+    p_lb.add_argument("--results", default="evals/results", help="results directory (default: evals/results)")
+    p_lb.add_argument("--write", metavar="FILE", help="also write the Markdown table to FILE")
     p_cmp = sub.add_parser("compare", help="compare two eval result files case by case")
     p_cmp.add_argument("a")
     p_cmp.add_argument("b")
@@ -271,6 +274,18 @@ def main(argv: list[str] | None = None) -> int:
                 parse_model_spec(args.judge)
                 ctx.config["eval"]["judge_model"] = args.judge
             run_eval(ctx, args.mode, Path(args.cases), args.only, args.repeat)
+            return 0
+        if args.command == "leaderboard":
+            from bartmoss.leaderboard import best_runs, load_runs, recommend, render
+
+            best = best_runs(load_runs(Path(args.results)))
+            table = render(best)
+            ctx.ui.print(table)
+            for mode, (model, score, top) in recommend(best).items():
+                ctx.ui.info(f"{mode:8} cheapest within 0.05 of the best ({top:.2f}): {model} ({score:.2f})")
+            if args.write:
+                Path(args.write).write_text(table)
+                ctx.ui.ok(f"wrote {args.write}")
             return 0
         if args.command == "compare":
             from bartmoss.compare import compare

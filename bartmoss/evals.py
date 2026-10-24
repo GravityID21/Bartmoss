@@ -167,6 +167,8 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
         run_name += f"_x{repeat}"
     results_dir = cases_root.resolve().parent / "results"
     ui.info(f"eval {mode} · {len(cases)} cases × {repeat} · model {spec} · simulator {simulator}")
+    calls_at_start = len(ctx.usage.calls)
+    started = time.time()
     rows = []
     skipped = []
     for case in cases:
@@ -201,9 +203,14 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
     mean = sum(r["score"] for r in rows) / len(rows)
     # Mean across cases for each repeat: the spread shows how much one full run can vary.
     run_means = [round(sum(r["runs"][i]["score"] for r in rows) / len(rows), 3) for i in range(repeat)]
+    # Cost of this run only (model and judge calls), not of the whole session.
+    run_calls = ctx.usage.calls[calls_at_start:]
+    costs = [ctx.usage.cost(s, r) for s, r in run_calls]
     report = {"format": 2, "date": date.today().isoformat(), "mode": mode, "model": spec, "simulator": simulator,
               "repeat": repeat, "prompt": prompt or mode, "mean_score": round(mean, 3), "run_means": run_means,
-              "usage": ctx.usage.summary(), "cases": rows, "skipped": skipped}
+              "cost_usd": None if None in costs else round(sum(costs), 4),
+              "seconds": round(time.time() - started, 1), "usage": ctx.usage.summary(),
+              "cases": rows, "skipped": skipped}
     results_dir.mkdir(exist_ok=True)
     out = results_dir / f"{run_name}.json"
     out.write_text(json.dumps(report, indent=2) + "\n")

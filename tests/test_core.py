@@ -158,6 +158,19 @@ class TestPromptsAndEvalTools(unittest.TestCase):
         result = compare(UI(color=False, out=io.StringIO()), tmp / "a.json", tmp / "b.json")
         self.assertAlmostEqual(result["mean_b"] - result["mean_a"], 0.375)
 
+    def test_leaderboard_prefers_repeated_runs_and_recommends_cheapest(self):
+        from bartmoss.leaderboard import best_runs, recommend, render
+
+        def run(model, score, repeat, cost):
+            return {"mode": "debug", "model": model, "prompt": "debug", "date": "2026-10-24", "repeat": repeat,
+                    "mean_score": score, "run_means": [score] * repeat, "cost_usd": cost, "seconds": 60.0,
+                    "cases": [{"case": "x", "score": score, "repeat": repeat, "full_passes": repeat}]}
+
+        best = best_runs([run("a:big", 0.80, 1, 3.0), run("a:big", 0.95, 3, 9.0), run("a:small", 0.93, 3, 0.3)])
+        self.assertEqual(best[("debug", "a:big", "debug")]["repeat"], 3)
+        self.assertEqual(recommend(best)["debug"][0], "a:small")
+        self.assertIn("| debug | a:big | **0.95** |", render(best))
+
     def test_judge_parses_items(self):
         from bartmoss.evals import judge
 
