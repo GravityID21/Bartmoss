@@ -1,5 +1,7 @@
 # Bartmoss
 
+[![CI](https://github.com/GravityID21/Bartmoss/actions/workflows/ci.yml/badge.svg)](https://github.com/GravityID21/Bartmoss/actions/workflows/ci.yml)
+
 An open-source AI assistant for RTL design and verification that runs in your terminal and works with any model. Generated and fixed RTL is checked with a real simulator before you see it.
 
 > Status: Phase 1 MVP, under active development. See [SPEC.md](SPEC.md) for the full roadmap and progress tracker.

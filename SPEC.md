@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Status** | Phase 1 (MVP) in progress |
+| **Status** | Phase 1 (MVP) complete · Phase 2 next |
 | **Owner** | Elliot Stevenson |
 | **Language** | Python ≥ 3.9 (3.12 recommended) |
 | **Licence** | MIT (see `LICENSE`) |
@@ -204,9 +204,9 @@ Evaluation
 Quality
 - [x] **P1.22** Offline unit tests (extractor, file safety, config, modes with the mock provider, simulator wrapper skipped if no tool)
 - [x] **P1.23** README with install, quick start, cost notes, screenshots/GIF. *`docs/demo.svg` is rendered from a real session by `scripts/term2svg.py` (stdlib, no recording tools needed).*
-- [~] **P1.24** GitHub Actions CI: run unit tests + Verilator smoke test (free for public repos). *`.github/workflows/ci.yml`: unit tests on Python 3.9 and 3.12, a mock-model CLI smoke test, and `evals/validate.py`, using apt Verilator/Icarus/NVC on Ubuntu 24.04. Not yet run: it needs a push, and apt's Verilator 5.020 is older than the 5.050 used locally.*
+- [x] **P1.24** GitHub Actions CI: run unit tests + Verilator smoke test (free for public repos). *Green on 2026-10-24 (run 40081539669): 21 unit tests on Python 3.9 and 3.12, a mock-model CLI smoke test, and `evals/validate.py` with apt Verilator 5.020, Icarus and GHDL on Ubuntu 24.04. This also verified the GHDL path, which can't be installed on macOS. `tb/axis_fifo_udp` is skipped there because it requires Verilator 5.050.*
 
-**Exit:** on the seed eval set, at least one model reaches ≥ 80 % pass on `/tb` and `/debug`; README lets a stranger install and run it in under 10 minutes. *Met by Haiku 5.5 (0.93 / 1.00). The install path has only been tested on this Mac, and CI (P1.24) will confirm Linux once pushed.*
+**Exit:** on the seed eval set, at least one model reaches ≥ 80 % pass on `/tb` and `/debug`; README lets a stranger install and run it in under 10 minutes. *Met by Haiku 5.5 (0.93 / 1.00). Install and tests verified on macOS and on Ubuntu 24.04 in CI. **Phase 1 complete.***
 
 ### Phase 2: Planning modes, filtering and model comparison
 - [ ] **P2.1** `/vplan`: verification plan template (features → checks → coverpoints → edge cases → open questions), text only
@@ -370,6 +370,8 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 ## 12. Decision log
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-24 | CI uses GHDL; local macOS uses NVC | NVC isn't packaged in Ubuntu 24.04, and GHDL's macOS cask is disabled. Together they test both VHDL backends |
+| 2026-10-24 | Eval cases can declare `requires` (minimum tool versions) | Your axis_fifo SVA needs Verilator 5.050, and an old simulator shouldn't count as a model failure |
 | 2026-10-24 | MIT licence | Same as the RTL repos the eval cases come from; simplest for an open-source CLI |
 | 2026-10-23 | Features are *modes* sharing one provider layer, not separate models | Removes complexity; model-per-mode becomes a config value set by evals |
 | 2026-10-23 | CLI first, no hosted service | Cost, legal exposure, scope |
