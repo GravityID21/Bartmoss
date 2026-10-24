@@ -6,6 +6,9 @@ from dataclasses import dataclass, field
 
 from bartmoss.providers.base import ChatResult
 
+# Providers that run locally (or not at all) and never bill per token.
+FREE_PROVIDERS = {"mock", "ollama"}
+
 
 @dataclass
 class Usage:
@@ -16,6 +19,8 @@ class Usage:
         self.calls.append((spec, result))
 
     def cost(self, spec: str, result: ChatResult) -> float | None:
+        if spec.split(":", 1)[0] in FREE_PROVIDERS:
+            return 0.0
         price = self.prices.get(spec)
         if not price:
             return None

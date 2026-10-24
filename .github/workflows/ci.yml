@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Unit tests (Python ${{ matrix.python }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install simulators
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends verilator iverilog nvc
+      - name: Install Bartmoss (core only, no provider SDKs)
+        run: pip install -e .
+      - name: Run unit tests (offline, no API keys)
+        run: python -m unittest -v
+      - name: CLI smoke test with the mock model
+        run: |
+          bartmoss --version
+          bartmoss --no-color doctor
+          bartmoss --no-color --model mock:echo ask "what is a latch?"
+
+  eval-cases:
+    name: Validate eval cases
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install simulators
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends verilator iverilog nvc
+      - name: Show tool versions
+        run: verilator --version && iverilog -V 2>&1 | head -1 && nvc --version
+      - name: Every bug fails, every fix passes, every mutant is caught
+        run: python evals/validate.py
