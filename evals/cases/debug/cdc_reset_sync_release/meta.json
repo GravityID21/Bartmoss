@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "reset_sync.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "cdc",
+  "bug": "every synchroniser stage is set at once on release, so reset deasserts after one clock instead of STAGES clocks",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/cdc/reset_sync.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "cdc",
+    "reset-synchronizer",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "else            sync_chain <= {STAGES{1'b1}};",
+      "else            sync_chain <= {sync_chain[STAGES-2:0], 1'b1};"
+    ]
+  ]
+}

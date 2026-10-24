@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "credit_sender.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "handshake",
+  "bug": "s_ready ignores the credit count, so upstream believes beats were accepted when no credit was available",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/credits/credit_sender.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "handshake",
+    "credits",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "assign s_ready = 1'b1;",
+      "assign s_ready = (credits_r > 0);"
+    ]
+  ]
+}

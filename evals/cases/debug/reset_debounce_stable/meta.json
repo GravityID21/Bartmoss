@@ -1,0 +1,22 @@
+{
+  "mode": "debug",
+  "file": "debounce.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "reset",
+  "bug": "the debounced state register is missing from reset; in 4-state simulation it stays X and presses never register",
+  "source": "RTL_projects_public/UDP/rtl/util/debounce.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "reset",
+    "debounce",
+    "4-state",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "if (!rst_n) begin\n            count     <= '0;\n",
+      "if (!rst_n) begin\n            count     <= '0;\n            stable    <= 1'b0;\n"
+    ]
+  ],
+  "simulator": "iverilog"
+}

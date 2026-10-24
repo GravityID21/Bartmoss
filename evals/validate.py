@@ -17,6 +17,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from bartmoss.sim.tools import is_vhdl, pick_simulator, simulate, tail, tb_verdict, unmet_requirement  # noqa: E402
 
 CASES = Path(__file__).resolve().parent / "cases"
+# Bug taxonomy for debug cases (SPEC P2.15).
+CATEGORIES = ("reset", "cdc", "fsm", "arithmetic", "handshake", "width", "combinational", "blocking",
+              "off-by-one", "multi-bug")
 
 
 def outcome(run) -> str:
@@ -75,7 +78,11 @@ def main() -> int:
             if reason:
                 print(f"skip {mode}/{case.name} ({reason})")
                 continue
-            sim = pick_simulator(args.sim, vhdl=is_vhdl(meta["file"]))
+            if mode == "debug" and meta.get("category") not in CATEGORIES:
+                print(f"FAIL {mode}/{case.name}: category must be one of {', '.join(CATEGORIES)}")
+                failures += 1
+                continue
+            sim = pick_simulator(meta.get("simulator", args.sim), vhdl=is_vhdl(meta["file"]))
             if sim is None:
                 print(f"skip {mode}/{case.name} (no {'VHDL' if is_vhdl(meta['file']) else 'Verilog'} simulator)")
                 continue

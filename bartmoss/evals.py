@@ -34,7 +34,8 @@ def _score_debug(case_ctx: Context, case: Path, meta: dict, simulator: str, scra
               "_artifacts": {"analysis.txt": result.analysis, Path(meta["file"]).name: result.fixed}}
     if not result.fixed:
         return detail
-    simulator = pick_simulator(simulator, vhdl=is_vhdl(meta["file"]))
+    # A case may name its grading simulator, e.g. Icarus for 4-state X checks on missing resets.
+    simulator = pick_simulator(meta.get("simulator", simulator), vhdl=is_vhdl(meta["file"]))
     fixed_path = scratch / Path(meta["file"]).name
     fixed_path.write_text(result.fixed)
     run = simulate([*(case / c for c in context), fixed_path, case / meta["tb"]], meta["tb_top"], scratch / "sim", simulator)
@@ -190,7 +191,8 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
             artifact_dir = results_dir / run_name / case.name / (f"run{i + 1}" if repeat > 1 else "")
             runs.append(_run_case(ctx, mode, case, meta, simulator, artifact_dir))
         scores = [r["score"] for r in runs]
-        row = {"case": case.name, "score": round(sum(scores) / repeat, 3), "min": min(scores), "max": max(scores),
+        row = {"case": case.name, "category": meta.get("category"),
+               "score": round(sum(scores) / repeat, 3), "min": min(scores), "max": max(scores),
                "full_passes": sum(s >= 0.99 for s in scores), "repeat": repeat, "runs": runs}
         rows.append(row)
         colour = "green" if row["score"] >= 0.99 else "yellow" if row["score"] > 0 else "red"

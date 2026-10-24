@@ -1,0 +1,23 @@
+{
+  "mode": "debug",
+  "file": "seq1011.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "multi-bug",
+  "bug": "two bugs: S1 on a 1 returns to IDLE instead of staying in S1, and S10 on a 0 stays in S10 instead of returning to IDLE",
+  "source": "hand-written",
+  "tags": [
+    "multi-bug",
+    "fsm"
+  ],
+  "fix": [
+    [
+      "S10:   next = din ? S101  : S10;",
+      "S10:   next = din ? S101  : IDLE;"
+    ],
+    [
+      "S1:    next = din ? IDLE  : S10;",
+      "S1:    next = din ? S1    : S10;"
+    ]
+  ]
+}

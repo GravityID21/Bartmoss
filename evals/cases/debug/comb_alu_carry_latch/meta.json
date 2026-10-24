@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "alu8.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "combinational",
+  "bug": "carry has no default assignment in the always_comb, so logic ops keep the previous carry (an inferred latch)",
+  "source": "hand-written",
+  "tags": [
+    "combinational",
+    "latch",
+    "alu"
+  ],
+  "fix": [
+    [
+      "        wide  = 9'd0;\n",
+      "        wide  = 9'd0;\n        carry = 1'b0;\n"
+    ]
+  ]
+}

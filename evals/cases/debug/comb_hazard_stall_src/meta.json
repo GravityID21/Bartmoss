@@ -1,0 +1,25 @@
+{
+  "mode": "debug",
+  "file": "riscv_hazard_unit.sv",
+  "context": [
+    "riscv_pkg.sv"
+  ],
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "combinational",
+  "bug": "the load-use check compares rd against the EX-stage rs1 instead of the decode-stage rs1, so real hazards are missed",
+  "source": "RTL_projects_public/riscv_piplined/rtl/riscv_hazard_unit.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "combinational",
+    "risc-v",
+    "hazards",
+    "package",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "((id_ex_rd_addr == id_ex_rs1_addr) ||",
+      "((id_ex_rd_addr == if_id_rs1_addr) ||"
+    ]
+  ]
+}

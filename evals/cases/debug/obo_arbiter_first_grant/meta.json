@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "axi4_arbiter.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "off-by-one",
+  "bug": "the round-robin pointer resets one position early, so the first grant after reset goes to the last requester instead of index 0",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/axi4_arbiter.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "off-by-one",
+    "arbiter",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "last_idx_q <= (N > 1) ? (N - 2) : '0;",
+      "last_idx_q <= (N > 1) ? (N - 1) : '0;"
+    ]
+  ]
+}

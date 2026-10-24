@@ -16,5 +16,6 @@
       "assign tx_ready = !active || (dibit_cnt == 2'd2);",
       "assign tx_ready = !active || (dibit_cnt == 2'd3);"
     ]
-  ]
+  ],
+  "category": "handshake"
 }

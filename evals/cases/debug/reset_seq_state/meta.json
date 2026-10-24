@@ -1,0 +1,19 @@
+{
+  "mode": "debug",
+  "file": "seq1011.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "reset",
+  "bug": "the FSM resets into S101 instead of IDLE, so the first 1 after reset produces a false match",
+  "source": "hand-written",
+  "tags": [
+    "reset",
+    "fsm"
+  ],
+  "fix": [
+    [
+      "if (!rst_n) state <= S101;",
+      "if (!rst_n) state <= IDLE;"
+    ]
+  ]
+}

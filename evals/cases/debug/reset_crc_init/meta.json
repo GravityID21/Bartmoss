@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "crc32_eth.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "reset",
+  "bug": "the CRC register resets to zero instead of all ones, so frames sent straight after reset get the wrong CRC",
+  "source": "RTL_projects_public/UDP/rtl/mac/crc32_eth.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "reset",
+    "crc",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "if (!rst_n)\n            crc_reg <= 32'h0000_0000;",
+      "if (!rst_n)\n            crc_reg <= 32'hFFFF_FFFF;"
+    ]
+  ]
+}

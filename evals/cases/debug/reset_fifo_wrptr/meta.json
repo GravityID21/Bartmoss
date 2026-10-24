@@ -1,0 +1,21 @@
+{
+  "mode": "debug",
+  "file": "sync_fifo.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "reset",
+  "bug": "the write pointer isn't reset, so the first writes go to an unknown address (X in 4-state simulation)",
+  "source": "hand-written",
+  "tags": [
+    "reset",
+    "fifo",
+    "4-state"
+  ],
+  "fix": [
+    [
+      "        if (!rst_n) begin\n            rd_ptr <= '0;",
+      "        if (!rst_n) begin\n            wr_ptr <= '0;\n            rd_ptr <= '0;"
+    ]
+  ],
+  "simulator": "iverilog"
+}

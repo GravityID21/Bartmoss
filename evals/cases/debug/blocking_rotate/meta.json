@@ -1,0 +1,19 @@
+{
+  "mode": "debug",
+  "file": "rot3.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "blocking",
+  "bug": "blocking assignments make r2 take the already-updated r0, so the rotation duplicates a value",
+  "source": "hand-written",
+  "tags": [
+    "blocking-vs-nonblocking",
+    "registers"
+  ],
+  "fix": [
+    [
+      "            r0 = 8'd1;\n            r1 = 8'd2;\n            r2 = 8'd3;\n        end else if (en) begin\n            r0 = r1;\n            r1 = r2;\n            r2 = r0;",
+      "            r0 <= 8'd1;\n            r1 <= 8'd2;\n            r2 <= 8'd3;\n        end else if (en) begin\n            r0 <= r1;\n            r1 <= r2;\n            r2 <= r0;"
+    ]
+  ]
+}

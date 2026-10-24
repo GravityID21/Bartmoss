@@ -1,0 +1,24 @@
+{
+  "mode": "debug",
+  "file": "async_fifo.sv",
+  "context": [
+    "cdc_sync_2ff.sv"
+  ],
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "cdc",
+  "bug": "the binary-to-Gray function shifts by two, so pointers crossing domains aren't Gray coded and full/empty go wrong",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/cdc/async_fifo.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "cdc",
+    "gray-code",
+    "dual-clock",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "return b ^ (b >> 2);",
+      "return b ^ (b >> 1);"
+    ]
+  ]
+}

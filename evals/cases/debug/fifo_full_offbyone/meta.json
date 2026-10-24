@@ -15,5 +15,6 @@
       "count == DEPTH - 1)",
       "count == DEPTH)"
     ]
-  ]
+  ],
+  "category": "off-by-one"
 }

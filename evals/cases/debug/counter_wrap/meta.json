@@ -15,5 +15,6 @@
       "count == N)",
       "count == N - 1)"
     ]
-  ]
+  ],
+  "category": "off-by-one"
 }

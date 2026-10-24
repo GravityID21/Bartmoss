@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "debounce.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "fsm",
+  "bug": "the debounced state updates but btn_level is never driven from it, so the output never follows a press",
+  "source": "RTL_projects_public/UDP/rtl/util/debounce.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "fsm",
+    "debounce",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "                    stable    <= btn_sync;\n",
+      "                    stable    <= btn_sync;\n                    btn_level <= btn_sync;\n"
+    ]
+  ]
+}

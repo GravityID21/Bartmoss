@@ -16,5 +16,6 @@
       "assign y = a >>> 2;",
       "assign y = a / 4;"
     ]
-  ]
+  ],
+  "category": "arithmetic"
 }

@@ -97,6 +97,7 @@ class TestSimHelpers(unittest.TestCase):
         self.assertEqual(tb_verdict("x\nTEST PASSED\n"), "pass")
         self.assertEqual(tb_verdict("ERROR: a\nTEST FAILED: 1 errors"), "fail")
         self.assertEqual(tb_verdict("nothing"), "unknown")
+        self.assertEqual(tb_verdict("[235000] %Error: f.sv:109: Assertion failed in tb.dut.sva_x: SVA"), "fail")
 
     def test_lint_errors_vhdl_formats(self):
         nvc = lint_errors("** Error: no visible declaration for FOO\n    > /tmp/a.vhd:3\n** Warning: unused")

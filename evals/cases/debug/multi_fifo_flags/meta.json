@@ -1,0 +1,24 @@
+{
+  "mode": "debug",
+  "file": "sync_fifo.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "multi-bug",
+  "bug": "two bugs: full asserts one entry early and empty asserts one entry late",
+  "source": "hand-written",
+  "tags": [
+    "multi-bug",
+    "fifo",
+    "flags"
+  ],
+  "fix": [
+    [
+      "assign empty   = (count <= 1);",
+      "assign empty   = (count == 0);"
+    ],
+    [
+      "assign full    = (count == DEPTH - 1);",
+      "assign full    = (count == DEPTH);"
+    ]
+  ]
+}

@@ -16,5 +16,6 @@
       "        2'b01, 2'b11: credits_r <= credits_r + 1'b1;",
       "        2'b01: credits_r <= credits_r + 1'b1;"
     ]
-  ]
+  ],
+  "category": "handshake"
 }

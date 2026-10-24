@@ -1,0 +1,24 @@
+{
+  "mode": "debug",
+  "file": "crc32_eth.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "multi-bug",
+  "bug": "two bugs: the CRC resets to zero instead of all ones, and the polynomial constant has its lowest bit cleared",
+  "source": "RTL_projects_public/UDP/rtl/mac/crc32_eth.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "multi-bug",
+    "crc",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "32'h04C11DB6;\n            else",
+      "32'h04C11DB7;\n            else"
+    ],
+    [
+      "if (!rst_n)\n            crc_reg <= 32'h0000_0000;",
+      "if (!rst_n)\n            crc_reg <= 32'hFFFF_FFFF;"
+    ]
+  ]
+}

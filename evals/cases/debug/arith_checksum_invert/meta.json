@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "ipv4_checksum.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "arithmetic",
+  "bug": "the folded one's-complement sum is not inverted, so the checksum is the sum rather than its complement",
+  "source": "RTL_projects_public/UDP/rtl/net/ipv4_checksum.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "arithmetic",
+    "ones-complement",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "cksum_comb = fold2;",
+      "cksum_comb = ~fold2;"
+    ]
+  ]
+}

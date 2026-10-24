@@ -1,0 +1,24 @@
+{
+  "mode": "debug",
+  "file": "axis_register_slice.sv",
+  "context": [
+    "axis_if.sv"
+  ],
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "handshake",
+  "bug": "a beat accepted while the output is stalled is written to the skid register but skid_valid is never set, so it is lost",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/axis/axis_register_slice.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "handshake",
+    "axi-stream",
+    "skid-buffer",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "                        skid_last  <= s_axis.tlast;\n",
+      "                        skid_last  <= s_axis.tlast;\n                        skid_valid <= 1'b1;\n"
+    ]
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "mode": "debug",
+  "file": "cdc_pulse_sync.sv",
+  "context": [
+    "cdc_sync_2ff.sv"
+  ],
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "cdc",
+  "bug": "the source-side toggle flop is clocked by the destination clock, so short source pulses are missed",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/cdc/cdc_pulse_sync.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "cdc",
+    "clock-domain",
+    "dual-clock",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "always_ff @(posedge clk_dst or negedge rst_n_src) begin",
+      "always_ff @(posedge clk_src or negedge rst_n_src) begin"
+    ]
+  ]
+}

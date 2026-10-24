@@ -1,0 +1,19 @@
+{
+  "mode": "debug",
+  "file": "rise_detect.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "blocking",
+  "bug": "prev is updated with a blocking assignment before rise reads it, so rise is always 0",
+  "source": "hand-written",
+  "tags": [
+    "blocking-vs-nonblocking",
+    "edge-detect"
+  ],
+  "fix": [
+    [
+      "            prev = 1'b0;\n            rise = 1'b0;\n        end else begin\n            prev = in;\n            rise = in & ~prev;",
+      "            prev <= 1'b0;\n            rise <= 1'b0;\n        end else begin\n            prev <= in;\n            rise <= in & ~prev;"
+    ]
+  ]
+}

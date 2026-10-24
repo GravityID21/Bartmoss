@@ -19,5 +19,6 @@
       "assign dst_pulse = dst_toggle & ~dst_toggle_q;",
       "assign dst_pulse = dst_toggle ^ dst_toggle_q;"
     ]
-  ]
+  ],
+  "category": "cdc"
 }

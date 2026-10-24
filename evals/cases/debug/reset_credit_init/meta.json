@@ -1,0 +1,22 @@
+{
+  "mode": "debug",
+  "file": "credit_sender.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "reset",
+  "bug": "the credit counter is missing from the reset branch, so it starts as X instead of INITIAL_CREDITS",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/credits/credit_sender.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "reset",
+    "credits",
+    "4-state",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "    if (!aresetn) begin\n",
+      "    if (!aresetn) begin\n      credits_r <= CREDIT_WIDTH'(INITIAL_CREDITS);\n"
+    ]
+  ],
+  "simulator": "iverilog"
+}

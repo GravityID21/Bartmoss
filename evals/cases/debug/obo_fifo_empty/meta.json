@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "sync_fifo.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "off-by-one",
+  "bug": "empty is asserted while one entry is still stored, so the last entry can't be read",
+  "source": "hand-written",
+  "tags": [
+    "off-by-one",
+    "fifo",
+    "flags"
+  ],
+  "fix": [
+    [
+      "assign empty   = (count <= 1);",
+      "assign empty   = (count == 0);"
+    ]
+  ]
+}

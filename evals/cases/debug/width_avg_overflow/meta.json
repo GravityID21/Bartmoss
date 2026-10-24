@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "avg8.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "width",
+  "bug": "the 8-bit sum drops the carry, so averages of large values wrap",
+  "source": "hand-written",
+  "tags": [
+    "width",
+    "overflow",
+    "dsp"
+  ],
+  "fix": [
+    [
+      "logic [7:0] sum;",
+      "logic [8:0] sum;"
+    ]
+  ]
+}

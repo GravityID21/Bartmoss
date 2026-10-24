@@ -1,0 +1,24 @@
+{
+  "mode": "debug",
+  "file": "mac8.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "multi-bug",
+  "bug": "two bugs: the product is unsigned (negative products zero-extend), and en takes priority over clr",
+  "source": "hand-written",
+  "tags": [
+    "multi-bug",
+    "arithmetic",
+    "priority"
+  ],
+  "fix": [
+    [
+      "        else if (en)\n            acc <= acc + product;\n        else if (clr)\n            acc <= '0;",
+      "        else if (clr)\n            acc <= '0;\n        else if (en)\n            acc <= acc + product;"
+    ],
+    [
+      "logic [15:0] product;",
+      "logic signed [15:0] product;"
+    ]
+  ]
+}

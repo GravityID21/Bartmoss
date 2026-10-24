@@ -1,0 +1,21 @@
+{
+  "mode": "debug",
+  "file": "rmii_tx.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "fsm",
+  "bug": "leaving idle doesn't load the shift register, so the first byte of every frame is replaced by stale data",
+  "source": "RTL_projects_public/UDP/rtl/mac/rmii_tx.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "fsm",
+    "ethernet",
+    "rmii",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "                    dibit_cnt <= '0;\n                    active    <= 1'b1;",
+      "                    shift_reg <= tx_data;\n                    dibit_cnt <= '0;\n                    active    <= 1'b1;"
+    ]
+  ]
+}

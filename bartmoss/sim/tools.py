@@ -190,7 +190,11 @@ def simulate(files: list[Path], top: str, workdir: Path, simulator: str, timeout
 
 def tb_verdict(output: str) -> str:
     """'pass', 'fail' or 'unknown', from the PASS/FAIL line the testbench prompt requires."""
-    if "TEST FAILED" in output or re.search(r"^\s*(%Fatal|FATAL|\*\* Failure)|\(assertion failure\)", output, re.M):
+    # Assertion failures inside the design (or a $stop they trigger) also count as failures.
+    if "TEST FAILED" in output or re.search(
+        r"^\s*(%Fatal|FATAL|\*\* Failure)|\(assertion failure\)|^(\[\d+\] )?%Error: .*(Assertion failed|Verilog \$stop)",
+        output, re.M,
+    ):
         return "fail"
     if "TEST PASSED" in output:
         return "pass"

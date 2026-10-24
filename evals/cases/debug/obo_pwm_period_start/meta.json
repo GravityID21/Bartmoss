@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "pwm.vhd",
+  "tb": "tb_ref.vhd",
+  "tb_top": "tb_ref",
+  "category": "off-by-one",
+  "bug": "period_start fires on the second cycle of each period instead of the first",
+  "source": "hand-written",
+  "tags": [
+    "off-by-one",
+    "vhdl",
+    "pwm"
+  ],
+  "fix": [
+    [
+      "period_start <= '1' when count = 1 else '0';",
+      "period_start <= '1' when count = 0 else '0';"
+    ]
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "mode": "debug",
+  "file": "riscv_alu.sv",
+  "context": [
+    "riscv_pkg.sv"
+  ],
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "width",
+  "bug": "the shift amount is 4 bits wide, so shifts of 16 or more wrap around",
+  "source": "RTL_projects_public/riscv_piplined/rtl/riscv_alu.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "width",
+    "risc-v",
+    "shifts",
+    "package",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "assign shamt    = operand_b[3:0];",
+      "assign shamt    = operand_b[4:0];"
+    ],
+    [
+      "logic [3:0]         shamt;",
+      "logic [4:0]         shamt;"
+    ]
+  ]
+}

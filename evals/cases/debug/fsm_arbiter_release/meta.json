@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "axi4_arbiter.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "fsm",
+  "bug": "on burst_done the held flag clears but the grant isn't dropped, so a stale grant stays visible between bursts",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/axi4_arbiter.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "fsm",
+    "arbiter",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "        held_q     <= 1'b0;",
+      "        grant_q    <= '0;\n        held_q     <= 1'b0;"
+    ]
+  ]
+}

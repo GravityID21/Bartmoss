@@ -19,5 +19,6 @@
       "q[0] = din;\n            q[1] = q[0];\n            q[2] = q[1];\n            q[3] = q[2];",
       "q <= {q[2:0], din};"
     ]
-  ]
+  ],
+  "category": "blocking"
 }

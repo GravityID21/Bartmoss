@@ -16,5 +16,6 @@
       "crc_reg[31:24] ^ data_in;",
       "crc_reg[31:24] ^ data_rev;"
     ]
-  ]
+  ],
+  "category": "width"
 }

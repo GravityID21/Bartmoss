@@ -230,6 +230,7 @@ def main(argv: list[str] | None = None) -> int:
     p_lb = sub.add_parser("leaderboard", help="summarise saved eval results by model")
     p_lb.add_argument("--results", default="evals/results", help="results directory (default: evals/results)")
     p_lb.add_argument("--write", metavar="FILE", help="also write the Markdown table to FILE")
+    p_lb.add_argument("--trend", action="store_true", help="list every saved full run in date order instead")
     p_cmp = sub.add_parser("compare", help="compare two eval result files case by case")
     p_cmp.add_argument("a")
     p_cmp.add_argument("b")
@@ -280,10 +281,15 @@ def main(argv: list[str] | None = None) -> int:
                 return 2
             return 0
         if args.command == "leaderboard":
-            from bartmoss.leaderboard import best_runs, load_runs, recommend, render
+            from bartmoss.leaderboard import best_runs, load_runs, recommend, render, render_categories, render_trend
 
-            best = best_runs(load_runs(Path(args.results)))
-            table = render(best)
+            runs = load_runs(Path(args.results))
+            if args.trend:
+                ctx.ui.print(render_trend(runs))
+                return 0
+            best = best_runs(runs)
+            categories = render_categories(best, Path(args.results).parent / "cases")
+            table = render(best) + ("\n### Debug score by bug category\n\n" + categories if categories else "")
             ctx.ui.print(table)
             for mode, (model, score, top) in recommend(best).items():
                 ctx.ui.info(f"{mode:8} cheapest within 0.05 of the best ({top:.2f}): {model} ({score:.2f})")

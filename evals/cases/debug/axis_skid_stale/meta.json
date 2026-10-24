@@ -20,5 +20,6 @@
       "                if (skid_valid) begin\n                    main_data  <= s_axis.tdata;",
       "                if (skid_valid) begin\n                    main_data  <= skid_data;"
     ]
-  ]
+  ],
+  "category": "handshake"
 }

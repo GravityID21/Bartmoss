@@ -16,5 +16,6 @@
       "fold2     = fold1[15:0];",
       "fold2     = fold1[15:0] + {15'd0, fold1[16]};"
     ]
-  ]
+  ],
+  "category": "arithmetic"
 }

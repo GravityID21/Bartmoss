@@ -15,5 +15,6 @@
       "S101:  next = din ? S1011 : IDLE;",
       "S101:  next = din ? S1011 : S10;"
     ]
-  ]
+  ],
+  "category": "fsm"
 }

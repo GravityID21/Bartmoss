@@ -20,5 +20,6 @@
       "                 (mem_wb_rd_addr == id_ex_rs2_addr))\n            forward_a = FWD_MEM_WB;",
       "                 (mem_wb_rd_addr == id_ex_rs1_addr))\n            forward_a = FWD_MEM_WB;"
     ]
-  ]
+  ],
+  "category": "combinational"
 }
