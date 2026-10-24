@@ -183,6 +183,19 @@ class TestModesWithMock(unittest.TestCase):
         with self.assertRaises(WorkspaceError):
             attach_mentions(self.ctx, "look at @../../etc/hosts")
 
+    def test_web_search_falls_back_without_claude(self):
+        from bartmoss.modes.ask import run_ask
+
+        self.ctx.web_search = True
+        self.assertIsNotNone(run_ask(self.ctx, "latest verilator?"))
+        self.assertIn("only available with Claude", self.ctx.ui.out.getvalue())
+
+    def test_web_search_cost(self):
+        from bartmoss.providers.base import ChatResult
+
+        usage = Usage(prices={"anthropic:m": [1.0, 1.0]})
+        self.assertAlmostEqual(usage.cost("anthropic:m", ChatResult("", "m", web_searches=2)), 0.02)
+
     def test_session_round_trip(self):
         from bartmoss.modes.ask import run_ask
         from bartmoss.session import load_session, save_session

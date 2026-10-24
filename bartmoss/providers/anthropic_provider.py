@@ -11,6 +11,10 @@ FALLBACK_MODELS = {"claude-opus-5-5", "claude-opus-5", "claude-fable-5-1", "clau
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
 NO_CREDENTIALS = ("No Claude credentials found. Set ANTHROPIC_API_KEY in your environment, in .env in the "
                   "workspace, or in ~/.config/bartmoss/.env (or run `ant auth login`).")
+# Models that take the dynamic-filtering web search tool; every other model uses the basic one.
+DYNAMIC_SEARCH_MODELS = {"claude-opus-5-5", "claude-opus-5", "claude-opus-4-8", "claude-opus-4-7", "claude-opus-4-6",
+                         "claude-sonnet-5-5", "claude-sonnet-5", "claude-sonnet-4-6"}
+MAX_CONTINUATIONS = 3  # pause_turn resumes allowed per question
 # Model families that accept output_config.effort (it errors on Haiku 4.5 / Sonnet 4.5).
 EFFORT_PREFIXES = ("claude-opus-", "claude-fable-", "claude-mythos-", "claude-sonnet-5", "claude-sonnet-4-6", "claude-haiku-5")
 
@@ -36,6 +40,7 @@ class AnthropicProvider(Provider):
         max_tokens: int,
         effort: Optional[str] = None,
         on_text: Optional[Callable[[str], None]] = None,
+        web_search: int = 0,
     ) -> ChatResult:
         sdk = self._sdk
         params: dict = {
@@ -51,13 +56,24 @@ class AnthropicProvider(Provider):
             # On a safety decline the API re-runs the request on a recommended fallback model.
             params["extra_headers"] = {"anthropic-beta": FALLBACK_BETA}
             params["extra_body"] = {"fallbacks": "default"}
+        if web_search:
+            tool_type = "web_search_20260209" if model in DYNAMIC_SEARCH_MODELS else "web_search_20250305"
+            params["tools"] = [{"type": tool_type, "name": "web_search", "max_uses": web_search}]
 
         try:
-            with self.client.messages.stream(**params) as stream:
-                for text in stream.text_stream:
-                    if on_text:
-                        on_text(text)
-                message = stream.get_final_message()
+            messages_sent = list(messages)
+            parts: list = []
+            for _ in range(MAX_CONTINUATIONS + 1):
+                with self.client.messages.stream(**{**params, "messages": messages_sent}) as stream:
+                    for text in stream.text_stream:
+                        if on_text:
+                            on_text(text)
+                    message = stream.get_final_message()
+                parts.append(message)
+                if message.stop_reason != "pause_turn":
+                    break
+                # The server paused its search loop; re-send its turn unchanged and it resumes.
+                messages_sent = messages_sent + [{"role": "assistant", "content": message.content}]
         except sdk.AuthenticationError:
             raise ProviderError("Claude rejected the credentials: check ANTHROPIC_API_KEY (or run `ant auth login`).")
         except sdk.NotFoundError:
@@ -78,15 +94,28 @@ class AnthropicProvider(Provider):
                 raise ProviderError(NO_CREDENTIALS)
             raise
 
-        text = "".join(block.text for block in message.content if block.type == "text")
-        usage = message.usage
+        blocks = [block for m in parts for block in m.content]
+        text = "".join(block.text for block in blocks if block.type == "text")
+        citations = []
+        for block in blocks:
+            for cite in (getattr(block, "citations", None) or []) if block.type == "text" else []:
+                url = getattr(cite, "url", None)
+                if url and (getattr(cite, "title", None) or url, url) not in citations:
+                    citations.append((getattr(cite, "title", None) or url, url))
+
+        def total(attr: str) -> int:
+            return sum(getattr(m.usage, attr, 0) or 0 for m in parts)
+
+        searches = sum(getattr(getattr(m.usage, "server_tool_use", None), "web_search_requests", 0) or 0 for m in parts)
         return ChatResult(
             text=text,
             model=message.model,
             stop_reason=message.stop_reason,
-            input_tokens=usage.input_tokens or 0,
-            output_tokens=usage.output_tokens or 0,
-            cache_read_tokens=getattr(usage, "cache_read_input_tokens", 0) or 0,
-            cache_write_tokens=getattr(usage, "cache_creation_input_tokens", 0) or 0,
+            input_tokens=total("input_tokens"),
+            output_tokens=total("output_tokens"),
+            cache_read_tokens=total("cache_read_input_tokens"),
+            cache_write_tokens=total("cache_creation_input_tokens"),
             refused=message.stop_reason == "refusal",
+            web_searches=searches,
+            citations=citations,
         )

@@ -37,6 +37,7 @@ class OpenAICompatProvider(Provider):
         max_tokens: int,
         effort: Optional[str] = None,
         on_text: Optional[Callable[[str], None]] = None,
+        web_search: int = 0,
     ) -> ChatResult:
         sdk = self._sdk
         params: dict = {

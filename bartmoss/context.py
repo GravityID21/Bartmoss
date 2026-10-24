@@ -35,6 +35,7 @@ class Context:
     model_override: Optional[str] = None
     assume_yes: bool = False
     ask_history: list = field(default_factory=list)  # replaced wholesale by /load
+    web_search: bool = False  # /web on|off; allows Claude web searches in /ask
     _providers: dict = field(default_factory=dict)
 
     def model_spec(self, mode: str) -> str:
@@ -46,7 +47,7 @@ class Context:
         return self._providers[name]
 
     def ask_model(self, mode: str, messages: list[dict], on_text: Optional[Callable[[str], None]] = None,
-                  prompt: Optional[str] = None) -> ChatResult:
+                  prompt: Optional[str] = None, web_search: int = 0) -> ChatResult:
         """`prompt` picks a prompt variant (e.g. tb_vhdl); model and limits still come from `mode`."""
         spec = self.model_spec(mode)
         provider_name, model = parse_model_spec(spec)
@@ -58,6 +59,7 @@ class Context:
             max_tokens=mode_cfg.get("max_tokens", 8000),
             effort=mode_cfg.get("effort"),
             on_text=on_text,
+            web_search=web_search,
         )
         self.usage.add(spec, result)
         return result

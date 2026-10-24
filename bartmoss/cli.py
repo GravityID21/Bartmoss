@@ -24,6 +24,7 @@ HELP = """\
   /debug <file> [ctx...]  review + fix one RTL file (writes <name>.fixed.<ext>);
                           extra files (packages, interfaces, submodules) are read-only context
   /tb <file> [ctx...]     generate + run a self-checking testbench
+  /web [on|off]       allow Claude to search the web in /ask (off by default; billed per search)
   /model [p:model]    show or set the model for this session (e.g. anthropic:claude-haiku-5-5)
   /models             list configured providers and per-mode models
   /doctor             check simulators and provider SDKs
@@ -119,6 +120,12 @@ def dispatch(ctx: Context, line: str) -> bool:
             ui.ok(f"model set to {rest} for all modes (conversation cleared)")
         else:
             ui.print(f"  {ctx.model_override or 'per-mode defaults (see /models)'}")
+    elif command == "/web":
+        if rest in ("on", "off"):
+            ctx.web_search = rest == "on"
+        elif rest:
+            ui.warn("usage: /web [on|off]")
+        ui.print(f"  web search for /ask is {'on' if ctx.web_search else 'off'}")
     elif command == "/models":
         cmd_models(ctx)
     elif command == "/doctor":
@@ -186,6 +193,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command")
     p_ask = sub.add_parser("ask", help="ask a hardware design question")
     p_ask.add_argument("question", nargs="+")
+    p_ask.add_argument("--web", action="store_true", help="allow Claude to search the web (billed per search)")
     for name, help_text in (("debug", "review and fix one RTL file"), ("tb", "generate and run a testbench for one RTL file")):
         p = sub.add_parser(name, help=help_text)
         p.add_argument("file")
@@ -212,6 +220,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "ask":
             from bartmoss.modes.ask import run_ask
 
+            ctx.web_search = args.web
             return 0 if run_ask(ctx, " ".join(args.question)) is not None else 1
         if args.command == "debug":
             from bartmoss.modes.debug import run_debug

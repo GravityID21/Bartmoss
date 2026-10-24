@@ -8,6 +8,8 @@ from bartmoss.providers.base import ChatResult
 
 # Providers that run locally (or not at all) and never bill per token.
 FREE_PROVIDERS = {"mock", "ollama"}
+# Claude server-side web search: $10 per 1,000 searches (check current pricing).
+WEB_SEARCH_USD = 0.01
 
 
 @dataclass
@@ -26,7 +28,7 @@ class Usage:
             return None
         price_in, price_out = price
         # Cache writes bill at ~1.25x input, cache reads at ~0.1x input (Anthropic pricing).
-        return (
+        return result.web_searches * WEB_SEARCH_USD + (
             result.input_tokens * price_in
             + result.cache_write_tokens * price_in * 1.25
             + result.cache_read_tokens * price_in * 0.1

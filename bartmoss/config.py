@@ -14,7 +14,7 @@ from pathlib import Path
 DEFAULTS: dict = {
     "default_model": "anthropic:claude-opus-5-5",
     "modes": {
-        "ask": {"model": None, "max_tokens": 4000, "effort": "low"},
+        "ask": {"model": None, "max_tokens": 4000, "effort": "low", "web_search_max_uses": 3},
         "debug": {"model": None, "max_tokens": 32000, "effort": "medium", "max_retries": 2},
         "tb": {"model": None, "max_tokens": 32000, "effort": "medium", "max_retries": 2},
     },

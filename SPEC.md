@@ -211,7 +211,7 @@ Quality
 ### Phase 2: Planning modes, filtering and model comparison
 - [ ] **P2.1** `/vplan`: verification plan template (features → checks → coverpoints → edge cases → open questions), text only
 - [ ] **P2.2** `/uvmplan`: UVM environment architecture from a spec (agents, sequences, scoreboard, coverage, reg model), text only
-- [ ] **P2.3** Optional web search for `/ask` (Claude server-side web search tool, off by default, `max_uses` cap; each search is billed)
+- [x] **P2.3** Optional web search for `/ask` (Claude server-side web search tool, off by default, `max_uses` cap; each search is billed). *`ask --web` or `/web on`; up to `modes.ask.web_search_max_uses` (3) searches; `pause_turn` resumed up to 3 times; sources listed and searches costed at $0.01 each. Uses `web_search_20260209` on Opus/Sonnet 4.6+ and `web_search_20250305` otherwise. Live-tested on Haiku 5.5.*
 - [ ] **P2.4** Optional pre-filter: cheap classifier call (in-scope / off-topic / harmful), off by default. Reuse the pattern from the course `content_filter` notebook.
 - [ ] **P2.5** Prompt evaluation pipeline: versioned prompts (`prompts/<mode>.v2.md`), A/B on the eval set, model-graded rubric for text modes (as in course lesson 11)
 - [ ] **P2.6** Model leaderboard: run every configured model on every mode, Markdown table of pass rate, tokens, cost, latency

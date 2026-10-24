@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable, Optional
 
 
@@ -16,6 +16,8 @@ class ChatResult:
     cache_read_tokens: int = 0
     cache_write_tokens: int = 0
     refused: bool = False
+    web_searches: int = 0  # server-side searches performed (billed per search)
+    citations: list = field(default_factory=list)  # [(title, url)] from web search results
 
 
 class ProviderError(Exception):
@@ -34,8 +36,10 @@ class Provider:
         max_tokens: int,
         effort: Optional[str] = None,
         on_text: Optional[Callable[[str], None]] = None,
+        web_search: int = 0,
     ) -> ChatResult:
         """Send one request. `messages` are {"role": "user"|"assistant", "content": str}.
         `on_text` receives streamed text chunks when given. `effort` is ignored by providers
-        that don't support it."""
+        that don't support it. `web_search` > 0 allows up to that many server-side web searches
+        (Claude only; other providers ignore it)."""
         raise NotImplementedError

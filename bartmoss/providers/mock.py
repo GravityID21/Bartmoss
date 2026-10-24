@@ -31,6 +31,7 @@ class MockProvider(Provider):
         max_tokens: int,
         effort: Optional[str] = None,
         on_text: Optional[Callable[[str], None]] = None,
+        web_search: int = 0,
     ) -> ChatResult:
         if "MODE: debug" in system:
             source = _first_file(messages)
