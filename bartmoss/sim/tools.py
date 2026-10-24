@@ -54,6 +54,31 @@ def pick_simulator(preference: str = "auto", vhdl: bool = False) -> Optional[str
     return None
 
 
+def tool_version(name: str) -> Optional[tuple]:
+    """Installed version as a tuple, e.g. (5, 50) for Verilator 5.050; None if missing or unparsable."""
+    if not shutil.which(name):
+        return None
+    flag = "-V" if name == "iverilog" else "--version"
+    try:
+        out = subprocess.run([name, flag], capture_output=True, text=True, timeout=10).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    match = re.search(r"(\d+)\.(\d+)", out)
+    return (int(match.group(1)), int(match.group(2))) if match else None
+
+
+def unmet_requirement(requires: dict) -> Optional[str]:
+    """Check {"verilator": "5.050"}-style minimum versions; returns why it's unmet, or None."""
+    for name, minimum in requires.items():
+        wanted = tuple(int(x) for x in minimum.split(".")[:2])
+        found = tool_version(name)
+        if found is None:
+            return f"needs {name} >= {minimum}, not installed"
+        if found < wanted:
+            return f"needs {name} >= {minimum}, found {found[0]}.{found[1]:03d}"
+    return None
+
+
 def _run(cmd: list[str], cwd: Path, timeout: int, stage: str) -> RunResult:
     try:
         proc = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout)

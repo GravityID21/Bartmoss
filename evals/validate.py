@@ -14,7 +14,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from bartmoss.sim.tools import is_vhdl, pick_simulator, simulate, tail, tb_verdict  # noqa: E402
+from bartmoss.sim.tools import is_vhdl, pick_simulator, simulate, tail, tb_verdict, unmet_requirement  # noqa: E402
 
 CASES = Path(__file__).resolve().parent / "cases"
 
@@ -71,6 +71,10 @@ def main() -> int:
             if not (case / "meta.json").is_file() or (args.only and args.only not in case.name):
                 continue
             meta = json.loads((case / "meta.json").read_text())
+            reason = unmet_requirement(meta.get("requires", {}))
+            if reason:
+                print(f"skip {mode}/{case.name} ({reason})")
+                continue
             sim = pick_simulator(args.sim, vhdl=is_vhdl(meta["file"]))
             if sim is None:
                 print(f"skip {mode}/{case.name} (no {'VHDL' if is_vhdl(meta['file']) else 'Verilog'} simulator)")

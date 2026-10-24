@@ -104,6 +104,12 @@ class TestSimHelpers(unittest.TestCase):
         self.assertEqual(nvc, {"no visible declaration for FOO"})
         self.assertEqual(ghdl, {'no declaration for "foo"'})
 
+    def test_unmet_requirement(self):
+        from bartmoss.sim.tools import unmet_requirement
+
+        self.assertIsNone(unmet_requirement({}))
+        self.assertIn("not installed", unmet_requirement({"no-such-simulator-xyz": "1.0"}))
+
     def test_vhdl_verdict(self):
         self.assertEqual(tb_verdict("** Note: 10ns+0: TEST PASSED"), "pass")
         self.assertEqual(tb_verdict("** Failure: 5ns+0: Assertion violation."), "fail")

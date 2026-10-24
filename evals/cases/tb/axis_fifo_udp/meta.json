@@ -2,7 +2,20 @@
   "mode": "tb",
   "file": "axis_fifo.sv",
   "top": "axis_fifo",
-  "mutants": ["mutant_last_dropped.sv", "mutant_rdptr.sv", "mutant_rd_addr.sv"],
+  "mutants": [
+    "mutant_last_dropped.sv",
+    "mutant_rdptr.sv",
+    "mutant_rd_addr.sv"
+  ],
   "source": "RTL_projects_public/UDP/rtl/axis/axis_fifo.sv (MIT, Elliot Stevenson)",
-  "tags": ["fifo", "axi-stream", "handshake", "own-project"]
+  "tags": [
+    "fifo",
+    "axi-stream",
+    "handshake",
+    "own-project"
+  ],
+  "requires": {
+    "verilator": "5.050"
+  },
+  "requires_note": "the DUT's SVA block uses `default disable iff`, which Verilator 5.020 rejects; verified on 5.050"
 }

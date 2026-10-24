@@ -18,7 +18,7 @@ from pathlib import Path
 
 from bartmoss.context import Context
 from bartmoss.files import Workspace
-from bartmoss.sim.tools import is_vhdl, pick_simulator, simulate, tb_verdict
+from bartmoss.sim.tools import is_vhdl, pick_simulator, simulate, tb_verdict, unmet_requirement
 from bartmoss.ui import UI
 
 
@@ -97,8 +97,16 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None)
     results_dir = cases_root.resolve().parent / "results"
     ui.info(f"eval {mode} · {len(cases)} cases · model {spec} · simulator {simulator}")
     rows = []
+    skipped = []
     for case in cases:
         meta = json.loads((case / "meta.json").read_text())
+        reason = unmet_requirement(meta.get("requires", {}))
+        if reason:
+            # Skipped cases are reported but left out of the mean, so an old local
+            # simulator isn't counted as a model failure.
+            ui.print(f"  {ui.style('skip', 'yellow')}  {case.name:28} {reason}")
+            skipped.append({"case": case.name, "skipped": reason})
+            continue
         case_ctx = replace(ctx, workspace=Workspace(case, ctx.config["output_dir"]), ui=UI(quiet=True),
                            assume_yes=True, ask_history=[], _providers=ctx._providers)
         calls_before = len(ctx.usage.calls)
@@ -125,9 +133,12 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None)
         score_text = ui.style(f"{detail['score']:.2f}", colour)
         ui.print(f"  {score_text}  {case.name:28} {extra}")
 
+    if not rows:
+        raise SystemExit("Every case was skipped; see the reasons above.")
     mean = sum(r["score"] for r in rows) / len(rows)
     report = {"date": date.today().isoformat(), "mode": mode, "model": spec, "simulator": simulator,
-              "mean_score": round(mean, 3), "usage": ctx.usage.summary(), "cases": rows}
+              "mean_score": round(mean, 3), "usage": ctx.usage.summary(), "cases": rows,
+              "skipped": skipped}
     results_dir.mkdir(exist_ok=True)
     out = results_dir / f"{run_name}.json"
     out.write_text(json.dumps(report, indent=2) + "\n")

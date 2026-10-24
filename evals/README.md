@@ -27,6 +27,7 @@ Score: 1.0 if the fix passes the reference testbench, 0.25 if it compiles but fa
 | `file`, `top` | correct RTL given to the model |
 | `context` | optional supporting files |
 | `mutants` | one-line bug variants that a good testbench must fail on |
+| `requires` | optional minimum tool versions, e.g. `{"verilator": "5.050"}`; the case is skipped (and left out of the mean) when unmet |
 | `reference_tb.sv` / `.vhd` | hand-written testbench proving every mutant is detectable |
 
 Score: 0.1 compiles, +0.2 passes on the correct DUT, +0.7 × fraction of mutants caught.
