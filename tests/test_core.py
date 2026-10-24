@@ -206,6 +206,22 @@ class TestModesWithMock(unittest.TestCase):
         usage = Usage(prices={"anthropic:m": [1.0, 1.0]})
         self.assertAlmostEqual(usage.cost("anthropic:m", ChatResult("", "m", web_searches=2)), 0.02)
 
+    def test_vplan_and_uvmplan_write_complete_plans(self):
+        from bartmoss.modes.plan import run_plan
+
+        (self.root / "spec.md").write_text("# FIFO\n8-deep synchronous FIFO with full/empty flags.\n")
+        for mode in ("vplan", "uvmplan"):
+            result = run_plan(self.ctx, mode, "spec.md")
+            self.assertEqual(result.status, "ok")
+            self.assertEqual(result.written.name, f"spec.{mode}.md")
+
+    def test_plan_structure_check(self):
+        from bartmoss.modes.plan import structure_problems
+
+        problems = structure_problems("vplan", "# Overview\nx\n# Features\nno table here\n")
+        self.assertIn("missing section '# Checks'", problems)
+        self.assertIn("section '# Features' needs a table with at least one row", problems)
+
     def test_session_round_trip(self):
         from bartmoss.modes.ask import run_ask
         from bartmoss.session import load_session, save_session

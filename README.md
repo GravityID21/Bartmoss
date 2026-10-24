@@ -17,6 +17,8 @@ An open-source AI assistant for RTL design and verification that runs in your te
 | `bartmoss ask "..."` | Hardware design theory Q&A (multi-turn in the REPL). `@path` attaches a file; `--web` (or `/web on`) lets Claude search the web, with sources listed. |
 | `bartmoss debug file.sv` | Lints with Verilator and checks synthesis with Yosys (if installed), asks the model for an analysis and a fixed file, re-checks the fix, retries if it introduced errors or latches, then writes `bartmoss_out/file.fixed.sv`. Your original is never touched. |
 | `bartmoss tb file.sv` | Generates a self-checking directed testbench plus Markdown notes, compiles and runs it, and retries on compile errors. Reports PASS/FAIL. |
+| `bartmoss vplan spec.md` | Writes a verification plan (features → checks → coverage → edge cases) to `bartmoss_out/spec.vplan.md`. Takes a spec, README or RTL file. |
+| `bartmoss uvmplan spec.md` | Designs a UVM environment (agents, transactions, sequences, scoreboard, coverage, tests, build order) as `bartmoss_out/spec.uvmplan.md`. |
 | `bartmoss eval --mode debug\|tb` | Scores a model on the cases in `evals/cases/`, graded by the simulator. |
 | `bartmoss` | Interactive REPL (`/help` lists commands). |
 

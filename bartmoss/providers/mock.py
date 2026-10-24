@@ -36,6 +36,15 @@ class MockProvider(Provider):
         if "MODE: filter" in system:
             question = _last_user(messages).lower()
             text = "OFF_TOPIC" if "recipe" in question else "HARMFUL" if "weapon" in question else "IN_SCOPE"
+        elif "MODE: vplan" in system or "MODE: uvmplan" in system:
+            from bartmoss.modes.plan import SECTIONS, TABLE_SECTIONS
+
+            mode = "vplan" if "MODE: vplan" in system else "uvmplan"
+            body = []
+            for name in SECTIONS[mode]:
+                table = "| a | b |\n|---|---|\n| mock | row |\n" if name in TABLE_SECTIONS[mode] else "Mock section.\n"
+                body.append(f"# {name}\n{table}")
+            text = "<plan>\n" + "\n".join(body) + "</plan>\n"
         elif "MODE: debug" in system:
             source = _first_file(messages)
             text = (

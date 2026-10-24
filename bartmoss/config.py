@@ -17,6 +17,8 @@ DEFAULTS: dict = {
         "ask": {"model": None, "max_tokens": 4000, "effort": "low", "web_search_max_uses": 3},
         "debug": {"model": None, "max_tokens": 32000, "effort": "medium", "max_retries": 2},
         "tb": {"model": None, "max_tokens": 32000, "effort": "medium", "max_retries": 2},
+        "vplan": {"model": None, "max_tokens": 16000, "effort": "medium", "max_retries": 1},
+        "uvmplan": {"model": None, "max_tokens": 16000, "effort": "medium", "max_retries": 1},
     },
     # Providers other than "anthropic" and "mock" are OpenAI-compatible endpoints.
     # Check each provider's docs for the current base URL and model names.

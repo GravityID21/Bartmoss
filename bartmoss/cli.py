@@ -24,6 +24,8 @@ HELP = """\
   /debug <file> [ctx...]  review + fix one RTL file (writes <name>.fixed.<ext>);
                           extra files (packages, interfaces, submodules) are read-only context
   /tb <file> [ctx...]     generate + run a self-checking testbench
+  /vplan <spec> [ctx...]  verification plan: features, checks, coverage, edge cases (Markdown)
+  /uvmplan <spec> [ctx...] UVM environment architecture: agents, sequences, scoreboard, tests
   /filter [on|off]    pre-check /ask questions with a cheap model (off by default)
   /web [on|off]       allow Claude to search the web in /ask (off by default; billed per search)
   /model [p:model]    show or set the model for this session (e.g. anthropic:claude-haiku-5-5)
@@ -101,6 +103,14 @@ def dispatch(ctx: Context, line: str) -> bool:
         from bartmoss.modes.ask import run_ask
 
         run_ask(ctx, rest) if rest else ui.warn("usage: /ask <question>")
+    elif command in ("/vplan", "/uvmplan"):
+        from bartmoss.modes.plan import run_plan
+
+        args = shlex.split(rest)
+        if not args:
+            ui.warn(f"usage: {command} <spec, README or RTL file> [context files...]")
+        else:
+            run_plan(ctx, command[1:], args[0], context_files=args[1:])
     elif command in ("/debug", "/tb"):
         args = shlex.split(rest)
         if not args:
@@ -202,7 +212,9 @@ def main(argv: list[str] | None = None) -> int:
     p_ask = sub.add_parser("ask", help="ask a hardware design question")
     p_ask.add_argument("question", nargs="+")
     p_ask.add_argument("--web", action="store_true", help="allow Claude to search the web (billed per search)")
-    for name, help_text in (("debug", "review and fix one RTL file"), ("tb", "generate and run a testbench for one RTL file")):
+    for name, help_text in (("debug", "review and fix one RTL file"), ("tb", "generate and run a testbench for one RTL file"),
+                            ("vplan", "write a verification plan from a spec, README or RTL file"),
+                            ("uvmplan", "design a UVM environment from a spec, README or RTL file")):
         p = sub.add_parser(name, help=help_text)
         p.add_argument("file")
         p.add_argument("--with", dest="context", action="append", default=[], metavar="FILE",
@@ -238,6 +250,10 @@ def main(argv: list[str] | None = None) -> int:
             from bartmoss.modes.tb import run_tb
 
             return 0 if run_tb(ctx, args.file, context_files=args.context).verdict in ("pass", "unchecked") else 1
+        if args.command in ("vplan", "uvmplan"):
+            from bartmoss.modes.plan import run_plan
+
+            return 0 if run_plan(ctx, args.command, args.file, context_files=args.context).status == "ok" else 1
         if args.command == "eval":
             from bartmoss.evals import run_eval
 
@@ -254,7 +270,7 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         return 130
     finally:
-        if args.command in ("ask", "debug", "tb", "eval") and ctx.usage.calls:
+        if args.command in ("ask", "debug", "tb", "vplan", "uvmplan", "eval") and ctx.usage.calls:
             ctx.ui.dim(ctx.usage.summary())
 
 

@@ -148,8 +148,8 @@ API keys are **only** read from environment variables or a git-ignored `.env`. T
 | 1 | Theory chat | `/ask` | text | — | 1 (web search: 2) |
 | 2 | RTL debugger | `/debug <file>` | analysis + `<name>.fixed.sv` | Verilator lint (before and after) | 1 |
 | 3 | Testbench generator | `/tb <file>` | `tb_<module>.sv` + `tb_<module>.md` (files only) | compile + run, PASS/FAIL | 1 |
-| 4 | Verification planner | `/vplan <spec>` | Markdown plan: features, coverpoints, edge cases | structure check | 2 |
-| 5 | UVM architecture planner | `/uvmplan <spec>` | Markdown architecture + component list | structure check | 2 |
+| 4 | Verification planner | `/vplan <spec>` | `<stem>.vplan.md`: features, checks, coverage, edge cases | structure check | 2 ✅ |
+| 5 | UVM architecture planner | `/uvmplan <spec>` | `<stem>.uvmplan.md`: components, sequences, scoreboard, tests, build order | structure check | 2 ✅ |
 | 6 | UVM component builder | `/uvm <component>` | SV/UVM files | compile with a UVM-capable simulator | 3 |
 | 7 | Waveform reviewer | `/wave <vcd> --signals … --window …` | text analysis | — | 3 |
 | 8 | Workflow orchestrator | `/flow …` | runs tool flows | tool exit codes | 5 |
@@ -209,8 +209,8 @@ Quality
 **Exit:** on the seed eval set, at least one model reaches ≥ 80 % pass on `/tb` and `/debug`; README lets a stranger install and run it in under 10 minutes. *Met by Haiku 5.5 (0.93 / 1.00). Install and tests verified on macOS and on Ubuntu 24.04 in CI. **Phase 1 complete.***
 
 ### Phase 2: Planning modes, filtering and model comparison
-- [ ] **P2.1** `/vplan`: verification plan template (features → checks → coverpoints → edge cases → open questions), text only
-- [ ] **P2.2** `/uvmplan`: UVM environment architecture from a spec (agents, sequences, scoreboard, coverage, reg model), text only
+- [x] **P2.1** `/vplan`: verification plan template (features → checks → coverpoints → edge cases → open questions), text only. *Feature IDs trace through checks, coverage and edge cases; the structure check (required headings, non-empty tables) retries once. Live: Haiku produced 11 features and 21 checks for axi4_arbiter for $0.003.*
+- [x] **P2.2** `/uvmplan`: UVM environment architecture from a spec (agents, sequences, scoreboard, coverage, reg model), text only. *10 required sections ending in a build order; live run on axis_fifo needed one structure retry and then passed ($0.013).*
 - [x] **P2.3** Optional web search for `/ask` (Claude server-side web search tool, off by default, `max_uses` cap; each search is billed). *`ask --web` or `/web on`; up to `modes.ask.web_search_max_uses` (3) searches; `pause_turn` resumed up to 3 times; sources listed and searches costed at $0.01 each. Uses `web_search_20260209` on Opus/Sonnet 4.6+ and `web_search_20250305` otherwise. Live-tested on Haiku 5.5.*
 - [x] **P2.4** Optional pre-filter: cheap classifier call (in-scope / off-topic / harmful), off by default. Reuse the pattern from the course `content_filter` notebook. *`filter.enabled` in config or `/filter on`; Haiku 5.5 by default (~$0.00006 per question); fails open; refused questions stay out of the conversation. Live check 5/5, including a hardware-security question kept in scope and a prompt-injection attempt.*
 - [ ] **P2.5** Prompt evaluation pipeline: versioned prompts (`prompts/<mode>.v2.md`), A/B on the eval set, model-graded rubric for text modes (as in course lesson 11)
