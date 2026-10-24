@@ -15,11 +15,12 @@ DEFAULTS: dict = {
     "default_model": "anthropic:claude-opus-5-5",
     "modes": {
         "ask": {"model": None, "max_tokens": 4000, "effort": "low", "web_search_max_uses": 3},
-        # Measured default (P2.7): Haiku 5.5 scored 1.00 on the 16 debug cases ×3, ahead of Sonnet 5.5 (0.92).
+        # Measured defaults (P2.7, evals/LEADERBOARD.md): Haiku 5.5 was best or within 0.05 of best in every
+        # evaluated mode, at 1/5 to 1/13 of Sonnet 5.5's cost. /ask has no eval yet, so it uses default_model.
         "debug": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 32000, "effort": "medium", "max_retries": 2},
-        "tb": {"model": None, "max_tokens": 32000, "effort": "medium", "max_retries": 2},
-        "vplan": {"model": None, "max_tokens": 16000, "effort": "medium", "max_retries": 1},
-        "uvmplan": {"model": None, "max_tokens": 16000, "effort": "medium", "max_retries": 1},
+        "tb": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 32000, "effort": "medium", "max_retries": 2},
+        "vplan": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 16000, "effort": "medium", "max_retries": 1},
+        "uvmplan": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 16000, "effort": "medium", "max_retries": 1},
     },
     # Providers other than "anthropic" and "mock" are OpenAI-compatible endpoints.
     # Check each provider's docs for the current base URL and model names.

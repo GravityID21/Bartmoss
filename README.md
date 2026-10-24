@@ -58,15 +58,15 @@ Built-in providers: `anthropic`, `openai`, `ollama`, `deepseek`, `openrouter`, `
 
 ## Results
 
-31 cases, each run three times (2026-10-24). Full table and notes: [evals/LEADERBOARD.md](evals/LEADERBOARD.md). See [evals/README.md](evals/README.md) for how scores are graded.
+31 cases, each run three times per model (2026-10-24). Full table and notes: [evals/LEADERBOARD.md](evals/LEADERBOARD.md). See [evals/README.md](evals/README.md) for how scores are graded.
 
-| Model | `/debug` (16 cases) | `/tb` (10 cases) | Cost per debug pass |
-|---|---|---|---|
-| Claude Haiku 5.5 | **1.00** (48/48 runs) | pending | $0.02 |
-| Claude Sonnet 5.5 | 0.92 | **0.79** | $0.27 |
-| Qwen2.5-Coder 7B (local) | 0.44 | 0.07 | $0 |
+| Model | `/debug` (16) | `/tb` (10) | `/vplan` (3) | `/uvmplan` (2) | Cost per debug + tb pass |
+|---|---|---|---|---|---|
+| Claude Haiku 5.5 | **1.00** | **0.91** | 0.95 | **1.00** | $0.13 |
+| Claude Sonnet 5.5 | 0.92 | 0.79 | **1.00** | **1.00** | $1.01 |
+| Qwen2.5-Coder 7B (local) | 0.44 | 0.07 | 0.22 | 0.41 | $0 |
 
-Haiku is the default for `/debug`. Testbench generation is the hardest mode: even Sonnet sometimes writes wrong expected values for a correct design.
+Haiku 5.5 is the measured default for every evaluated mode. Testbench generation is the hardest: both Claude models sometimes write wrong expected values for a correct design.
 
 ## Cost
 

@@ -1,0 +1,383 @@
+{
+  "format": 2,
+  "date": "2026-10-24",
+  "mode": "uvmplan",
+  "model": "ollama:qwen2.5-coder:7b",
+  "simulator": "auto",
+  "repeat": 3,
+  "prompt": "uvmplan",
+  "mean_score": 0.407,
+  "run_means": [
+    0.472,
+    0.322,
+    0.428
+  ],
+  "cost_usd": 0.0444,
+  "seconds": 416.2,
+  "usage": "18 calls \u00b7 36,075 in \u00b7 11,995 out \u00b7 0 cache-read \u00b7 est. $0.0444",
+  "cases": [
+    {
+      "case": "axi4_arbiter",
+      "score": 0.448,
+      "min": 0.343,
+      "max": 0.543,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.543,
+          "rubric_met": "3/7",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Has a driver or agent for the req and burst_done inputs and a monitor for grant",
+              "met": false,
+              "evidence": "Agent described as handling the interface with the DUT to send requests and receive grants; no explicit driver/monitor split, and burst_done driving is not stated."
+            },
+            {
+              "id": 2,
+              "item": "Has a reference model that predicts the round-robin grant order",
+              "met": true,
+              "evidence": "Reference model predicts the grant 'following the round-robin and burst-locked logic'"
+            },
+            {
+              "id": 3,
+              "item": "Checks (in the scoreboard or with assertions) that the grant doesn't change during a burst",
+              "met": false,
+              "evidence": "Scoreboard only compares actual vs expected grant; no explicit check that grant is stable during a burst."
+            },
+            {
+              "id": 4,
+              "item": "Coverage includes which requester was granted and how many requests were active at once",
+              "met": false,
+              "evidence": "Coverpoints are granted_req and burst_done; there is no coverpoint for the number of active requests."
+            },
+            {
+              "id": 5,
+              "item": "States that a register model is not applicable",
+              "met": true,
+              "evidence": "Register model: Not applicable."
+            },
+            {
+              "id": 6,
+              "item": "Includes a test that holds every requester active for many bursts and checks each one is served (no starvation)",
+              "met": false,
+              "evidence": "stress_test covers multiple bursts, but nothing about all requesters held active or starvation checks."
+            },
+            {
+              "id": 7,
+              "item": "Makes the parameter N configurable in the environment or tests",
+              "met": true,
+              "evidence": "Key Configuration lists `N` for the agent, scoreboard and reference model."
+            }
+          ],
+          "seconds": 75.4,
+          "input_tokens": 5717,
+          "output_tokens": 2138
+        },
+        {
+          "status": "incomplete",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.343,
+          "rubric_met": "3/7",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Has a driver or agent for the req and burst_done inputs and a monitor for grant",
+              "met": false,
+              "evidence": "Agent 'drives req and check grant' but no explicit burst_done driving or separate monitor"
+            },
+            {
+              "id": 2,
+              "item": "Has a reference model that predicts the round-robin grant order",
+              "met": true,
+              "evidence": "ref_model predicts grant signals; round-robin scheduling is a goal"
+            },
+            {
+              "id": 3,
+              "item": "Checks (in the scoreboard or with assertions) that the grant doesn't change during a burst",
+              "met": false,
+              "evidence": "No check that grant is stable during a burst"
+            },
+            {
+              "id": 4,
+              "item": "Coverage includes which requester was granted and how many requests were active at once",
+              "met": false,
+              "evidence": "grant x req cross, but no explicit count of active requests"
+            },
+            {
+              "id": 5,
+              "item": "States that a register model is not applicable",
+              "met": true,
+              "evidence": "Register model: Not applicable. The design has no software-visible registers."
+            },
+            {
+              "id": 6,
+              "item": "Includes a test that holds every requester active for many bursts and checks each one is served (no starvation)",
+              "met": false,
+              "evidence": "No starvation test with all requesters active"
+            },
+            {
+              "id": 7,
+              "item": "Makes the parameter N configurable in the environment or tests",
+              "met": true,
+              "evidence": "arbiter_agent Key Configuration: Number of requesters (N)"
+            }
+          ],
+          "seconds": 71.8,
+          "input_tokens": 5808,
+          "output_tokens": 2034
+        },
+        {
+          "status": "incomplete",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.457,
+          "rubric_met": "4/7",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Has a driver or agent for the req and burst_done inputs and a monitor for grant",
+              "met": true,
+              "evidence": "Driver drives axi4_req_t (req); Monitor collects axi4_rsp_t with grant, burst_done. Driver for req and burst_done is implied by stress_seq 'Burst_done variations'."
+            },
+            {
+              "id": 2,
+              "item": "Has a reference model that predicts the round-robin grant order",
+              "met": true,
+              "evidence": "Reference Model: 'Correctly predicts the grant based on the last served requester and the current requestor priority.'"
+            },
+            {
+              "id": 3,
+              "item": "Checks (in the scoreboard or with assertions) that the grant doesn't change during a burst",
+              "met": false,
+              "evidence": "No explicit check that grant stays stable during a burst; the scoreboard only compares grants to predictions."
+            },
+            {
+              "id": 4,
+              "item": "Coverage includes which requester was granted and how many requests were active at once",
+              "met": false,
+              "evidence": "Coverage crosses req and grant, but no coverpoint on the number of simultaneously active requests."
+            },
+            {
+              "id": 5,
+              "item": "States that a register model is not applicable",
+              "met": true,
+              "evidence": "Register Model: 'Not applicable.'"
+            },
+            {
+              "id": 6,
+              "item": "Includes a test that holds every requester active for many bursts and checks each one is served (no starvation)",
+              "met": false,
+              "evidence": "stress_test covers burst locking and round-robin under load, but no explicit no-starvation test where every requester stays active."
+            },
+            {
+              "id": 7,
+              "item": "Makes the parameter N configurable in the environment or tests",
+              "met": true,
+              "evidence": "Key Configuration lists N for the agent, driver, monitor, scoreboard and reference model."
+            }
+          ],
+          "seconds": 67.8,
+          "input_tokens": 5432,
+          "output_tokens": 1919
+        }
+      ]
+    },
+    {
+      "case": "axis_fifo",
+      "score": 0.367,
+      "min": 0.3,
+      "max": 0.4,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "incomplete",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.4,
+          "rubric_met": "4/8",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Defines separate agents (or agent instances) for the write and read interfaces",
+              "met": true,
+              "evidence": "WriteAgent and ReadAgent defined under Agent"
+            },
+            {
+              "id": 2,
+              "item": "The read-side agent actively drives rd_ready back-pressure rather than only monitoring",
+              "met": false,
+              "evidence": "ReadAgent only described as managing data path; no rd_ready back-pressure driving stated"
+            },
+            {
+              "id": 3,
+              "item": "Has a scoreboard that checks read data and the last flag against written data, in order",
+              "met": false,
+              "evidence": "Scoreboard compares actual against expected data; no explicit last flag or in-order check"
+            },
+            {
+              "id": 4,
+              "item": "Defines a sequence item with data and last fields",
+              "met": true,
+              "evidence": "axis_transaction with data and last fields"
+            },
+            {
+              "id": 5,
+              "item": "Includes coverage of the full and empty conditions",
+              "met": false,
+              "evidence": "Coverage covers valid, last, data, write; no full/empty coverpoints (only mentioned as sequence constraint)"
+            },
+            {
+              "id": 6,
+              "item": "States that a register model is not applicable (no software-visible registers)",
+              "met": true,
+              "evidence": "Register model: Not applicable."
+            },
+            {
+              "id": 7,
+              "item": "Includes a test with simultaneous reads and writes",
+              "met": true,
+              "evidence": "StressTestSequence: simultaneous write/read; StressTest uses it"
+            },
+            {
+              "id": 8,
+              "item": "In the build order, some step that runs a test comes before the step that adds the scoreboard",
+              "met": false,
+              "evidence": "Build order adds scoreboard at step 3 before any test; tests only at step 6"
+            }
+          ],
+          "seconds": 77.9,
+          "input_tokens": 6753,
+          "output_tokens": 2218
+        },
+        {
+          "status": "incomplete",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.3,
+          "rubric_met": "3/8",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Defines separate agents (or agent instances) for the write and read interfaces",
+              "met": true,
+              "evidence": "Components table lists Write Agent and Read Agent"
+            },
+            {
+              "id": 2,
+              "item": "The read-side agent actively drives rd_ready back-pressure rather than only monitoring",
+              "met": false,
+              "evidence": "Read Agent only 'Captures read transactions'; no rd_ready back-pressure driving"
+            },
+            {
+              "id": 3,
+              "item": "Has a scoreboard that checks read data and the last flag against written data, in order",
+              "met": false,
+              "evidence": "Scoreboard compares FIFO fill level with reference model, not read data/last in order"
+            },
+            {
+              "id": 4,
+              "item": "Defines a sequence item with data and last fields",
+              "met": true,
+              "evidence": "Write Transaction: data, last, valid, ready"
+            },
+            {
+              "id": 5,
+              "item": "Includes coverage of the full and empty conditions",
+              "met": false,
+              "evidence": "Covergroup lists valid/last signals only; full/empty not covered (only in env diagram as flags)"
+            },
+            {
+              "id": 6,
+              "item": "States that a register model is not applicable (no software-visible registers)",
+              "met": true,
+              "evidence": "Register Model: Not applicable."
+            },
+            {
+              "id": 7,
+              "item": "Includes a test with simultaneous reads and writes",
+              "met": false,
+              "evidence": "No test with simultaneous read/write; Error Test uses Error Seq, simultaneous only in build order step 7 sequence"
+            },
+            {
+              "id": 8,
+              "item": "In the build order, some step that runs a test comes before the step that adds the scoreboard",
+              "met": false,
+              "evidence": "Test run (step 8) comes after scoreboard (step 5); no earlier test-running step"
+            }
+          ],
+          "seconds": 60.3,
+          "input_tokens": 6068,
+          "output_tokens": 1807
+        },
+        {
+          "status": "incomplete",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.4,
+          "rubric_met": "4/8",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Defines separate agents (or agent instances) for the write and read interfaces",
+              "met": true,
+              "evidence": "`write_agent`, `read_agent` defined as separate components"
+            },
+            {
+              "id": 2,
+              "item": "The read-side agent actively drives rd_ready back-pressure rather than only monitoring",
+              "met": false,
+              "evidence": "read_agent lists rd_ready but no statement that it drives back-pressure"
+            },
+            {
+              "id": 3,
+              "item": "Has a scoreboard that checks read data and the last flag against written data, in order",
+              "met": false,
+              "evidence": "Scoreboard compares data integrity and count; no explicit in-order check of last flag"
+            },
+            {
+              "id": 4,
+              "item": "Defines a sequence item with data and last fields",
+              "met": true,
+              "evidence": "`axis_fifo_seq_item` | `data`, `last`"
+            },
+            {
+              "id": 5,
+              "item": "Includes coverage of the full and empty conditions",
+              "met": true,
+              "evidence": "Crosses: FIFO Full, Empty, Last"
+            },
+            {
+              "id": 6,
+              "item": "States that a register model is not applicable (no software-visible registers)",
+              "met": true,
+              "evidence": "Register model: Not applicable."
+            },
+            {
+              "id": 7,
+              "item": "Includes a test with simultaneous reads and writes",
+              "met": false,
+              "evidence": "Overview says DUT supports simultaneous ops, but no test explicitly targets it"
+            },
+            {
+              "id": 8,
+              "item": "In the build order, some step that runs a test comes before the step that adds the scoreboard",
+              "met": false,
+              "evidence": "Scoreboard implemented at step 3 before tests are run at step 4"
+            }
+          ],
+          "seconds": 63.0,
+          "input_tokens": 6297,
+          "output_tokens": 1879
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}

@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Status** | Phase 1 (MVP) complete · Phase 2 next |
+| **Status** | Phase 1 complete · Phase 2 mostly complete (P2.13, P2.14 open) |
 | **Owner** | Elliot Stevenson |
 | **Language** | Python ≥ 3.9 (3.12 recommended) |
 | **Licence** | MIT (see `LICENSE`) |
@@ -214,9 +214,10 @@ Quality
 - [x] **P2.3** Optional web search for `/ask` (Claude server-side web search tool, off by default, `max_uses` cap; each search is billed). *`ask --web` or `/web on`; up to `modes.ask.web_search_max_uses` (3) searches; `pause_turn` resumed up to 3 times; sources listed and searches costed at $0.01 each. Uses `web_search_20260209` on Opus/Sonnet 4.6+ and `web_search_20250305` otherwise. Live-tested on Haiku 5.5.*
 - [x] **P2.4** Optional pre-filter: cheap classifier call (in-scope / off-topic / harmful), off by default. Reuse the pattern from the course `content_filter` notebook. *`filter.enabled` in config or `/filter on`; Haiku 5.5 by default (~$0.00006 per question); fails open; refused questions stay out of the conversation. Live check 5/5, including a hardware-security question kept in scope and a prompt-injection attempt.*
 - [x] **P2.5** Prompt evaluation pipeline: versioned prompts (`prompts/<mode>.v2.md`), A/B on the eval set, model-graded rubric for text modes (as in course lesson 11). *`eval --prompt debug.v2` (or `modes.<mode>.prompt`), `bartmoss compare A.json B.json`, and 5 rubric-graded planning cases scored 0.2 for structure + 0.8 × rubric items met. The judge defaults to Sonnet 5.5 because Haiku flipped verdicts on re-grading. Baseline: Haiku plans score 0.97 (vplan) and 1.00 (uvmplan).*
-- [~] **P2.6** Model leaderboard: run every configured model on every mode, Markdown table of pass rate, tokens, cost, latency. *`bartmoss leaderboard` and `evals/LEADERBOARD.md`. ×3 sweeps done for Haiku and Sonnet (debug) and Sonnet (tb, vplan) and Qwen 7B (debug, tb). Still to do, blocked on Anthropic credit (~$1.50): Haiku tb/vplan/uvmplan, Sonnet uvmplan, Qwen planning (Sonnet judge).*
-- [~] **P2.7** Per-mode default model chosen from leaderboard results (cheapest model that meets the quality bar). *`/debug` now defaults to Haiku 5.5 (1.00 vs Sonnet's 0.92, about 1/13 of the cost). tb, vplan and uvmplan wait for the missing Haiku runs; `/ask` has no eval yet.*
+- [x] **P2.6** Model leaderboard: run every configured model on every mode, Markdown table of pass rate, tokens, cost, latency. *`bartmoss leaderboard` and `evals/LEADERBOARD.md`: Haiku 5.5, Sonnet 5.5 and local Qwen2.5-Coder 7B, 31 cases ×3, about $6.00 in total. Other providers (OpenAI, Gemini, DeepSeek) can be added with their API keys.*
+- [x] **P2.7** Per-mode default model chosen from leaderboard results (cheapest model that meets the quality bar). *Haiku 5.5 for /debug (1.00), /tb (0.91), /vplan (0.95, Sonnet 1.00) and /uvmplan (1.00). `/ask` has no eval and keeps `default_model`; see P2.14.*
 - [x] **P2.11** `eval --repeat N`: run each case N times and report mean ± spread. Single runs are noisy (Haiku failed and then passed crc32_bitrev on two runs). *Reports per-case mean, min/max and full passes, plus each repeat's overall mean; results format 2.*
+- [ ] **P2.14** `/ask` eval: rubric-graded theory questions, so `/ask` can get a measured default as well.
 - [ ] **P2.13** A/B the debug prompt's "if you find no real bugs, return the file unchanged" line: Sonnet twice called a buggy CDC synchronizer correct. Use `eval --prompt debug.v2 --repeat 3`.
 - [x] **P2.12** Grow the eval set to 30+ with harder tb cases. Haiku already catches every mutant in the current 5, so add protocol-level DUTs (AXI-Lite slave, credit link, CDC handshake) and more subtle mutants. *31 cases: 16 debug, 10 tb, 3 vplan, 2 uvmplan. New: forwarding, CDC pulse, RMII handshake, credit flow, saturation and rounding bugs. Whether they're harder is measured in the P2.6 sweep.*
 - [x] **P2.8** Yosys synthesizability check as an extra `/debug` signal. *Runs `hierarchy; proc; opt_clean; check` before and after the fix; findings (latches, multiple drivers, loops) go into the prompt, and only new ones trigger a retry. Skipped for VHDL and for designs Yosys can't elaborate (e.g. package imports in the module header).*
@@ -371,7 +372,7 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 ## 12. Decision log
 | Date | Decision | Why |
 |---|---|---|
-| 2026-10-24 | `/debug` defaults to Haiku 5.5 | First data-driven default: 1.00 on 16 cases ×3 vs Sonnet 5.5's 0.92, about 1/13 of the cost |
+| 2026-10-24 | Haiku 5.5 is the default for debug, tb, vplan and uvmplan | Full ×3 sweep: best or within 0.05 of best in every mode, at 1/5 to 1/13 of Sonnet 5.5's cost (evals/LEADERBOARD.md) |
 | 2026-10-24 | Evals abort on provider errors | A credit-balance error mid-sweep was scored as 0.0; infrastructure failures must not look like model failures |
 | 2026-10-24 | Rubric judge defaults to Sonnet 5.5, not Haiku | Re-grading the same plan, Haiku flipped a verdict and missed a met item; Sonnet was consistent. About 1.4¢ per judged plan |
 | 2026-10-24 | CI uses GHDL; local macOS uses NVC | NVC isn't packaged in Ubuntu 24.04, and GHDL's macOS cask is disabled. Together they test both VHDL backends |

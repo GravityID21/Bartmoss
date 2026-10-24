@@ -1,0 +1,383 @@
+{
+  "format": 2,
+  "date": "2026-10-24",
+  "mode": "uvmplan",
+  "model": "anthropic:claude-haiku-5-5",
+  "simulator": "auto",
+  "repeat": 3,
+  "prompt": "uvmplan",
+  "mean_score": 1.0,
+  "run_means": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "cost_usd": 0.1216,
+  "seconds": 370.6,
+  "usage": "12 calls \u00b7 39,587 in \u00b7 75,554 out \u00b7 5,025 cache-read \u00b7 est. $0.1216",
+  "cases": [
+    {
+      "case": "axi4_arbiter",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "rubric_met": "7/7",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Has a driver or agent for the req and burst_done inputs and a monitor for grant",
+              "met": true,
+              "evidence": "arb_driver: drives req[], burst_done; arb_monitor: samples req, burst_done, aresetn, grant, grant_valid"
+            },
+            {
+              "id": 2,
+              "item": "Has a reference model that predicts the round-robin grant order",
+              "met": true,
+              "evidence": "arb_ref_model: cycle-accurate predictor of grant; picks first requester after last_idx in circular order"
+            },
+            {
+              "id": 3,
+              "item": "Checks (in the scoreboard or with assertions) that the grant doesn't change during a burst",
+              "met": true,
+              "evidence": "No preemption: while held, grant does not change until burst_done is seen"
+            },
+            {
+              "id": 4,
+              "item": "Coverage includes which requester was granted and how many requests were active at once",
+              "met": true,
+              "evidence": "cp_grant_idx per index; cp_req: 0, single-bit per requester index, multi-bit"
+            },
+            {
+              "id": 5,
+              "item": "States that a register model is not applicable",
+              "met": true,
+              "evidence": "Register model: Not applicable. The RTL has no software-visible registers"
+            },
+            {
+              "id": 6,
+              "item": "Includes a test that holds every requester active for many bursts and checks each one is served (no starvation)",
+              "met": true,
+              "evidence": "arb_fairness_test: all requesters always high, grants rotate in round-robin order"
+            },
+            {
+              "id": 7,
+              "item": "Makes the parameter N configurable in the environment or tests",
+              "met": true,
+              "evidence": "Run each test with N = 2, 4, and 8 via parameter override"
+            }
+          ],
+          "seconds": 49.8,
+          "input_tokens": 6646,
+          "output_tokens": 9905
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "rubric_met": "7/7",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Has a driver or agent for the req and burst_done inputs and a monitor for grant",
+              "met": true,
+              "evidence": "arb_driver drives req and burst_done; arb_monitor samples grant and grant_valid"
+            },
+            {
+              "id": 2,
+              "item": "Has a reference model that predicts the round-robin grant order",
+              "met": true,
+              "evidence": "arb_model: scans from last_idx+1 (mod N) to predict grant, compared in arb_scoreboard"
+            },
+            {
+              "id": 3,
+              "item": "Checks (in the scoreboard or with assertions) that the grant doesn't change during a burst",
+              "met": true,
+              "evidence": "SVA: 'No grant change while held except on burst_done'; model holds grant_q while held and !bd"
+            },
+            {
+              "id": 4,
+              "item": "Coverage includes which requester was granted and how many requests were active at once",
+              "met": true,
+              "evidence": "cg_arb_handshake: cp_grant one_hot[each index]; cp_req single_hot, multi_hot, all_ones, zero"
+            },
+            {
+              "id": 5,
+              "item": "States that a register model is not applicable",
+              "met": true,
+              "evidence": "Register model: Not applicable. The design has no software-visible registers."
+            },
+            {
+              "id": 6,
+              "item": "Includes a test that holds every requester active for many bursts and checks each one is served (no starvation)",
+              "met": true,
+              "evidence": "arb_rr_test uses arb_all_req_seq and arb_rr_fairness_seq: 'Round-robin order across all requesters; wraparound; no starvation'"
+            },
+            {
+              "id": 7,
+              "item": "Makes the parameter N configurable in the environment or tests",
+              "met": true,
+              "evidence": "arb_config holds N; arb_param_regress rebuilt for N = 1, 2, 3, 4, 8"
+            }
+          ],
+          "seconds": 56.6,
+          "input_tokens": 7562,
+          "output_tokens": 11630
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "rubric_met": "7/7",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Has a driver or agent for the req and burst_done inputs and a monitor for grant",
+              "met": true,
+              "evidence": "req_driver, burst_driver, and grant_monitor in the Components table"
+            },
+            {
+              "id": 2,
+              "item": "Has a reference model that predicts the round-robin grant order",
+              "met": true,
+              "evidence": "arb_ref_model: spec-level cycle model with pointer and rotation scanning from pointer+1"
+            },
+            {
+              "id": 3,
+              "item": "Checks (in the scoreboard or with assertions) that the grant doesn't change during a burst",
+              "met": true,
+              "evidence": "Invariant 'grant changes only on reset, on the idle-to-held edge, or on a burst_done while held'; arb_nopreempt_test"
+            },
+            {
+              "id": 4,
+              "item": "Coverage includes which requester was granted and how many requests were active at once",
+              "met": true,
+              "evidence": "cg_grant grant_idx per requester; cg_arb_decision req_pattern {single, two_or_more, all_set}"
+            },
+            {
+              "id": 5,
+              "item": "States that a register model is not applicable",
+              "met": true,
+              "evidence": "Register model: 'Not applicable. The design has no software-visible registers.'"
+            },
+            {
+              "id": 6,
+              "item": "Includes a test that holds every requester active for many bursts and checks each one is served (no starvation)",
+              "met": true,
+              "evidence": "arb_rr_test: req_rr_seq has every requester requesting repeatedly; 'a continuously requesting master cannot starve others'"
+            },
+            {
+              "id": 7,
+              "item": "Makes the parameter N configurable in the environment or tests",
+              "met": true,
+              "evidence": "arb_env config N; stress test run across N = 1, 2, 3, 4, 8"
+            }
+          ],
+          "seconds": 80.5,
+          "input_tokens": 7631,
+          "output_tokens": 16080
+        }
+      ]
+    },
+    {
+      "case": "axis_fifo",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "rubric_met": "8/8",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Defines separate agents (or agent instances) for the write and read interfaces",
+              "met": true,
+              "evidence": "wr_agent and rd_agent defined as separate agents in the Environment and Components tables"
+            },
+            {
+              "id": 2,
+              "item": "The read-side agent actively drives rd_ready back-pressure rather than only monitoring",
+              "met": true,
+              "evidence": "rd_agent is ACTIVE; rd_driver 'Drives rd_ready according to stall parameters'"
+            },
+            {
+              "id": 3,
+              "item": "Has a scoreboard that checks read data and the last flag against written data, in order",
+              "met": true,
+              "evidence": "fifo_scoreboard compares each read fire {rd_last, rd_data} against the head of the expected queue, in order"
+            },
+            {
+              "id": 4,
+              "item": "Defines a sequence item with data and last fields",
+              "met": true,
+              "evidence": "axis_wr_item has wr_data and wr_last fields"
+            },
+            {
+              "id": 5,
+              "item": "Includes coverage of the full and empty conditions",
+              "met": true,
+              "evidence": "cg_occupancy has full: {0,1}; empty: {0,1}; fill_level bins at 0 and DEPTH"
+            },
+            {
+              "id": 6,
+              "item": "States that a register model is not applicable (no software-visible registers)",
+              "met": true,
+              "evidence": "Register model: 'Not applicable. The DUT has no software-visible registers.'"
+            },
+            {
+              "id": 7,
+              "item": "Includes a test with simultaneous reads and writes",
+              "met": true,
+              "evidence": "fifo_random_rw_test runs fifo_rw_vseq with wr_random_seq and rd_random_bp_seq concurrently"
+            },
+            {
+              "id": 8,
+              "item": "In the build order, some step that runs a test comes before the step that adds the scoreboard",
+              "met": true,
+              "evidence": "Step 2 runs fifo_smoke_test printing observed transfers; the scoreboard is added in step 3"
+            }
+          ],
+          "seconds": 62.2,
+          "input_tokens": 7728,
+          "output_tokens": 13115
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "rubric_met": "8/8",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Defines separate agents (or agent instances) for the write and read interfaces",
+              "met": true,
+              "evidence": "axis_wr_agent and axis_rd_agent defined separately"
+            },
+            {
+              "id": 2,
+              "item": "The read-side agent actively drives rd_ready back-pressure rather than only monitoring",
+              "met": true,
+              "evidence": "axis_rd_agent ACTIVE: it drives rd_ready, which needs a driver"
+            },
+            {
+              "id": 3,
+              "item": "Has a scoreboard that checks read data and the last flag against written data, in order",
+              "met": true,
+              "evidence": "Scoreboard checks the read data and last bit exactly, in order"
+            },
+            {
+              "id": 4,
+              "item": "Defines a sequence item with data and last fields",
+              "met": true,
+              "evidence": "axis_wr_item: data, last fields; axis_rd_item has data and last"
+            },
+            {
+              "id": 5,
+              "item": "Includes coverage of the full and empty conditions",
+              "met": true,
+              "evidence": "cg_status full: {0,1}; empty: {0,1}; fill_level bins"
+            },
+            {
+              "id": 6,
+              "item": "States that a register model is not applicable (no software-visible registers)",
+              "met": true,
+              "evidence": "Register model: Not applicable. The design has no software-visible registers."
+            },
+            {
+              "id": 7,
+              "item": "Includes a test with simultaneous reads and writes",
+              "met": true,
+              "evidence": "test_boundary_rw: simultaneous read and write at empty, DEPTH-1 and DEPTH"
+            },
+            {
+              "id": 8,
+              "item": "In the build order, some step that runs a test comes before the step that adds the scoreboard",
+              "met": true,
+              "evidence": "Step 2 runs the first passing test_smoke; scoreboard added in step 3"
+            }
+          ],
+          "seconds": 51.1,
+          "input_tokens": 7213,
+          "output_tokens": 10804
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "rubric_met": "8/8",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Defines separate agents (or agent instances) for the write and read interfaces",
+              "met": true,
+              "evidence": "wr_agent [ACTIVE] and rd_agent [ACTIVE] defined separately in Environment"
+            },
+            {
+              "id": 2,
+              "item": "The read-side agent actively drives rd_ready back-pressure rather than only monitoring",
+              "met": true,
+              "evidence": "rd_agent is_active = UVM_ACTIVE (drives rd_ready only); rd_driver drives rd_ready per ready_delay"
+            },
+            {
+              "id": 3,
+              "item": "Has a scoreboard that checks read data and the last flag against written data, in order",
+              "met": true,
+              "evidence": "fifo_scoreboard: ap_rd vs model queue (in order); compares read data/last in order"
+            },
+            {
+              "id": 4,
+              "item": "Defines a sequence item with data and last fields",
+              "met": true,
+              "evidence": "axis_wr_item with data and last fields"
+            },
+            {
+              "id": 5,
+              "item": "Includes coverage of the full and empty conditions",
+              "met": true,
+              "evidence": "cg_status covers fill_bin DEPTH, full, empty; full x wr_blocked"
+            },
+            {
+              "id": 6,
+              "item": "States that a register model is not applicable (no software-visible registers)",
+              "met": true,
+              "evidence": "Register model: Not applicable. The design has no software-visible registers."
+            },
+            {
+              "id": 7,
+              "item": "Includes a test with simultaneous reads and writes",
+              "met": true,
+              "evidence": "sim_rw_stress_test using vseq_sim_rw (concurrent wr_burst_seq and rd_random_seq)"
+            },
+            {
+              "id": 8,
+              "item": "In the build order, some step that runs a test comes before the step that adds the scoreboard",
+              "met": true,
+              "evidence": "Step 2 runs smoke before step 4 adds fifo_scoreboard; step 1 runs empty test"
+            }
+          ],
+          "seconds": 70.4,
+          "input_tokens": 7832,
+          "output_tokens": 14020
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}
