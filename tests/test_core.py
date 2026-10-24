@@ -190,6 +190,17 @@ class TestPromptsAndEvalTools(unittest.TestCase):
             run_eval(ctx, "debug", REPO / "evals" / "cases", only="counter_wrap")
         self.assertEqual(set(results.glob("*.json")), before)
 
+    def test_ask_eval_scores_rubric(self):
+        from bartmoss.evals import run_eval
+
+        ctx = make_ctx(Path(tempfile.mkdtemp()))
+        ctx.config["eval"]["judge_model"] = "mock:echo"
+        results = REPO / "evals" / "results"
+        report = run_eval(ctx, "ask", REPO / "evals" / "cases", only="fifo_depth")
+        self.assertEqual(report["cases"][0]["runs"][0]["rubric_met"], "2/4")  # mock judge alternates
+        for f in results.glob("*mock-echo_only-fifo-depth*"):
+            shutil.rmtree(f) if f.is_dir() else f.unlink()
+
     def test_judge_parses_items(self):
         from bartmoss.evals import judge
 

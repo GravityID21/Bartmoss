@@ -1,0 +1,17 @@
+{
+  "mode": "ask",
+  "question": "Why do we use a two-flop synchronizer for a single-bit signal crossing clock domains, and when is it not enough?",
+  "rubric": [
+    "Explains that the first flop can go metastable when its setup or hold time is violated",
+    "Explains that the second flop gives the first a clock period to resolve, making failures rare (MTBF)",
+    "States that the synchronizer reduces but doesn't eliminate the chance of metastability",
+    "Says it isn't suitable for multi-bit buses whose bits can change together, and names an alternative (Gray code, handshake or async FIFO)",
+    "Says a pulse shorter than the destination clock period can be missed, and names a remedy (toggle synchronizer, handshake or pulse stretching)"
+  ],
+  "category": "cdc",
+  "source": "hand-written",
+  "tags": [
+    "ask",
+    "cdc"
+  ]
+}

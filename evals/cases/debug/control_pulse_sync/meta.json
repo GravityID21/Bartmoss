@@ -1,0 +1,17 @@
+{
+  "mode": "debug",
+  "file": "cdc_pulse_sync.sv",
+  "context": [
+    "cdc_sync_2ff.sv"
+  ],
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "control",
+  "control": true,
+  "bug": "none: a correct design; a good reviewer returns it unchanged or with harmless edits",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/cdc/cdc_pulse_sync.sv (MIT, Elliot Stevenson)",
+  "tags": [
+    "control",
+    "no-bug"
+  ]
+}

@@ -220,13 +220,13 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument("--with", dest="context", action="append", default=[], metavar="FILE",
                        help="supporting file (package, interface, submodule); repeatable")
     p_eval = sub.add_parser("eval", help="score a model on the eval cases")
-    p_eval.add_argument("--mode", choices=["debug", "tb", "vplan", "uvmplan"], required=True)
+    p_eval.add_argument("--mode", choices=["debug", "tb", "vplan", "uvmplan", "ask"], required=True)
     p_eval.add_argument("--cases", default="evals/cases", help="cases directory (default: evals/cases)")
     p_eval.add_argument("--only", help="run only cases whose name contains this text")
     p_eval.add_argument("--repeat", type=int, default=1, metavar="N",
                         help="run each case N times and report mean, min/max and full passes (default 1)")
     p_eval.add_argument("--prompt", metavar="NAME", help="prompt variant to test, e.g. debug.v2 (prompts/debug.v2.md)")
-    p_eval.add_argument("--judge", metavar="PROVIDER:MODEL", help="judge model for vplan/uvmplan rubrics")
+    p_eval.add_argument("--judge", metavar="PROVIDER:MODEL", help="judge model for vplan/uvmplan/ask rubrics")
     p_lb = sub.add_parser("leaderboard", help="summarise saved eval results by model")
     p_lb.add_argument("--results", default="evals/results", help="results directory (default: evals/results)")
     p_lb.add_argument("--write", metavar="FILE", help="also write the Markdown table to FILE")

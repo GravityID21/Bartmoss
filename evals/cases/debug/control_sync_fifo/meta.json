@@ -1,0 +1,14 @@
+{
+  "mode": "debug",
+  "file": "sync_fifo.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "control",
+  "control": true,
+  "bug": "none: a correct design; a good reviewer returns it unchanged or with harmless edits",
+  "source": "hand-written",
+  "tags": [
+    "control",
+    "no-bug"
+  ]
+}

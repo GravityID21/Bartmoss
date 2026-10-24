@@ -89,7 +89,7 @@ def _run_case(ctx: Context, mode: str, case: Path, meta: dict, simulator: str, a
     started = time.time()
     scratch = Path(tempfile.mkdtemp(prefix=f"bartmoss_eval_{case.name}_"))
     try:
-        scorer = {"debug": _score_debug, "tb": _score_tb}.get(mode, _score_plan)
+        scorer = {"debug": _score_debug, "tb": _score_tb, "ask": _score_ask}.get(mode, _score_plan)
         detail = scorer(case_ctx, case, meta, simulator, scratch)
     except ProviderError:
         # API, billing, auth or network failures say nothing about the model: abort the whole run
@@ -143,6 +143,23 @@ def _score_plan(case_ctx: Context, case: Path, meta: dict, simulator: str, scrat
     met = sum(g["met"] for g in graded)
     detail.update(rubric_met=f"{met}/{len(graded)}", rubric=graded,
                   score=round((0.2 if result.status == "ok" else 0.0) + 0.8 * met / len(graded), 3))
+    return detail
+
+
+def _score_ask(case_ctx: Context, case: Path, meta: dict, simulator: str, scratch: Path) -> dict:
+    """Fraction of rubric items the judge finds in a single /ask answer (no web search, no filter)."""
+    from bartmoss.modes.ask import run_ask
+
+    case_ctx.web_search = False
+    case_ctx.use_filter = False
+    answer = run_ask(case_ctx, meta["question"])
+    detail = {"score": 0.0, "_artifacts": {"answer.md": answer}}
+    if not answer:
+        detail["status"] = "no_answer"
+        return detail
+    graded = judge(case_ctx, answer, meta["rubric"])
+    met = sum(g["met"] for g in graded)
+    detail.update(status="ok", rubric_met=f"{met}/{len(graded)}", rubric=graded, score=round(met / len(graded), 3))
     return detail
 
 

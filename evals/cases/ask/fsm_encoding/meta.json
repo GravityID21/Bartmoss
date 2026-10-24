@@ -1,0 +1,17 @@
+{
+  "mode": "ask",
+  "question": "When would you choose one-hot encoding over binary encoding for an FSM on an FPGA?",
+  "rubric": [
+    "States that one-hot uses one flip-flop per state, while binary uses about log2(N)",
+    "Explains that one-hot next-state and output decoding is simpler or faster (fewer logic levels)",
+    "Notes that FPGAs have plenty of flip-flops, which favours one-hot",
+    "Says binary (or Gray) suits designs with many states or where registers are scarce",
+    "Mentions illegal-state recovery or that synthesis tools can choose the encoding automatically"
+  ],
+  "category": "coding",
+  "source": "hand-written",
+  "tags": [
+    "ask",
+    "coding"
+  ]
+}

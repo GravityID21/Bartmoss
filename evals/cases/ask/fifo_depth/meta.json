@@ -1,0 +1,16 @@
+{
+  "mode": "ask",
+  "question": "A producer writes a burst of 120 words at 100 MHz, one word per cycle, while the consumer reads continuously at 80 MHz, one word per cycle. What is the minimum FIFO depth so nothing is lost during the burst? Show the calculation.",
+  "rubric": [
+    "Works out that the burst lasts 1.2 microseconds (120 cycles at 100 MHz)",
+    "Works out that the consumer reads 96 words during the burst",
+    "Gives a minimum depth of 24 words",
+    "Recommends margin on top, for flag or synchronizer latency, or rounding up (for example to 32)"
+  ],
+  "category": "calculation",
+  "source": "hand-written",
+  "tags": [
+    "ask",
+    "calculation"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "mode": "debug",
+  "file": "credit_sender.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "category": "control",
+  "control": true,
+  "bug": "none: a correct design; a good reviewer returns it unchanged or with harmless edits",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/credits/credit_sender.sv (MIT, Elliot Stevenson)",
+  "tags": [
+    "control",
+    "no-bug"
+  ]
+}

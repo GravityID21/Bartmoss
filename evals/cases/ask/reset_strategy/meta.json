@@ -1,0 +1,17 @@
+{
+  "mode": "ask",
+  "question": "Compare synchronous and asynchronous resets, and explain why an asynchronous reset is usually deasserted synchronously.",
+  "rubric": [
+    "States that a synchronous reset only takes effect on a clock edge (needs a running clock)",
+    "States that an asynchronous reset takes effect immediately, without a clock",
+    "Explains that releasing an asynchronous reset near a clock edge can cause metastability or recovery/removal violations",
+    "Describes a reset synchronizer: asynchronous assertion, synchronous deassertion through a flop chain",
+    "Mentions recovery and removal timing checks (or that release must meet timing like a data input)"
+  ],
+  "category": "coding",
+  "source": "hand-written",
+  "tags": [
+    "ask",
+    "coding"
+  ]
+}

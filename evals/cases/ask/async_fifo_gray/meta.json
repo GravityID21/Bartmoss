@@ -1,0 +1,17 @@
+{
+  "mode": "ask",
+  "question": "Why are the read and write pointers of an asynchronous FIFO Gray-coded before they cross clock domains?",
+  "rubric": [
+    "States that only one bit changes per increment in Gray code",
+    "Explains that the synchronized value is therefore either the old or the new pointer, never a mix of bits",
+    "Explains that a binary pointer can change several bits at once and be captured as an unrelated value",
+    "Notes that the synchronized pointer lags, so full/empty are pessimistic (conservative) rather than unsafe",
+    "Mentions the extra pointer bit (or equivalent) used to tell full from empty"
+  ],
+  "category": "cdc",
+  "source": "hand-written",
+  "tags": [
+    "ask",
+    "cdc"
+  ]
+}

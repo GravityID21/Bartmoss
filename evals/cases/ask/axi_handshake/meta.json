@@ -1,0 +1,17 @@
+{
+  "mode": "ask",
+  "question": "Explain the rules of the AXI valid/ready handshake.",
+  "rubric": [
+    "States that a transfer happens on a clock edge where both VALID and READY are high",
+    "States that once VALID is asserted the source must keep VALID and the payload stable until the transfer",
+    "States that the source must not wait for READY before asserting VALID",
+    "States that READY may be asserted before, with or after VALID, and the destination may wait for VALID",
+    "Explains that these rules prevent deadlock"
+  ],
+  "category": "protocol",
+  "source": "hand-written",
+  "tags": [
+    "ask",
+    "protocol"
+  ]
+}

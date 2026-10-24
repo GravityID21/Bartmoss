@@ -1,0 +1,17 @@
+{
+  "mode": "ask",
+  "question": "What is functional coverage, and how does it differ from code coverage?",
+  "rubric": [
+    "Explains that code coverage automatically measures which lines, branches, toggles or FSM states were exercised",
+    "Explains that functional coverage measures whether specified features or scenarios occurred, as defined by the engineer",
+    "Mentions covergroups, coverpoints, bins or crosses",
+    "States that 100% code coverage doesn't mean the design is verified",
+    "Mentions using coverage holes to steer constrained-random stimulus"
+  ],
+  "category": "verification",
+  "source": "hand-written",
+  "tags": [
+    "ask",
+    "verification"
+  ]
+}

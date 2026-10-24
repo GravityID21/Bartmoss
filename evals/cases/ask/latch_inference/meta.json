@@ -1,0 +1,17 @@
+{
+  "mode": "ask",
+  "question": "How do unintended latches get inferred in RTL, and how do I avoid them?",
+  "rubric": [
+    "Explains that a combinational block that doesn't assign an output on every path infers a latch",
+    "Names typical causes such as an if without else or a case without a default/full coverage",
+    "Recommends default assignments at the top of the block or complete else/default branches",
+    "Mentions always_comb or lint/synthesis warnings as a way to catch them",
+    "Notes that latches are usually unintended and complicate timing analysis"
+  ],
+  "category": "coding",
+  "source": "hand-written",
+  "tags": [
+    "ask",
+    "coding"
+  ]
+}

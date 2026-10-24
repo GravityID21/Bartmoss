@@ -19,7 +19,7 @@ from bartmoss.sim.tools import is_vhdl, pick_simulator, simulate, tail, tb_verdi
 CASES = Path(__file__).resolve().parent / "cases"
 # Bug taxonomy for debug cases (SPEC P2.15).
 CATEGORIES = ("reset", "cdc", "fsm", "arithmetic", "handshake", "width", "combinational", "blocking",
-              "off-by-one", "multi-bug")
+              "off-by-one", "multi-bug", "control")
 
 
 def outcome(run) -> str:
@@ -29,6 +29,10 @@ def outcome(run) -> str:
 def check_debug(case: Path, meta: dict, sim: str, tmp: Path) -> list[str]:
     context = [case / c for c in meta.get("context", [])]
     problems = []
+    if meta.get("control"):
+        # Control cases are correct designs: the file as given must pass its reference testbench.
+        run = simulate([*context, case / meta["file"], case / meta["tb"]], meta["tb_top"], tmp / "control", sim)
+        return [] if outcome(run) == "pass" else [f"control design should pass tb_ref, got {outcome(run)}"]
     buggy = simulate([*context, case / meta["file"], case / meta["tb"]], meta["tb_top"], tmp / "buggy", sim)
     if outcome(buggy) != "fail":
         problems.append(f"buggy file should fail tb_ref, got {outcome(buggy)}")

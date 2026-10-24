@@ -1,0 +1,17 @@
+{
+  "mode": "ask",
+  "question": "My design fails timing at 200 MHz on a long combinational path. What are my options?",
+  "rubric": [
+    "Suggests adding pipeline registers to split the path, accepting extra latency",
+    "Suggests restructuring the logic (for example balancing a chain into a tree or precomputing)",
+    "Mentions retiming (letting the tool move registers)",
+    "Mentions a multicycle-path constraint when the result is only needed every N cycles",
+    "Recommends reading the timing report to find the real critical path (including routing or fanout causes)"
+  ],
+  "category": "timing",
+  "source": "hand-written",
+  "tags": [
+    "ask",
+    "timing"
+  ]
+}

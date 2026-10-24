@@ -1,0 +1,17 @@
+{
+  "mode": "ask",
+  "question": "Why might a design pass in Verilator but fail in a 4-state simulator such as Questa or Icarus?",
+  "rubric": [
+    "Explains that Verilator is 2-state, so X and Z become 0 or 1",
+    "Says uninitialised registers (missing resets) show up as X only in 4-state simulators",
+    "Mentions X-propagation differences (X-optimism or pessimism in if/case statements)",
+    "Mentions scheduling or race differences (blocking assignments, combinational loops settling)",
+    "Recommends running both kinds of simulator or Verilator's X-initialisation randomisation"
+  ],
+  "category": "verification",
+  "source": "hand-written",
+  "tags": [
+    "ask",
+    "verification"
+  ]
+}

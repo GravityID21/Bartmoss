@@ -1,0 +1,17 @@
+{
+  "mode": "ask",
+  "question": "What are setup and hold time, and how does clock skew affect each?",
+  "rubric": [
+    "Defines setup time as data stable for some time before the capturing clock edge",
+    "Defines hold time as data stable for some time after the clock edge",
+    "States that slowing the clock fixes setup violations but not hold violations",
+    "Explains correctly that skew delaying the capture clock helps setup and hurts hold (or the equivalent)",
+    "Gives the setup slack relationship (period vs clock-to-Q + logic delay + setup, adjusted for skew)"
+  ],
+  "category": "timing",
+  "source": "hand-written",
+  "tags": [
+    "ask",
+    "timing"
+  ]
+}

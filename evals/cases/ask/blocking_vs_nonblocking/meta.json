@@ -1,0 +1,17 @@
+{
+  "mode": "ask",
+  "question": "When should I use blocking versus non-blocking assignments in SystemVerilog RTL, and what goes wrong if I mix them up?",
+  "rubric": [
+    "Recommends non-blocking (<=) for sequential logic in clocked (always_ff) blocks",
+    "Recommends blocking (=) for combinational logic in always_comb blocks",
+    "Explains that blocking assignments in sequential logic let later statements see updated values (for example a shift register collapsing)",
+    "Mentions simulation races or simulation/synthesis mismatch",
+    "Advises against using both kinds of assignment on the same variable"
+  ],
+  "category": "coding",
+  "source": "hand-written",
+  "tags": [
+    "ask",
+    "coding"
+  ]
+}
