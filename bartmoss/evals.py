@@ -77,8 +77,35 @@ def _score_tb(case_ctx: Context, case: Path, meta: dict, simulator: str, scratch
     return detail
 
 
-def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None) -> dict:
-    """Filtered runs (`only`) are saved under their own name so they never overwrite a full run."""
+def _run_case(ctx: Context, mode: str, case: Path, meta: dict, simulator: str, artifact_dir: Path) -> dict:
+    """One scored attempt at one case, with its model outputs saved under artifact_dir."""
+    case_ctx = replace(ctx, workspace=Workspace(case, ctx.config["output_dir"]), ui=UI(quiet=True),
+                       assume_yes=True, ask_history=[], _providers=ctx._providers)
+    calls_before = len(ctx.usage.calls)
+    started = time.time()
+    scratch = Path(tempfile.mkdtemp(prefix=f"bartmoss_eval_{case.name}_"))
+    try:
+        scorer = _score_debug if mode == "debug" else _score_tb
+        detail = scorer(case_ctx, case, meta, simulator, scratch)
+    except Exception as e:  # one broken case shouldn't stop the run
+        detail = {"score": 0.0, "error": f"{type(e).__name__}: {e}"}
+    # Save what the model produced so failures can be inspected later.
+    for name, text in detail.pop("_artifacts", {}).items():
+        if text:
+            target = artifact_dir / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(text)
+    calls = ctx.usage.calls[calls_before:]
+    detail.update(seconds=round(time.time() - started, 1),
+                  input_tokens=sum(r.input_tokens + r.cache_write_tokens + r.cache_read_tokens for _, r in calls),
+                  output_tokens=sum(r.output_tokens for _, r in calls))
+    return detail
+
+
+def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None, repeat: int = 1) -> dict:
+    """Score every case `repeat` times. Reports per-case mean, min/max and full passes, plus the
+    spread of the overall mean across repeats. Filtered (`only`) and repeated runs are saved under
+    their own names so they never overwrite a plain full run."""
     ui = ctx.ui
     simulator = ctx.config.get("simulator", "auto")
     if pick_simulator(simulator) is None:
@@ -89,13 +116,16 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None)
         cases = [c for c in cases if only in c.name]
     if not cases:
         raise SystemExit(f"No cases found in {cases_dir}")
+    repeat = max(1, repeat)
 
     spec = ctx.model_spec(mode)
     run_name = f"{date.today().isoformat()}_{mode}_{re.sub(r'[^A-Za-z0-9.-]+', '-', spec)}"
     if only:
         run_name += f"_only-{re.sub(r'[^A-Za-z0-9.-]+', '-', only)}"
+    if repeat > 1:
+        run_name += f"_x{repeat}"
     results_dir = cases_root.resolve().parent / "results"
-    ui.info(f"eval {mode} · {len(cases)} cases · model {spec} · simulator {simulator}")
+    ui.info(f"eval {mode} · {len(cases)} cases × {repeat} · model {spec} · simulator {simulator}")
     rows = []
     skipped = []
     for case in cases:
@@ -107,40 +137,34 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None)
             ui.print(f"  {ui.style('skip', 'yellow')}  {case.name:28} {reason}")
             skipped.append({"case": case.name, "skipped": reason})
             continue
-        case_ctx = replace(ctx, workspace=Workspace(case, ctx.config["output_dir"]), ui=UI(quiet=True),
-                           assume_yes=True, ask_history=[], _providers=ctx._providers)
-        calls_before = len(ctx.usage.calls)
-        started = time.time()
-        scratch = Path(tempfile.mkdtemp(prefix=f"bartmoss_eval_{case.name}_"))
-        try:
-            scorer = _score_debug if mode == "debug" else _score_tb
-            detail = scorer(case_ctx, case, meta, simulator, scratch)
-        except Exception as e:  # one broken case shouldn't stop the run
-            detail = {"score": 0.0, "error": f"{type(e).__name__}: {e}"}
-        # Save what the model produced so failures can be inspected later.
-        for name, text in detail.pop("_artifacts", {}).items():
-            if text:
-                target = results_dir / run_name / case.name / name
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text(text)
-        calls = ctx.usage.calls[calls_before:]
-        detail.update(case=case.name, seconds=round(time.time() - started, 1),
-                      input_tokens=sum(r.input_tokens + r.cache_write_tokens + r.cache_read_tokens for _, r in calls),
-                      output_tokens=sum(r.output_tokens for _, r in calls))
-        rows.append(detail)
-        colour = "green" if detail["score"] >= 0.99 else "yellow" if detail["score"] > 0 else "red"
-        extra = detail.get("error") or detail.get("mutants_caught") or detail.get("ref_tb") or ""
-        score_text = ui.style(f"{detail['score']:.2f}", colour)
+        runs = []
+        for i in range(repeat):
+            artifact_dir = results_dir / run_name / case.name / (f"run{i + 1}" if repeat > 1 else "")
+            runs.append(_run_case(ctx, mode, case, meta, simulator, artifact_dir))
+        scores = [r["score"] for r in runs]
+        row = {"case": case.name, "score": round(sum(scores) / repeat, 3), "min": min(scores), "max": max(scores),
+               "full_passes": sum(s >= 0.99 for s in scores), "repeat": repeat, "runs": runs}
+        rows.append(row)
+        colour = "green" if row["score"] >= 0.99 else "yellow" if row["score"] > 0 else "red"
+        score_text = ui.style(f"{row['score']:.2f}", colour)
+        if repeat > 1:
+            extra = f"min {row['min']:.2f} max {row['max']:.2f} · full score {row['full_passes']}/{repeat}"
+        else:
+            only_run = runs[0]
+            extra = only_run.get("error") or only_run.get("mutants_caught") or only_run.get("ref_tb") or ""
         ui.print(f"  {score_text}  {case.name:28} {extra}")
 
     if not rows:
         raise SystemExit("Every case was skipped; see the reasons above.")
     mean = sum(r["score"] for r in rows) / len(rows)
-    report = {"date": date.today().isoformat(), "mode": mode, "model": spec, "simulator": simulator,
-              "mean_score": round(mean, 3), "usage": ctx.usage.summary(), "cases": rows,
-              "skipped": skipped}
+    # Mean across cases for each repeat: the spread shows how much one full run can vary.
+    run_means = [round(sum(r["runs"][i]["score"] for r in rows) / len(rows), 3) for i in range(repeat)]
+    report = {"format": 2, "date": date.today().isoformat(), "mode": mode, "model": spec, "simulator": simulator,
+              "repeat": repeat, "mean_score": round(mean, 3), "run_means": run_means,
+              "usage": ctx.usage.summary(), "cases": rows, "skipped": skipped}
     results_dir.mkdir(exist_ok=True)
     out = results_dir / f"{run_name}.json"
     out.write_text(json.dumps(report, indent=2) + "\n")
-    ui.ok(f"mean score {mean:.2f} · results saved to {out}")
+    spread = f" (per-run means {min(run_means):.2f}–{max(run_means):.2f})" if repeat > 1 else ""
+    ui.ok(f"mean score {mean:.2f}{spread} · results saved to {out}")
     return report

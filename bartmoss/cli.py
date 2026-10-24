@@ -194,6 +194,8 @@ def main(argv: list[str] | None = None) -> int:
     p_eval.add_argument("--mode", choices=["debug", "tb"], required=True)
     p_eval.add_argument("--cases", default="evals/cases", help="cases directory (default: evals/cases)")
     p_eval.add_argument("--only", help="run only cases whose name contains this text")
+    p_eval.add_argument("--repeat", type=int, default=1, metavar="N",
+                        help="run each case N times and report mean, min/max and full passes (default 1)")
     sub.add_parser("doctor", help="check simulators and provider SDKs")
     sub.add_parser("models", help="show configured providers and models")
     args = parser.parse_args(argv)
@@ -221,7 +223,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "eval":
             from bartmoss.evals import run_eval
 
-            run_eval(ctx, args.mode, Path(args.cases), args.only)
+            run_eval(ctx, args.mode, Path(args.cases), args.only, args.repeat)
             return 0
         if args.command == "doctor":
             cmd_doctor(ctx)

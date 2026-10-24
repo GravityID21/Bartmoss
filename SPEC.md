@@ -216,7 +216,7 @@ Quality
 - [ ] **P2.5** Prompt evaluation pipeline: versioned prompts (`prompts/<mode>.v2.md`), A/B on the eval set, model-graded rubric for text modes (as in course lesson 11)
 - [ ] **P2.6** Model leaderboard: run every configured model on every mode, Markdown table of pass rate, tokens, cost, latency
 - [ ] **P2.7** Per-mode default model chosen from leaderboard results (cheapest model that meets the quality bar)
-- [ ] **P2.11** `eval --repeat N`: run each case N times and report mean ± spread. Single runs are noisy (Haiku failed and then passed crc32_bitrev on two runs).
+- [x] **P2.11** `eval --repeat N`: run each case N times and report mean ± spread. Single runs are noisy (Haiku failed and then passed crc32_bitrev on two runs). *Reports per-case mean, min/max and full passes, plus each repeat's overall mean; results format 2.*
 - [ ] **P2.12** Grow the eval set to 30+ with harder tb cases. Haiku already catches every mutant in the current 5, so add protocol-level DUTs (AXI-Lite slave, credit link, CDC handshake) and more subtle mutants.
 - [ ] **P2.8** Yosys synthesizability check as an extra `/debug` signal (`yosys -p "read_verilog -sv f.sv; synth"`)
 - [x] **P2.9** Session transcript save/load (`/save`, `/load`) as JSON. *Saves the `/ask` conversation and model to the output dir; `/load` validates role order before restoring.*

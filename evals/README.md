@@ -60,4 +60,4 @@ Score: 0.1 compiles, +0.2 passes on the correct DUT, +0.7 × fraction of mutants
 3. Don't leave hints in the RTL (`// BUG`, `// fixed`).
 4. Watch for SystemVerilog keywords used as names (`matches`, `before`, …), and for loop-local `int x = …` declarations, which are static unless marked `automatic`.
 
-Results are written to `results/<date>_<mode>_<model>.json`.
+Results are written to `results/<date>_<mode>_<model>[_only-…][_xN].json`, with model outputs in a folder of the same name. Use `bartmoss eval --mode debug --repeat 3` to measure run-to-run spread. Format 2 files nest each attempt under `cases[].runs` and add `run_means`; older files have one flat entry per case.
