@@ -171,6 +171,24 @@ class TestPromptsAndEvalTools(unittest.TestCase):
         self.assertEqual(recommend(best)["debug"][0], "a:small")
         self.assertIn("| debug | a:big | **0.95** |", render(best))
 
+    def test_eval_aborts_on_provider_error(self):
+        from bartmoss.evals import run_eval
+        from bartmoss.providers import ProviderError
+
+        ctx = make_ctx(Path(tempfile.mkdtemp()))
+        ctx.ui = UI(color=False, out=io.StringIO())
+
+        class Broken:
+            def chat(self, *args, **kwargs):
+                raise ProviderError("Your credit balance is too low")
+
+        ctx._providers["mock"] = Broken()  # shared with the per-case contexts
+        results = REPO / "evals" / "results"
+        before = set(results.glob("*.json"))
+        with self.assertRaises(ProviderError):
+            run_eval(ctx, "debug", REPO / "evals" / "cases", only="counter_wrap")
+        self.assertEqual(set(results.glob("*.json")), before)
+
     def test_judge_parses_items(self):
         from bartmoss.evals import judge
 

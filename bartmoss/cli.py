@@ -273,7 +273,11 @@ def main(argv: list[str] | None = None) -> int:
             if args.judge:
                 parse_model_spec(args.judge)
                 ctx.config["eval"]["judge_model"] = args.judge
-            run_eval(ctx, args.mode, Path(args.cases), args.only, args.repeat)
+            try:
+                run_eval(ctx, args.mode, Path(args.cases), args.only, args.repeat)
+            except ProviderError as e:
+                ctx.ui.error(f"eval aborted, no results saved: {e}")
+                return 2
             return 0
         if args.command == "leaderboard":
             from bartmoss.leaderboard import best_runs, load_runs, recommend, render

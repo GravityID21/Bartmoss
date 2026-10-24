@@ -20,6 +20,7 @@ from bartmoss.config import parse_model_spec
 from bartmoss.context import PROMPT_DIR, Context
 from bartmoss.extract import tag
 from bartmoss.files import Workspace
+from bartmoss.providers import ProviderError
 from bartmoss.sim.tools import is_vhdl, pick_simulator, simulate, tb_verdict, unmet_requirement
 from bartmoss.ui import UI
 
@@ -89,6 +90,10 @@ def _run_case(ctx: Context, mode: str, case: Path, meta: dict, simulator: str, a
     try:
         scorer = {"debug": _score_debug, "tb": _score_tb}.get(mode, _score_plan)
         detail = scorer(case_ctx, case, meta, simulator, scratch)
+    except ProviderError:
+        # API, billing, auth or network failures say nothing about the model: abort the whole run
+        # rather than recording zeros that would skew the leaderboard.
+        raise
     except Exception as e:  # one broken case shouldn't stop the run
         detail = {"score": 0.0, "error": f"{type(e).__name__}: {e}"}
     # Save what the model produced so failures can be inspected later.
