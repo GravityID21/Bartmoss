@@ -56,16 +56,17 @@ Built-in providers: `anthropic`, `openai`, `ollama`, `deepseek`, `openrouter`, `
 }
 ```
 
-## Early results
+## Results
 
-16 simulator-graded cases (10 debug, 6 testbench; 2 in VHDL), one run each, 2026-10-24. The set has since grown to 31 cases; the P2.6 model sweep will replace this table. Scores are means; see [evals/README.md](evals/README.md) for how they're graded.
+31 cases, each run three times (2026-10-24). Full table and notes: [evals/LEADERBOARD.md](evals/LEADERBOARD.md). See [evals/README.md](evals/README.md) for how scores are graded.
 
-| Model | `/debug` | `/tb` | Mutants caught | Cost |
-|---|---|---|---|---|
-| Claude Haiku 5.5 (API) | **0.93** (9/10 fixed) | **1.00** (6/6) | 18/18 | ~$0.10 |
-| Qwen2.5-Coder 7B (local, Ollama) | 0.45 (3/10 fixed) | 0.05 (0/6 working) | 0/3 | $0 |
+| Model | `/debug` (16 cases) | `/tb` (10 cases) | Cost per debug pass |
+|---|---|---|---|
+| Claude Haiku 5.5 | **1.00** (48/48 runs) | pending | $0.02 |
+| Claude Sonnet 5.5 | 0.92 | **0.79** | $0.27 |
+| Qwen2.5-Coder 7B (local) | 0.44 | 0.07 | $0 |
 
-The small local model mostly returned files that compiled but kept the bug. Its testbenches failed to compile even after simulator feedback (for example, ports that don't exist, or non-constant declarations). Single runs are noisy: Haiku has missed a different debug case on each run so far.
+Haiku is the default for `/debug`. Testbench generation is the hardest mode: even Sonnet sometimes writes wrong expected values for a correct design.
 
 ## Cost
 
