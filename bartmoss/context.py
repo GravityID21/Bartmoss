@@ -36,6 +36,7 @@ class Context:
     assume_yes: bool = False
     ask_history: list = field(default_factory=list)  # replaced wholesale by /load
     web_search: bool = False  # /web on|off; allows Claude web searches in /ask
+    use_filter: Optional[bool] = None  # /filter on|off; None means use config["filter"]["enabled"]
     _providers: dict = field(default_factory=dict)
 
     def model_spec(self, mode: str) -> str:

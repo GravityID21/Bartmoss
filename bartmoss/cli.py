@@ -24,6 +24,7 @@ HELP = """\
   /debug <file> [ctx...]  review + fix one RTL file (writes <name>.fixed.<ext>);
                           extra files (packages, interfaces, submodules) are read-only context
   /tb <file> [ctx...]     generate + run a self-checking testbench
+  /filter [on|off]    pre-check /ask questions with a cheap model (off by default)
   /web [on|off]       allow Claude to search the web in /ask (off by default; billed per search)
   /model [p:model]    show or set the model for this session (e.g. anthropic:claude-haiku-5-5)
   /models             list configured providers and per-mode models
@@ -120,6 +121,13 @@ def dispatch(ctx: Context, line: str) -> bool:
             ui.ok(f"model set to {rest} for all modes (conversation cleared)")
         else:
             ui.print(f"  {ctx.model_override or 'per-mode defaults (see /models)'}")
+    elif command == "/filter":
+        if rest in ("on", "off"):
+            ctx.use_filter = rest == "on"
+        elif rest:
+            ui.warn("usage: /filter [on|off]")
+        enabled = ctx.config["filter"]["enabled"] if ctx.use_filter is None else ctx.use_filter
+        ui.print(f"  /ask pre-filter is {'on' if enabled else 'off'} · model {ctx.config['filter']['model']}")
     elif command == "/web":
         if rest in ("on", "off"):
             ctx.web_search = rest == "on"

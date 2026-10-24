@@ -183,6 +183,16 @@ class TestModesWithMock(unittest.TestCase):
         with self.assertRaises(WorkspaceError):
             attach_mentions(self.ctx, "look at @../../etc/hosts")
 
+    def test_filter_blocks_off_topic_and_keeps_history_clean(self):
+        from bartmoss.modes.ask import run_ask
+
+        self.ctx.config["filter"]["model"] = "mock:echo"
+        self.ctx.use_filter = True
+        self.assertIsNone(run_ask(self.ctx, "give me a pancake recipe"))
+        self.assertEqual(self.ctx.ask_history, [])
+        self.assertIsNotNone(run_ask(self.ctx, "what is clock skew?"))
+        self.assertEqual(len(self.ctx.ask_history), 2)
+
     def test_web_search_falls_back_without_claude(self):
         from bartmoss.modes.ask import run_ask
 

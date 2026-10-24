@@ -33,7 +33,10 @@ class MockProvider(Provider):
         on_text: Optional[Callable[[str], None]] = None,
         web_search: int = 0,
     ) -> ChatResult:
-        if "MODE: debug" in system:
+        if "MODE: filter" in system:
+            question = _last_user(messages).lower()
+            text = "OFF_TOPIC" if "recipe" in question else "HARMFUL" if "weapon" in question else "IN_SCOPE"
+        elif "MODE: debug" in system:
             source = _first_file(messages)
             text = (
                 "<analysis>\nSummary: mock review, no changes made.\nIssues:\n(none, mock provider)\n</analysis>\n"

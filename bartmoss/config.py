@@ -46,6 +46,8 @@ DEFAULTS: dict = {
         "anthropic:claude-haiku-5-5": [0.10, 0.50],
         "anthropic:claude-fable-5-1": [10.0, 50.0],
     },
+    # Optional /ask pre-filter (P2.4): a cheap model labels questions before the main model sees them.
+    "filter": {"enabled": False, "model": "anthropic:claude-haiku-5-5", "max_tokens": 1024},
     "simulator": "auto",  # auto | verilator | iverilog
     "output_dir": "bartmoss_out",
     "sim_timeout_s": 300,

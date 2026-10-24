@@ -30,6 +30,15 @@ def attach_mentions(ctx: Context, question: str) -> str:
 
 
 def run_ask(ctx: Context, question: str) -> Optional[str]:
+    use_filter = ctx.config["filter"]["enabled"] if ctx.use_filter is None else ctx.use_filter
+    if use_filter:
+        from bartmoss.filter import REPLIES, classify
+
+        label = classify(ctx, question)
+        if label != "IN_SCOPE":
+            # Not added to the conversation, so a refused question doesn't colour later answers.
+            ctx.ui.warn(REPLIES[label])
+            return None
     ctx.ask_history.append({"role": "user", "content": attach_mentions(ctx, question)})
     searches = 0
     if ctx.web_search:
