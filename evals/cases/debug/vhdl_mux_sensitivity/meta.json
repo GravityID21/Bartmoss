@@ -1,0 +1,10 @@
+{
+  "mode": "debug",
+  "file": "mux4.vhd",
+  "tb": "tb_ref.vhd",
+  "tb_top": "tb_ref",
+  "bug": "combinational process lists only sel, so y doesn't update when the selected data input changes (simulation/synthesis mismatch)",
+  "source": "hand-written",
+  "tags": ["vhdl", "combinational", "sensitivity-list"],
+  "fix": [["process (sel)", "process (all)"]]
+}

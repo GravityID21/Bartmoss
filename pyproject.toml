@@ -19,7 +19,7 @@ openai = ["openai>=1.40"]
 all = ["anthropic>=0.125,<1", "openai>=1.40"]
 
 [project.scripts]
-bartmoss = "bartmoss.cli:main"
+bartmoss = "bartmoss.cli:entry"
 
 [tool.setuptools.packages.find]
 include = ["bartmoss*"]

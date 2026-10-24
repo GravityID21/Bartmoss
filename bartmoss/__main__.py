@@ -1,3 +1,3 @@
-from bartmoss.cli import main
+from bartmoss.cli import entry
 
-raise SystemExit(main())
+raise SystemExit(entry())

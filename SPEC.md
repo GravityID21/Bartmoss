@@ -84,11 +84,11 @@ bartmoss/
     openai_compat.py        any OpenAI-compatible endpoint via `openai` SDK (optional extra)
     mock.py         offline, deterministic provider for tests and demos
   sim/
-    tools.py        detect + run verilator / iverilog / ghdl
+    tools.py        detect + run verilator / iverilog (SV) and nvc / ghdl (VHDL)
     loop.py         generate → check → feed back errors → retry
   modes/
     ask.py  debug.py  tb.py   one run_<mode>() each, returning a result object (used by evals too)
-  prompts/          one Markdown system prompt per mode (+ shared guard.md rules)
+  prompts/          one Markdown system prompt per mode (+ shared guard.md rules, tb_vhdl.md variant)
   evals.py          eval runner (`bartmoss eval`)
 evals/cases/        eval cases (debug/, tb/), each a folder with RTL + meta.json
 evals/results/      saved eval runs (JSON)
@@ -188,7 +188,7 @@ Simulator integration
 - [x] **P1.11** Tool detection (`verilator`, `iverilog`, `ghdl`) with clear install hints when missing
 - [x] **P1.12** Verilator lint + `--binary --timing` run; Icarus `-g2012` compile + `vvp` run
 - [x] **P1.13** Check-and-retry loop with error-text truncation (keep context small)
-- [ ] **P1.14** VHDL path via GHDL (`ghdl -a/-e/-r`)
+- [x] **P1.14** VHDL path via NVC or GHDL: VHDL-2008 lint in `/debug`, a `tb_vhdl` prompt variant and compile/run in `/tb`, VHDL eval cases. NVC is preferred because GHDL's macOS package is disabled.
 
 Interface
 - [x] **P1.15** One-shot CLI (`bartmoss debug file.sv`) and interactive REPL (`bartmoss`)
@@ -324,7 +324,7 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 | `openai` | optional extra `[openai]` | free lib | OpenAI + every OpenAI-compatible endpoint, including local Ollama |
 | Verilator | recommended | free | lint, SV simulation (`--binary --timing`) |
 | Icarus Verilog | optional | free | alternative Verilog simulator |
-| GHDL | optional | free | VHDL |
+| NVC (or GHDL) | optional | free | VHDL-2008 lint and simulation |
 | Yosys | optional (Phase 2) | free | synthesizability check |
 | Ollama | optional | free (your hardware) | local open models |
 
@@ -363,7 +363,7 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 - [ ] Project name for publishing (Bartmoss works; check PyPI/GitHub name availability).
 - [ ] Which open models to standardise on for the leaderboard (depends on what runs well on your hardware via Ollama vs paid APIs)?
 - [ ] Eval contamination: once the repo is public, the `fix` fields and mutants could end up in model training data. Add a canary string to each case (as BIG-bench does), or keep a private held-out set?
-- [ ] VHDL priority: your projects are SystemVerilog, so is VHDL (P1.14) needed for v0.1?
+- [x] VHDL priority: supported in v0.1 via NVC/GHDL (P1.14), with 2 VHDL eval cases
 
 ---
 

@@ -11,7 +11,7 @@ from typing import Optional
 from bartmoss.context import Context, context_blocks
 from bartmoss.extract import hdl_block, tag, top_module
 from bartmoss.sim.loop import CheckOutcome, generate_with_checks, hit_token_limit
-from bartmoss.sim.tools import RunResult, pick_simulator, simulate, tail, tb_verdict
+from bartmoss.sim.tools import RunResult, is_vhdl, pick_simulator, simulate, tail, tb_verdict
 
 
 @dataclass
@@ -32,22 +32,22 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=())
     src_path, source = ctx.workspace.read_text(path)
     context = ctx.read_context_files(context_files)
     context_paths = [p for p, _ in context]
-    if src_path.suffix.lower() in (".vhd", ".vhdl"):
-        ui.warn("VHDL testbenches aren't supported yet (planned: SPEC P1.14).")
-        return TbResult("broken")
+    vhdl = is_vhdl(src_path)
     top = top_module(source)
     if not top:
-        ui.error(f"No module declaration found in {src_path.name}.")
+        ui.error(f"No {'entity' if vhdl else 'module'} declaration found in {src_path.name}.")
         return TbResult("broken")
 
-    simulator = pick_simulator(ctx.config.get("simulator", "auto"))
+    simulator = pick_simulator(ctx.config.get("simulator", "auto"), vhdl=vhdl)
     ui.info(f"tb for {top} ({ctx.workspace.relative(src_path)}) · model {ctx.model_spec('tb')} · "
             f"simulator {simulator or 'none'}")
     if simulator is None:
-        ui.warn("No simulator found; the testbench won't be checked (brew install verilator).")
+        ui.warn(f"No simulator found; the testbench won't be checked ({'brew install nvc' if vhdl else 'brew install verilator'}).")
 
     scratch = Path(tempfile.mkdtemp(prefix="bartmoss_tb_"))
     tb_name = f"tb_{top}"
+    tb_file = f"{tb_name}{'.vhd' if vhdl else '.sv'}"
+    unit = "entity" if vhdl else "module"
     attempt_no = [0]
 
     def check(text: str) -> CheckOutcome:
@@ -56,15 +56,15 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=())
         notes = tag(text, "notes") or ""
         if not tb:
             return CheckOutcome(False, True, "Your reply had no <tb_file> section. Reply again in the required format.")
-        if f"module {tb_name}" not in tb:
-            return CheckOutcome(False, True, f"The testbench module must be named `{tb_name}`. Reply again in the same format.",
+        if f"{unit} {tb_name}".lower() not in tb.lower():
+            return CheckOutcome(False, True, f"The testbench {unit} must be named `{tb_name}`. Reply again in the same format.",
                                 data={"tb": tb, "notes": notes})
         data = {"tb": tb, "notes": notes}
         if simulator is None:
             return CheckOutcome(True, data={**data, "verdict": "unchecked"})
         workdir = scratch / f"attempt{attempt_no[0]}"
         workdir.mkdir()
-        tb_path = workdir / f"{tb_name}.sv"
+        tb_path = workdir / tb_file
         tb_path.write_text(tb)
         run = simulate([*context_paths, src_path, tb_path], tb_name, workdir, simulator, ctx.config.get("sim_timeout_s", 300))
         data["sim"] = run
@@ -94,7 +94,8 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=())
 
     message = (f"Top module: {top}\nTestbench module name: {tb_name}\n\n"
                f'<file name="{src_path.name}">\n{source}</file>\n' + context_blocks(context))
-    loop = generate_with_checks(lambda messages: ctx.ask_model("tb", messages), message, check,
+    prompt = "tb_vhdl" if vhdl else "tb"
+    loop = generate_with_checks(lambda messages: ctx.ask_model("tb", messages, prompt=prompt), message, check,
                                 ctx.config["modes"]["tb"].get("max_retries", 2), on_attempt)
     if loop.refused:
         ui.warn("The model declined this request. Try another model with --model.")
@@ -108,7 +109,7 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=())
         ui.warn("The reply hit max_tokens and may be incomplete; raise modes.tb.max_tokens in bartmoss.json.")
 
     if result.tb and write:
-        written = [ctx.workspace.write_text(f"{tb_name}.sv", result.tb, ctx.confirm_overwrite)]
+        written = [ctx.workspace.write_text(tb_file, result.tb, ctx.confirm_overwrite)]
         if result.notes:
             written.append(ctx.workspace.write_text(f"{tb_name}.md", result.notes, ctx.confirm_overwrite))
         result.written = tuple(p for p in written if p)
@@ -119,7 +120,7 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=())
         ui.ok(ui.style("TEST PASSED", "green") + f" with {simulator} · attempts {loop.attempts}")
     elif result.verdict == "fail":
         ui.warn(ui.style("TEST FAILED", "red") + " — could be a DUT bug or a wrong expectation in the testbench.")
-        for line in [l for l in result.sim.output.splitlines() if l.startswith("ERROR")][:8]:
+        for line in [l for l in result.sim.output.splitlines() if "ERROR" in l][:8]:
             ui.dim("  " + line)
         ui.dim(f"  Review the failures, then try /debug {ctx.workspace.relative(src_path)}")
     elif result.verdict == "unchecked":

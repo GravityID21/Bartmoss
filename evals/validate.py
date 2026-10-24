@@ -14,7 +14,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from bartmoss.sim.tools import pick_simulator, simulate, tail, tb_verdict  # noqa: E402
+from bartmoss.sim.tools import is_vhdl, pick_simulator, simulate, tail, tb_verdict  # noqa: E402
 
 CASES = Path(__file__).resolve().parent / "cases"
 
@@ -45,12 +45,13 @@ def check_debug(case: Path, meta: dict, sim: str, tmp: Path) -> list[str]:
 def check_tb(case: Path, meta: dict, sim: str, tmp: Path) -> list[str]:
     context = [case / c for c in meta.get("context", [])]
     top = "tb_" + meta["top"]
+    ref_tb = case / ("reference_tb.vhd" if is_vhdl(meta["file"]) else "reference_tb.sv")
     problems = []
-    good = simulate([*context, case / meta["file"], case / "reference_tb.sv"], top, tmp / "good", sim)
+    good = simulate([*context, case / meta["file"], ref_tb], top, tmp / "good", sim)
     if outcome(good) != "pass":
         problems.append(f"correct DUT should pass reference_tb, got {outcome(good)}\n{tail(good.output, 20)}")
     for i, mutant in enumerate(meta["mutants"]):
-        run = simulate([*context, case / mutant, case / "reference_tb.sv"], top, tmp / f"m{i}", sim)
+        run = simulate([*context, case / mutant, ref_tb], top, tmp / f"m{i}", sim)
         if outcome(run) == "pass":
             problems.append(f"{mutant} is not caught by reference_tb")
     return problems
@@ -61,8 +62,7 @@ def main() -> int:
     parser.add_argument("--sim", default="auto")
     parser.add_argument("--only")
     args = parser.parse_args()
-    sim = pick_simulator(args.sim)
-    if not sim:
+    if not pick_simulator(args.sim):
         print("No simulator found (brew install verilator)")
         return 2
     failures = 0
@@ -71,12 +71,16 @@ def main() -> int:
             if not (case / "meta.json").is_file() or (args.only and args.only not in case.name):
                 continue
             meta = json.loads((case / "meta.json").read_text())
+            sim = pick_simulator(args.sim, vhdl=is_vhdl(meta["file"]))
+            if sim is None:
+                print(f"skip {mode}/{case.name} (no {'VHDL' if is_vhdl(meta['file']) else 'Verilog'} simulator)")
+                continue
             problems = checker(case, meta, sim, Path(tempfile.mkdtemp(prefix=f"validate_{case.name}_")))
-            print(f"{'ok  ' if not problems else 'FAIL'} {mode}/{case.name}")
+            print(f"{'ok  ' if not problems else 'FAIL'} {mode}/{case.name} ({sim})")
             for p in problems:
                 print("     " + p.replace("\n", "\n     "))
             failures += bool(problems)
-    print(f"\n{failures} invalid case(s) · simulator {sim}")
+    print(f"\n{failures} invalid case(s)")
     return 1 if failures else 0
 
 

@@ -31,9 +31,9 @@ def build_message(name: str, source: str, lint_result: Optional[RunResult], cont
     if lint_result is None:
         message += "\nNo linter is available, so review the file by reading it.\n"
     elif lint_result.output.strip():
-        message += f"\nVerilator lint output:\n<lint>\n{tail(lint_result.output)}\n</lint>\n"
+        message += f"\n{lint_result.tool} lint output:\n<lint>\n{tail(lint_result.output)}\n</lint>\n"
     else:
-        message += "\nVerilator lint reported nothing.\n"
+        message += f"\n{lint_result.tool} lint reported nothing.\n"
     return message
 
 
@@ -46,10 +46,10 @@ def run_debug(ctx: Context, path: str | Path, write: bool = True, context_files=
 
     before = lint(src_path, context_paths)
     if before is None:
-        ui.warn("Verilator not found; skipping lint checks (brew install verilator).")
+        ui.warn("No linter found; skipping lint checks (brew install verilator, or nvc for VHDL).")
     else:
         n_err = len(lint_errors(before.output))
-        n_warn = before.output.count("%Warning")
+        n_warn = before.output.count("%Warning") + before.output.count("** Warning")
         ui.dim(f"  lint before: {n_err} errors, {n_warn} warnings")
     known_errors = lint_errors(before.output) if before else set()
 
@@ -69,7 +69,7 @@ def run_debug(ctx: Context, path: str | Path, write: bool = True, context_files=
         if new_errors:
             listing = "\n".join(sorted(new_errors))
             return CheckOutcome(False, True,
-                                f"Your fixed file introduced new Verilator errors:\n<lint>\n{tail(listing)}\n</lint>\n"
+                                f"Your fixed file introduced new {after.tool} errors:\n<lint>\n{tail(listing)}\n</lint>\n"
                                 "Fix them and reply again in the same format with the complete file.",
                                 data={"fixed": fixed, "lint": after})
         return CheckOutcome(True, data={"fixed": fixed, "lint": after})

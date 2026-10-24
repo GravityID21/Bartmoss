@@ -17,6 +17,19 @@ from bartmoss.usage import Usage
 
 REPO = Path(__file__).resolve().parent.parent
 HAS_VERILATOR = shutil.which("verilator") is not None
+HAS_VHDL_SIM = bool(shutil.which("nvc") or shutil.which("ghdl"))
+VHDL_INV = """library ieee;
+use ieee.std_logic_1164.all;
+
+entity inv is
+    port (a : in std_logic; y : out std_logic);
+end entity;
+
+architecture rtl of inv is
+begin
+    y <= not a;
+end architecture;
+"""
 
 
 def make_ctx(root: Path) -> Context:
@@ -85,6 +98,16 @@ class TestSimHelpers(unittest.TestCase):
         self.assertEqual(tb_verdict("ERROR: a\nTEST FAILED: 1 errors"), "fail")
         self.assertEqual(tb_verdict("nothing"), "unknown")
 
+    def test_lint_errors_vhdl_formats(self):
+        nvc = lint_errors("** Error: no visible declaration for FOO\n    > /tmp/a.vhd:3\n** Warning: unused")
+        ghdl = lint_errors("/tmp/a.vhd:3:5: no declaration for \"foo\"\n/tmp/a.vhd:4:1:warning: unused")
+        self.assertEqual(nvc, {"no visible declaration for FOO"})
+        self.assertEqual(ghdl, {'no declaration for "foo"'})
+
+    def test_vhdl_verdict(self):
+        self.assertEqual(tb_verdict("** Note: 10ns+0: TEST PASSED"), "pass")
+        self.assertEqual(tb_verdict("** Failure: 5ns+0: Assertion violation."), "fail")
+
     def test_lint_errors_ignore_location(self):
         a = lint_errors("%Error: /tmp/a/x.sv:3:5: syntax error, unexpected endmodule\n%Error: Exiting due to 1 error(s)")
         b = lint_errors("%Error: /other/x.sv:9:1: syntax error, unexpected endmodule")
@@ -120,6 +143,24 @@ class TestModesWithMock(unittest.TestCase):
         self.assertEqual(result.verdict, "pass")
         self.assertTrue((self.root / "out" / "tb_inv.sv").is_file())
         self.assertTrue((self.root / "out" / "tb_inv.md").is_file())
+
+    @unittest.skipUnless(HAS_VHDL_SIM, "nvc/ghdl not installed")
+    def test_vhdl_tb_runs_in_simulator(self):
+        from bartmoss.modes.tb import run_tb
+
+        (self.root / "inv.vhd").write_text(VHDL_INV)
+        result = run_tb(self.ctx, "inv.vhd")
+        self.assertEqual(result.verdict, "pass")
+        self.assertTrue((self.root / "out" / "tb_inv.vhd").is_file())
+
+    @unittest.skipUnless(HAS_VHDL_SIM, "nvc/ghdl not installed")
+    def test_vhdl_debug_lints(self):
+        from bartmoss.modes.debug import run_debug
+
+        (self.root / "inv.vhd").write_text(VHDL_INV)
+        result = run_debug(self.ctx, "inv.vhd")
+        self.assertEqual(result.status, "clean")
+        self.assertTrue(result.lint_before.ok)
 
     def test_debug_refuses_file_outside_workspace(self):
         from bartmoss.modes.debug import run_debug

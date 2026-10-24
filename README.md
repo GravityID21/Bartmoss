@@ -19,7 +19,8 @@ An open-source AI assistant for RTL design and verification that runs in your te
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[claude]"      # or ".[openai]" or ".[all]"; the core has no dependencies
-brew install verilator           # free simulator/linter used for checks
+brew install verilator           # free SystemVerilog simulator/linter used for checks
+brew install nvc                 # optional: VHDL-2008 support (GHDL also works on Linux)
 cp .env.example .env             # add the API key(s) you want to use
 bartmoss doctor                  # check what's installed
 ```

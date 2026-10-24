@@ -5,5 +5,6 @@
 - Claude calls use the official `anthropic` SDK (streaming, cached system prompt, `output_config.effort`, refusal fallback). Never send `temperature`/`top_p`/`top_k` or assistant prefill to Claude.
 - Model replies are parsed from XML-style tags (`<fixed_file>`, `<tb_file>`, `<notes>`, `<analysis>`). If you change a prompt's output format, update `extract.py` callers and `providers/mock.py`.
 - Every file access goes through `files.Workspace`; every tool run goes through `sim/tools.py` (argument lists, timeouts, no shell).
+- VHDL files (`.vhd/.vhdl`) use NVC or GHDL (`sim/tools.py` picks by extension) and the `tb_vhdl.md` prompt variant.
 - Tests: `.venv/bin/python -m unittest`. They must pass offline with no API keys.
 - Eval cases live in `evals/cases/<mode>/<case>/`. Files other than `meta["file"]` (reference TBs, mutants) are hidden from the model. Prove each new case is valid with Verilator before adding it.

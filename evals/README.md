@@ -27,11 +27,11 @@ Score: 1.0 if the fix passes the reference testbench, 0.25 if it compiles but fa
 | `file`, `top` | correct RTL given to the model |
 | `context` | optional supporting files |
 | `mutants` | one-line bug variants that a good testbench must fail on |
-| `reference_tb.sv` | hand-written testbench proving every mutant is detectable |
+| `reference_tb.sv` / `.vhd` | hand-written testbench proving every mutant is detectable |
 
 Score: 0.1 compiles, +0.2 passes on the correct DUT, +0.7 × fraction of mutants caught.
 
-## Current set (14 cases)
+## Current set (16 cases)
 
 | Case | Source | What makes it hard |
 |---|---|---|
@@ -49,6 +49,8 @@ Score: 0.1 compiles, +0.2 passes on the correct DUT, +0.7 × fraction of mutants
 | tb/axi4_arbiter_rr | crossbar `axi4_arbiter` | fairness and burst locking need multi-burst tests |
 | tb/async_fifo_gray | crossbar `async_fifo` + `cdc_sync_2ff` | two clocks; capacity and Gray-code bugs |
 | tb/debounce_btn | UDP `debounce` | must override parameters to get a usable window; bounce timing |
+| debug/vhdl_mux_sensitivity | hand-written (VHDL) | incomplete sensitivity list: simulation/synthesis mismatch |
+| tb/vhdl_pwm | hand-written (VHDL) | duty latching and period boundaries; VHDL-2008 testbench structure |
 
 ## Adding a case
 

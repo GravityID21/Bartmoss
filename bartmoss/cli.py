@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import shlex
 import sys
 from pathlib import Path
@@ -218,5 +219,14 @@ def main(argv: list[str] | None = None) -> int:
             ctx.ui.dim(ctx.usage.summary())
 
 
+def entry() -> int:
+    """Console-script entry point: exit quietly when output is piped into e.g. `head`."""
+    try:
+        return main()
+    except BrokenPipeError:
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        return 1
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(entry())

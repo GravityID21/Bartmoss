@@ -18,7 +18,7 @@ from pathlib import Path
 
 from bartmoss.context import Context
 from bartmoss.files import Workspace
-from bartmoss.sim.tools import pick_simulator, simulate, tb_verdict
+from bartmoss.sim.tools import is_vhdl, pick_simulator, simulate, tb_verdict
 from bartmoss.ui import UI
 
 
@@ -31,6 +31,7 @@ def _score_debug(case_ctx: Context, case: Path, meta: dict, simulator: str, scra
               "_artifacts": {"analysis.txt": result.analysis, Path(meta["file"]).name: result.fixed}}
     if not result.fixed:
         return detail
+    simulator = pick_simulator(simulator, vhdl=is_vhdl(meta["file"]))
     fixed_path = scratch / Path(meta["file"]).name
     fixed_path.write_text(result.fixed)
     run = simulate([*(case / c for c in context), fixed_path, case / meta["tb"]], meta["tb_top"], scratch / "sim", simulator)
@@ -48,7 +49,8 @@ def _score_tb(case_ctx: Context, case: Path, meta: dict, simulator: str, scratch
     context = [case / c for c in meta.get("context", [])]
     result = run_tb(case_ctx, meta["file"], write=False, context_files=context)
     detail = {"verdict": result.verdict, "attempts": result.attempts, "truncated": result.truncated, "score": 0.0,
-              "_artifacts": {f"tb_{result.top}.sv": result.tb, f"tb_{result.top}.md": result.notes,
+              "_artifacts": {f"tb_{result.top}{'.vhd' if is_vhdl(meta['file']) else '.sv'}": result.tb,
+                             f"tb_{result.top}.md": result.notes,
                              "sim.log": result.sim.output if result.sim else None}}
     if result.verdict not in ("pass", "fail"):
         return detail
@@ -56,7 +58,8 @@ def _score_tb(case_ctx: Context, case: Path, meta: dict, simulator: str, scratch
     if result.verdict != "pass":
         return detail
     detail["score"] += 0.2
-    tb_path = scratch / f"tb_{result.top}.sv"
+    simulator = result.simulator
+    tb_path = scratch / f"tb_{result.top}{'.vhd' if is_vhdl(meta['file']) else '.sv'}"
     tb_path.write_text(result.tb)
     mutants = meta.get("mutants", [])
     caught = 0
@@ -75,10 +78,11 @@ def _score_tb(case_ctx: Context, case: Path, meta: dict, simulator: str, scratch
 
 
 def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None) -> dict:
+    """Filtered runs (`only`) are saved under their own name so they never overwrite a full run."""
     ui = ctx.ui
-    simulator = pick_simulator(ctx.config.get("simulator", "auto"))
-    if simulator is None:
-        raise SystemExit("Evals need a simulator: brew install verilator")
+    simulator = ctx.config.get("simulator", "auto")
+    if pick_simulator(simulator) is None:
+        raise SystemExit("Evals need a simulator: brew install verilator (and nvc for VHDL cases)")
     cases_dir = (cases_root / mode).resolve()
     cases = sorted(p for p in cases_dir.iterdir() if (p / "meta.json").is_file()) if cases_dir.is_dir() else []
     if only:
@@ -88,6 +92,8 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None)
 
     spec = ctx.model_spec(mode)
     run_name = f"{date.today().isoformat()}_{mode}_{re.sub(r'[^A-Za-z0-9.-]+', '-', spec)}"
+    if only:
+        run_name += f"_only-{re.sub(r'[^A-Za-z0-9.-]+', '-', only)}"
     results_dir = cases_root.resolve().parent / "results"
     ui.info(f"eval {mode} · {len(cases)} cases · model {spec} · simulator {simulator}")
     rows = []

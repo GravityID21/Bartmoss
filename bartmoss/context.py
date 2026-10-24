@@ -45,12 +45,14 @@ class Context:
             self._providers[name] = make_provider(name, self.config)
         return self._providers[name]
 
-    def ask_model(self, mode: str, messages: list[dict], on_text: Optional[Callable[[str], None]] = None) -> ChatResult:
+    def ask_model(self, mode: str, messages: list[dict], on_text: Optional[Callable[[str], None]] = None,
+                  prompt: Optional[str] = None) -> ChatResult:
+        """`prompt` picks a prompt variant (e.g. tb_vhdl); model and limits still come from `mode`."""
         spec = self.model_spec(mode)
         provider_name, model = parse_model_spec(spec)
         mode_cfg = self.config["modes"].get(mode, {})
         result = self.provider(provider_name).chat(
-            system_prompt(mode),
+            system_prompt(prompt or mode),
             messages,
             model=model,
             max_tokens=mode_cfg.get("max_tokens", 8000),

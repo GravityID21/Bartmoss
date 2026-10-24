@@ -1,0 +1,8 @@
+{
+  "mode": "tb",
+  "file": "pwm.vhd",
+  "top": "pwm",
+  "mutants": ["mutant_le.vhd", "mutant_unlatched.vhd", "mutant_period.vhd"],
+  "source": "hand-written",
+  "tags": ["vhdl", "pwm", "generics", "timing"]
+}

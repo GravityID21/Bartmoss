@@ -38,6 +38,13 @@ class MockProvider(Provider):
                 "<analysis>\nSummary: mock review, no changes made.\nIssues:\n(none, mock provider)\n</analysis>\n"
                 f"<fixed_file>\n{source}</fixed_file>\n"
             )
+        elif "MODE: tb_vhdl" in system:
+            top = top_module(_first_file(messages)) or "dut"
+            text = (
+                "<tb_file>\nentity tb_" + top + " is\nend entity;\n\narchitecture sim of tb_" + top + " is\nbegin\n"
+                "  process\n  begin\n    report \"TEST PASSED\" severity note;\n    std.env.finish;\n  end process;\n"
+                "end architecture;\n</tb_file>\n<notes>\n# Overview\nMock testbench with no real checks.\n</notes>\n"
+            )
         elif "MODE: tb" in system:
             top = top_module(_first_file(messages)) or "dut"
             text = (
