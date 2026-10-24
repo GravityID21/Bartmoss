@@ -169,7 +169,7 @@ class TestPromptsAndEvalTools(unittest.TestCase):
         best = best_runs([run("a:big", 0.80, 1, 3.0), run("a:big", 0.95, 3, 9.0), run("a:small", 0.93, 3, 0.3)])
         self.assertEqual(best[("debug", "a:big", "debug")]["repeat"], 3)
         self.assertEqual(recommend(best)["debug"][0], "a:small")
-        self.assertIn("| debug | a:big | **0.95** |", render(best))
+        self.assertIn("| debug | a:big | 1 | **0.95** |", render(best))
 
     def test_eval_aborts_on_provider_error(self):
         from bartmoss.evals import run_eval

@@ -1,0 +1,661 @@
+{
+  "format": 2,
+  "date": "2026-10-24",
+  "mode": "debug",
+  "model": "anthropic:claude-haiku-5-5",
+  "simulator": "auto",
+  "repeat": 3,
+  "prompt": "debug",
+  "mean_score": 1.0,
+  "run_means": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "cost_usd": 0.0625,
+  "seconds": 540.4,
+  "usage": "48 calls \u00b7 75,910 in \u00b7 108,939 out \u00b7 38,963 cache-read \u00b7 est. $0.0625",
+  "cases": [
+    {
+      "case": "axis_skid_stale",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 15.3,
+          "input_tokens": 3524,
+          "output_tokens": 3463
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 15.4,
+          "input_tokens": 3524,
+          "output_tokens": 3607
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 14.0,
+          "input_tokens": 3524,
+          "output_tokens": 3351
+        }
+      ]
+    },
+    {
+      "case": "cdc_pulse_rising",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 15.5,
+          "input_tokens": 2871,
+          "output_tokens": 3720
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 13.7,
+          "input_tokens": 2871,
+          "output_tokens": 2804
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 13.1,
+          "input_tokens": 2871,
+          "output_tokens": 2995
+        }
+      ]
+    },
+    {
+      "case": "counter_wrap",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 9.5,
+          "input_tokens": 1733,
+          "output_tokens": 1661
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 10.9,
+          "input_tokens": 1733,
+          "output_tokens": 1908
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 9.0,
+          "input_tokens": 1733,
+          "output_tokens": 1610
+        }
+      ]
+    },
+    {
+      "case": "crc32_bitrev",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 12.8,
+          "input_tokens": 2252,
+          "output_tokens": 2686
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 15.1,
+          "input_tokens": 2252,
+          "output_tokens": 3220
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 20.0,
+          "input_tokens": 2252,
+          "output_tokens": 4296
+        }
+      ]
+    },
+    {
+      "case": "credit_simul",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 10.4,
+          "input_tokens": 2058,
+          "output_tokens": 2079
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 11.5,
+          "input_tokens": 2058,
+          "output_tokens": 2676
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 15.3,
+          "input_tokens": 2058,
+          "output_tokens": 3663
+        }
+      ]
+    },
+    {
+      "case": "div4_rounding",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 8.0,
+          "input_tokens": 1183,
+          "output_tokens": 1250
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 7.4,
+          "input_tokens": 1183,
+          "output_tokens": 1139
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 8.4,
+          "input_tokens": 1183,
+          "output_tokens": 1325
+        }
+      ]
+    },
+    {
+      "case": "fifo_full_offbyone",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 11.1,
+          "input_tokens": 1928,
+          "output_tokens": 2386
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 10.1,
+          "input_tokens": 1928,
+          "output_tokens": 1731
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 12.0,
+          "input_tokens": 1928,
+          "output_tokens": 2307
+        }
+      ]
+    },
+    {
+      "case": "ipv4_checksum_carry",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 11.6,
+          "input_tokens": 1971,
+          "output_tokens": 2345
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 11.0,
+          "input_tokens": 1971,
+          "output_tokens": 2024
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 14.7,
+          "input_tokens": 1971,
+          "output_tokens": 2735
+        }
+      ]
+    },
+    {
+      "case": "mac_signedness",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 10.9,
+          "input_tokens": 1566,
+          "output_tokens": 1964
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 11.8,
+          "input_tokens": 1566,
+          "output_tokens": 2061
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 10.6,
+          "input_tokens": 1566,
+          "output_tokens": 1850
+        }
+      ]
+    },
+    {
+      "case": "riscv_alu_signed",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 12.6,
+          "input_tokens": 5382,
+          "output_tokens": 2575
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 11.8,
+          "input_tokens": 5382,
+          "output_tokens": 2535
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 13.0,
+          "input_tokens": 5382,
+          "output_tokens": 2887
+        }
+      ]
+    },
+    {
+      "case": "riscv_hazard_fwd",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 12.7,
+          "input_tokens": 5831,
+          "output_tokens": 2939
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 11.8,
+          "input_tokens": 5831,
+          "output_tokens": 2703
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 11.3,
+          "input_tokens": 5831,
+          "output_tokens": 2565
+        }
+      ]
+    },
+    {
+      "case": "rmii_tx_ready",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 13.9,
+          "input_tokens": 2009,
+          "output_tokens": 2942
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 15.4,
+          "input_tokens": 2009,
+          "output_tokens": 3177
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 15.7,
+          "input_tokens": 2009,
+          "output_tokens": 3308
+        }
+      ]
+    },
+    {
+      "case": "sat_add_overflow",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 9.6,
+          "input_tokens": 1258,
+          "output_tokens": 1648
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 10.1,
+          "input_tokens": 1258,
+          "output_tokens": 1755
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 9.7,
+          "input_tokens": 1258,
+          "output_tokens": 1661
+        }
+      ]
+    },
+    {
+      "case": "seq_detect_overlap",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 9.1,
+          "input_tokens": 1451,
+          "output_tokens": 1614
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 9.8,
+          "input_tokens": 1451,
+          "output_tokens": 1856
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 9.0,
+          "input_tokens": 1451,
+          "output_tokens": 1649
+        }
+      ]
+    },
+    {
+      "case": "shift_blocking",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 6.5,
+          "input_tokens": 2101,
+          "output_tokens": 974
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 6.9,
+          "input_tokens": 2101,
+          "output_tokens": 977
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 6.9,
+          "input_tokens": 2101,
+          "output_tokens": 1006
+        }
+      ]
+    },
+    {
+      "case": "vhdl_mux_sensitivity",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 5.1,
+          "input_tokens": 1173,
+          "output_tokens": 1144
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 5.1,
+          "input_tokens": 1173,
+          "output_tokens": 1049
+        },
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 5.1,
+          "input_tokens": 1173,
+          "output_tokens": 1119
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}

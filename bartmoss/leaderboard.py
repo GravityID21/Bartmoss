@@ -44,8 +44,8 @@ def full_passes(run: dict) -> tuple[int, int]:
 
 
 def render(best: dict) -> str:
-    lines = ["| Mode | Model | Mean score | Range across repeats | Full-score runs | Cost per pass | Time per pass |",
-             "|---|---|---|---|---|---|---|"]
+    lines = ["| Mode | Model | Cases | Mean score | Range across repeats | Full-score runs | Cost per pass | Time per pass |",
+             "|---|---|---|---|---|---|---|---|"]
     for mode in MODES:
         rows = sorted((r for (m, _, _), r in best.items() if m == mode), key=lambda r: -r["mean_score"])
         for run in rows:
@@ -58,16 +58,20 @@ def render(best: dict) -> str:
             secs = run.get("seconds")
             time_text = "—" if secs is None else f"{secs / repeat / 60:.1f} min"
             model = run["model"] + ("" if run.get("prompt", mode) == mode else f" ({run['prompt']})")
-            lines.append(f"| {mode} | {model} | **{run['mean_score']:.2f}** | {spread} | {passed}/{total} | "
+            lines.append(f"| {mode} | {model} | {len(run['cases'])} | **{run['mean_score']:.2f}** | {spread} | {passed}/{total} | "
                          f"{cost_text} | {time_text} |")
     return "\n".join(lines) + "\n"
 
 
 def recommend(best: dict, margin: float = 0.05) -> dict:
-    """Per mode, the cheapest model whose mean is within `margin` of the best mean."""
+    """Per mode, the cheapest model whose mean is within `margin` of the best mean. Only runs on
+    the mode's largest case set count, so an old run on fewer cases can't win by being easier."""
     picks = {}
     for mode in MODES:
         rows = [r for (m, _, p), r in best.items() if m == mode and p == mode]
+        if rows:
+            most = max(len(r["cases"]) for r in rows)
+            rows = [r for r in rows if len(r["cases"]) == most]
         if not rows:
             continue
         top = max(r["mean_score"] for r in rows)
