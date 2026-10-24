@@ -219,7 +219,7 @@ Quality
 - [ ] **P2.11** `eval --repeat N`: run each case N times and report mean ± spread. Single runs are noisy (Haiku failed and then passed crc32_bitrev on two runs).
 - [ ] **P2.12** Grow the eval set to 30+ with harder tb cases. Haiku already catches every mutant in the current 5, so add protocol-level DUTs (AXI-Lite slave, credit link, CDC handshake) and more subtle mutants.
 - [ ] **P2.8** Yosys synthesizability check as an extra `/debug` signal (`yosys -p "read_verilog -sv f.sv; synth"`)
-- [ ] **P2.9** Session transcript save/load (`/save`, `/load`) as JSON
+- [x] **P2.9** Session transcript save/load (`/save`, `/load`) as JSON. *Saves the `/ask` conversation and model to the output dir; `/load` validates role order before restoring.*
 - [~] **P2.10** Multi-file context: attach extra files (packages, includes) to a request. *Done: `--with FILE` on `debug`/`tb` (REPL: extra args), sent read-only and compiled in every lint/sim run. Left: `@file` mentions in `/ask`, automatic dependency discovery.*
 
 **Exit:** leaderboard published in README; each mode has a measured default model.

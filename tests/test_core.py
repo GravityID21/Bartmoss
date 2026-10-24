@@ -150,6 +150,25 @@ class TestModesWithMock(unittest.TestCase):
         self.assertIn("setup time", run_ask(self.ctx, "what is setup time?"))
         self.assertEqual(len(self.ctx.ask_history), 2)
 
+    def test_session_round_trip(self):
+        from bartmoss.modes.ask import run_ask
+        from bartmoss.session import load_session, save_session
+
+        run_ask(self.ctx, "what is a latch?")
+        path = save_session(self.ctx, "chat")
+        self.assertEqual(path.name, "chat.json")
+        saved = list(self.ctx.ask_history)
+        self.ctx.ask_history.clear()
+        self.assertEqual(load_session(self.ctx, "chat.json"), 2)
+        self.assertEqual(self.ctx.ask_history, saved)
+
+    def test_session_rejects_bad_history(self):
+        from bartmoss.session import load_session
+
+        (self.root / "bad.json").write_text('{"bartmoss_session": 1, "ask_history": [{"role": "assistant", "content": "x"}]}')
+        with self.assertRaises(ValueError):
+            load_session(self.ctx, "bad.json")
+
     def test_debug_writes_fixed_copy(self):
         from bartmoss.modes.debug import run_debug
 

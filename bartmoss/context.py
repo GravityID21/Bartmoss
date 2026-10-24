@@ -34,7 +34,7 @@ class Context:
     usage: Usage
     model_override: Optional[str] = None
     assume_yes: bool = False
-    ask_history: list = field(default_factory=list)
+    ask_history: list = field(default_factory=list)  # replaced wholesale by /load
     _providers: dict = field(default_factory=dict)
 
     def model_spec(self, mode: str) -> str:

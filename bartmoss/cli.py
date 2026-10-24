@@ -28,6 +28,8 @@ HELP = """\
   /doctor             check simulators and provider SDKs
   /usage              tokens and estimated cost so far
   /clear              forget the /ask conversation
+  /save [name]        save the /ask conversation to the output dir as JSON
+  /load <file>        restore a saved /ask conversation (and its model)
   /quit               exit"""
 
 
@@ -122,6 +124,23 @@ def dispatch(ctx: Context, line: str) -> bool:
         cmd_doctor(ctx)
     elif command == "/usage":
         ui.print("  " + ctx.usage.summary())
+    elif command == "/save":
+        from bartmoss.session import save_session
+
+        if not ctx.ask_history:
+            ui.warn("nothing to save yet; ask something first")
+        else:
+            path = save_session(ctx, rest or None)
+            if path:
+                ui.ok(f"saved {len(ctx.ask_history)} messages to {ctx.workspace.relative(path)}")
+    elif command == "/load":
+        from bartmoss.session import load_session
+
+        if not rest:
+            ui.warn("usage: /load <file>")
+        else:
+            count = load_session(ctx, rest)
+            ui.ok(f"loaded {count} messages" + (f" · model {ctx.model_override}" if ctx.model_override else ""))
     elif command == "/clear":
         ctx.ask_history.clear()
         ui.ok("conversation cleared")
