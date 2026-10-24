@@ -1,0 +1,39 @@
+{
+  "mode": "wave",
+  "file": "wave.vcd",
+  "sources": [
+    "design.sv",
+    "tb.sv"
+  ],
+  "tb_top": "tb",
+  "simulator": "iverilog",
+  "category": "off-by-one",
+  "signals": [
+    "dut.*"
+  ],
+  "question": "burst4: after start, valid must be high for exactly four beats (beat 0 to 3) and last must be high on the fourth beat only. Is the burst correct?",
+  "expect": {
+    "signal": "tb.dut.last",
+    "time": 55,
+    "tolerance": 10,
+    "accept": [
+      "valid",
+      "beat"
+    ],
+    "check": {
+      "time": 57,
+      "value": "0"
+    }
+  },
+  "fix": [
+    [
+      "(beat == 3'd4);",
+      "(beat == 3'd3);"
+    ]
+  ],
+  "rubric": [
+    "Says the burst has five beats (valid high one cycle too long) and last arrives on the fifth beat instead of the fourth",
+    "Attributes it to last comparing beat with 4 instead of 3"
+  ],
+  "source": "hand-written"
+}

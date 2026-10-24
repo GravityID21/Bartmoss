@@ -1,0 +1,12 @@
+{
+  "mode": "formal",
+  "file": "rr_arb2.sv",
+  "top": "rr_arb2",
+  "mutants": [
+    "mutant_double_grant.sv",
+    "mutant_fixed_priority.sv",
+    "mutant_grant_idle.sv"
+  ],
+  "depth": 20,
+  "source": "hand-written"
+}

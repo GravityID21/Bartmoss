@@ -1,0 +1,38 @@
+{
+  "mode": "wave",
+  "file": "wave.vcd",
+  "sources": [
+    "design.sv",
+    "tb.sv"
+  ],
+  "tb_top": "tb",
+  "simulator": "iverilog",
+  "category": "handshake",
+  "signals": [
+    "dut.*"
+  ],
+  "question": "fifo4 holds four entries: full must be high when count is 4, and writes while full are ignored. The test writes 10, 20, 30, 40, 50, 60 back to back, then reads until empty. Is the FIFO behaving correctly?",
+  "expect": {
+    "signal": "tb.dut.full",
+    "time": 55,
+    "tolerance": 10,
+    "accept": [
+      "count"
+    ],
+    "check": {
+      "time": 57,
+      "value": "0"
+    }
+  },
+  "fix": [
+    [
+      "assign full = (count == 3'd5);",
+      "assign full = (count == 3'd4);"
+    ]
+  ],
+  "rubric": [
+    "Says full stays low when count reaches 4, so a fifth write is accepted and count reaches 5",
+    "Says this overwrites the oldest entry or corrupts the read data, or attributes it to full comparing against 5 instead of 4"
+  ],
+  "source": "hand-written"
+}

@@ -1,0 +1,35 @@
+{
+  "mode": "wave",
+  "file": "wave.vcd",
+  "sources": [
+    "design.sv",
+    "tb.sv"
+  ],
+  "tb_top": "tb",
+  "simulator": "iverilog",
+  "category": "reset",
+  "signals": [
+    "dut.*"
+  ],
+  "question": "parity_acc: reset (synchronous, active high) clears sum and parity to 0. On each cycle with in_valid high it adds in_data to sum and XORs the parity of in_data into parity. Inputs are 03, 01, 80. Are both outputs correct after reset?",
+  "expect": {
+    "signal": "tb.dut.parity",
+    "time": 25,
+    "tolerance": 10,
+    "check": {
+      "time": 27,
+      "value": "x"
+    }
+  },
+  "fix": [
+    [
+      "            sum <= 8'd0;\n        end else",
+      "            sum <= 8'd0;\n            parity <= 1'b0;\n        end else"
+    ]
+  ],
+  "rubric": [
+    "Says parity is still X (unknown) after reset is released, and stays X because XOR with X is X",
+    "Attributes it to parity missing from the reset branch"
+  ],
+  "source": "hand-written"
+}

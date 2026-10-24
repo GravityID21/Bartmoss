@@ -55,6 +55,26 @@ class MockProvider(Provider):
                 "<analysis>\nSummary: mock review, no changes made.\nIssues:\n(none, mock provider)\n</analysis>\n"
                 f"<fixed_file>\n{source}</fixed_file>\n"
             )
+        elif "MODE: wave" in system:
+            text = (
+                "<analysis>\nSummary: mock review of the waveform summary.\nObservations:\n(none, mock provider)\n"
+                "Likely cause: none\nNext checks: none\n</analysis>\n<diagnosis>\nsignal: none\ntime: none\n</diagnosis>\n"
+            )
+        elif "MODE: formal" in system:
+            text = (
+                "<properties>\nalways @* assert (1'b1);\n</properties>\n"
+                "<notes>\n# Properties\n| id | property | intent |\n|---|---|---|\n| 1 | true | mock |\n</notes>\n"
+            )
+        elif "MODE: tb_random" in system:
+            top = top_module(_first_file(messages)) or "dut"
+            text = (
+                "<tb_file>\n`timescale 1ns/1ps\n"
+                f"module tb_{top};\n  int unsigned seed;\n  initial begin\n"
+                '    if (!$value$plusargs("seed=%d", seed)) seed = 1;\n    $display("SEED %0d", seed);\n'
+                '    if (seed == 1) $display("UNCOVERED: odd");\n    else $display("UNCOVERED: even");\n'
+                '    $display("COVERAGE: 1/2 bins");\n    $display("TEST PASSED");\n    $finish;\n  end\nendmodule\n'
+                "</tb_file>\n<notes>\n# Overview\nMock random testbench with no real checks.\n</notes>\n"
+            )
         elif "MODE: tb_vhdl" in system:
             top = top_module(_first_file(messages)) or "dut"
             text = (

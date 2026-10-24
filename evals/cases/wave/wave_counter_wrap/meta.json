@@ -1,0 +1,38 @@
+{
+  "mode": "wave",
+  "file": "wave.vcd",
+  "sources": [
+    "design.sv",
+    "tb.sv"
+  ],
+  "tb_top": "tb",
+  "simulator": "iverilog",
+  "category": "off-by-one",
+  "signals": [
+    "dut.*"
+  ],
+  "question": "decade_counter: while en is high, count should step 0, 1, ..., 9 and then wrap back to 0. carry should be high while count is 9 and en is high. Reset is synchronous and active high. Where does it first go wrong?",
+  "expect": {
+    "signal": "tb.dut.count",
+    "time": 105,
+    "tolerance": 10,
+    "accept": [
+      "carry"
+    ],
+    "check": {
+      "time": 107,
+      "value": "1010"
+    }
+  },
+  "fix": [
+    [
+      "(count == 4'd10)",
+      "(count == 4'd9)"
+    ]
+  ],
+  "rubric": [
+    "Says count goes to 10 (0xa) after 9 instead of wrapping to 0",
+    "Attributes it to the wrap condition comparing against 10 instead of 9 (an off-by-one in the wrap compare)"
+  ],
+  "source": "hand-written"
+}

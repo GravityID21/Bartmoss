@@ -1,0 +1,12 @@
+{
+  "mode": "formal",
+  "file": "gray4.sv",
+  "top": "gray4",
+  "mutants": [
+    "mutant_shift_left.sv",
+    "mutant_step2.sv",
+    "mutant_msb_flip.sv"
+  ],
+  "depth": 20,
+  "source": "hand-written"
+}

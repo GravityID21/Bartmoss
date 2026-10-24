@@ -3,7 +3,12 @@
 debug: 1.0 if the fixed file passes the hidden reference testbench, 0.25 if it compiles but fails, else 0.
 tb:    0.1 compiles · +0.2 passes on the correct DUT · +0.7 × fraction of mutants it catches
        (mutants are only scored when the testbench passes on the correct DUT, so a testbench
-       that always prints TEST PASSED scores 0.3).
+       that always prints TEST PASSED scores 0.3). With --random the testbench and every mutant
+       run with modes.tb.random_seeds seeds; a mutant is caught if any seed fails.
+formal: 0.1 properties elaborate · +0.2 they hold on the correct design · +0.7 × fraction of
+       mutants where an assertion fails (same rule as tb, so `assert (1)` scores 0.3).
+wave:  0.3 names the first misbehaving signal · 0.3 gives its time within the case's tolerance ·
+       0.4 × rubric items the judge finds in the analysis (0.5 + 0.5 when a case has no rubric).
 """
 
 from __future__ import annotations
@@ -21,7 +26,8 @@ from bartmoss.context import PROMPT_DIR, Context
 from bartmoss.extract import tag
 from bartmoss.files import Workspace
 from bartmoss.providers import ProviderError
-from bartmoss.sim.tools import is_vhdl, pick_simulator, simulate, tb_verdict, unmet_requirement
+from bartmoss.sim.tools import (formal_check, is_vhdl, pick_simulator, pick_solver, rerun, simulate, tb_verdict,
+                                unmet_requirement)
 from bartmoss.ui import UI
 
 
@@ -51,11 +57,14 @@ def _score_tb(case_ctx: Context, case: Path, meta: dict, simulator: str, scratch
     from bartmoss.modes.tb import run_tb
 
     context = [case / c for c in meta.get("context", [])]
-    result = run_tb(case_ctx, meta["file"], write=False, context_files=context)
+    random = bool(meta.get("random"))
+    result = run_tb(case_ctx, meta["file"], write=False, context_files=context, random=random)
     detail = {"verdict": result.verdict, "attempts": result.attempts, "truncated": result.truncated, "score": 0.0,
               "_artifacts": {f"tb_{result.top}{'.vhd' if is_vhdl(meta['file']) else '.sv'}": result.tb,
                              f"tb_{result.top}.md": result.notes,
                              "sim.log": result.sim.output if result.sim else None}}
+    if result.coverage:
+        detail["coverage"] = f"{result.coverage[0]}/{result.coverage[1]}"
     if result.verdict not in ("pass", "fail"):
         return detail
     detail["score"] = 0.1
@@ -67,8 +76,15 @@ def _score_tb(case_ctx: Context, case: Path, meta: dict, simulator: str, scratch
     tb_path.write_text(result.tb)
     mutants = meta.get("mutants", [])
     caught = 0
+    seeds = result.seeds if random else 1
     for i, mutant in enumerate(mutants):
-        run = simulate([*context, case / mutant, tb_path], f"tb_{result.top}", scratch / f"mutant{i}", simulator)
+        workdir = scratch / f"mutant{i}"
+        run = simulate([*context, case / mutant, tb_path], f"tb_{result.top}", workdir, simulator,
+                       plusargs=("+seed=1",) if random else ())
+        for seed in range(2, seeds + 1):
+            if run.stage != "run" or run.timed_out or tb_verdict(run.output) != "pass":
+                break
+            run = rerun(workdir, f"tb_{result.top}", simulator, (f"+seed={seed}",))
         # A mutant that breaks compilation or hangs also counts as caught.
         if run.stage == "compile" or run.timed_out or tb_verdict(run.output) != "pass":
             caught += 1
@@ -81,6 +97,78 @@ def _score_tb(case_ctx: Context, case: Path, meta: dict, simulator: str, scratch
     return detail
 
 
+def _score_formal(case_ctx: Context, case: Path, meta: dict, simulator: str, scratch: Path) -> dict:
+    from bartmoss.modes.formal import insert_properties, run_formal, stage_files
+
+    context = meta.get("context", [])
+    result = run_formal(case_ctx, meta["file"], write=False, context_files=context, depth=meta.get("depth"))
+    detail = {"status": result.status, "attempts": result.attempts, "truncated": result.truncated, "score": 0.0,
+              "_artifacts": {"properties.sv": result.properties, "notes.md": result.notes,
+                             "check.log": result.check.output if result.check else None}}
+    if result.status not in ("pass", "fail", "unproven"):
+        return detail
+    detail["score"] = 0.1
+    if result.status == "fail":
+        return detail
+    detail["score"] += 0.2
+    context_files = [(case / c, (case / c).read_text()) for c in context]
+    depth = meta.get("depth") or case_ctx.config["modes"]["formal"].get("depth", 20)
+    mutants = meta.get("mutants", [])
+    caught = 0
+    for i, mutant in enumerate(mutants):
+        workdir = scratch / f"mutant{i}"
+        workdir.mkdir(parents=True)
+        source = insert_properties((case / mutant).read_text(), result.top, result.properties)
+        files = stage_files(workdir, context_files, Path(meta["file"]).name, source)
+        # A mutant the properties no longer elaborate with also counts as caught, as in tb.
+        if formal_check(files, result.top, workdir, depth).status in ("fail", "error"):
+            caught += 1
+    if mutants:
+        detail["mutants_caught"] = f"{caught}/{len(mutants)}"
+        detail["score"] += 0.7 * caught / len(mutants)
+    else:
+        detail["score"] += 0.7
+    detail["score"] = round(detail["score"], 3)
+    return detail
+
+
+def signal_matches(answer, expect: dict) -> bool:
+    """Leaf-name match, so 'tb.dut.count', 'dut.count' and 'count[3:0]' all name 'count'.
+    `expect["accept"]` lists other names that describe the same symptom."""
+    if not answer:
+        return False
+    leaf = lambda name: re.sub(r"\[.*\]$", "", name.strip()).rsplit(".", 1)[-1].lower()
+    return leaf(answer) in {leaf(n) for n in [expect["signal"], *expect.get("accept", [])]}
+
+
+def _score_wave(case_ctx: Context, case: Path, meta: dict, simulator: str, scratch: Path) -> dict:
+    from bartmoss.modes.wave import run_wave
+
+    result = run_wave(case_ctx, meta["file"], meta.get("signals", []), meta.get("window"), meta.get("clock"),
+                      meta.get("question", ""), meta.get("context", []), write=False)
+    expect = meta["expect"]
+    detail = {"status": result.status, "attempts": result.attempts, "truncated": result.truncated, "score": 0.0,
+              "signal": result.signal, "time": result.time,
+              "_artifacts": {"analysis.md": result.analysis, "summary.txt": result.summary}}
+    signal_ok = signal_matches(result.signal, expect)
+    if expect["signal"] == "none":
+        time_ok = signal_ok
+    else:
+        time_ok = result.time is not None and abs(result.time - expect["time"]) <= expect.get("tolerance", 0)
+    detail.update(signal_ok=signal_ok, time_ok=time_ok)
+    rubric = meta.get("rubric", [])
+    if rubric and result.analysis:
+        graded = judge(case_ctx, result.analysis, rubric)
+        met = sum(g["met"] for g in graded)
+        detail.update(rubric_met=f"{met}/{len(graded)}", rubric=graded)
+        detail["score"] = round(0.3 * signal_ok + 0.3 * time_ok + 0.4 * met / len(graded), 3)
+    elif rubric:
+        detail["score"] = round(0.3 * signal_ok + 0.3 * time_ok, 3)
+    else:
+        detail["score"] = 0.5 * signal_ok + 0.5 * time_ok
+    return detail
+
+
 def _run_case(ctx: Context, mode: str, case: Path, meta: dict, simulator: str, artifact_dir: Path) -> dict:
     """One scored attempt at one case, with its model outputs saved under artifact_dir."""
     case_ctx = replace(ctx, workspace=Workspace(case, ctx.config["output_dir"]), ui=UI(quiet=True),
@@ -89,7 +177,8 @@ def _run_case(ctx: Context, mode: str, case: Path, meta: dict, simulator: str, a
     started = time.time()
     scratch = Path(tempfile.mkdtemp(prefix=f"bartmoss_eval_{case.name}_"))
     try:
-        scorer = {"debug": _score_debug, "tb": _score_tb, "ask": _score_ask}.get(mode, _score_plan)
+        scorer = {"debug": _score_debug, "tb": _score_tb, "ask": _score_ask, "formal": _score_formal,
+                  "wave": _score_wave}.get(mode, _score_plan)
         detail = scorer(case_ctx, case, meta, simulator, scratch)
     except ProviderError:
         # API, billing, auth or network failures say nothing about the model: abort the whole run
@@ -163,7 +252,8 @@ def _score_ask(case_ctx: Context, case: Path, meta: dict, simulator: str, scratc
     return detail
 
 
-def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None, repeat: int = 1) -> dict:
+def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None, repeat: int = 1,
+             random_tb: bool = False) -> dict:
     """Score every case `repeat` times. Reports per-case mean, min/max and full passes, plus the
     spread of the overall mean across repeats. Filtered (`only`) and repeated runs are saved under
     their own names so they never overwrite a plain full run."""
@@ -171,6 +261,8 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
     simulator = ctx.config.get("simulator", "auto")
     if mode in ("debug", "tb") and pick_simulator(simulator) is None:
         raise SystemExit("Evals need a simulator: brew install verilator (and nvc for VHDL cases)")
+    if mode == "formal" and pick_solver() is None:
+        raise SystemExit("Formal evals need yosys, yosys-smtbmc and an SMT solver: brew install yosys z3")
     cases_dir = (cases_root / mode).resolve()
     cases = sorted(p for p in cases_dir.iterdir() if (p / "meta.json").is_file()) if cases_dir.is_dir() else []
     if only:
@@ -183,7 +275,7 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
     run_name = f"{date.today().isoformat()}_{mode}_{re.sub(r'[^A-Za-z0-9.-]+', '-', spec)}"
     if only:
         run_name += f"_only-{re.sub(r'[^A-Za-z0-9.-]+', '-', only)}"
-    prompt = ctx.prompt_overrides.get(mode)
+    prompt = ctx.prompt_overrides.get(mode) or ("tb_random" if random_tb else None)
     if prompt:
         run_name += f"_p-{re.sub(r'[^A-Za-z0-9.-]+', '-', prompt)}"
     if repeat > 1:
@@ -197,6 +289,9 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
     for case in cases:
         meta = json.loads((case / "meta.json").read_text())
         reason = unmet_requirement(meta.get("requires", {}))
+        if random_tb:
+            meta["random"] = True
+            reason = reason or ("random testbenches are SystemVerilog only" if is_vhdl(meta["file"]) else None)
         if reason:
             # Skipped cases are reported but left out of the mean, so an old local
             # simulator isn't counted as a model failure.

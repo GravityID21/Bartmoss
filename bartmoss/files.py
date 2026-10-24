@@ -44,6 +44,14 @@ class Workspace:
             raise WorkspaceError(f"{path} is {size} bytes; the limit is {MAX_READ_BYTES}")
         return resolved, resolved.read_text(errors="replace")
 
+    def existing_file(self, path: str | Path) -> Path:
+        """An existing file inside the workspace, with no size cap: for inputs such as waveform
+        dumps that are streamed rather than read whole."""
+        resolved = self.resolve(path)
+        if not resolved.is_file():
+            raise WorkspaceError(f"File not found: {path}")
+        return resolved
+
     def output_path(self, name: str) -> Path:
         return self.resolve(Path(self.output_dir) / name)
 

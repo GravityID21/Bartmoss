@@ -1,0 +1,39 @@
+{
+  "mode": "wave",
+  "file": "wave.vcd",
+  "sources": [
+    "design.sv",
+    "tb.sv"
+  ],
+  "tb_top": "tb",
+  "simulator": "iverilog",
+  "category": "fsm",
+  "signals": [
+    "dut.*"
+  ],
+  "question": "job_ctrl: IDLE (0) -> BUSY (1) when start is high; BUSY -> DONE (2) when done_in is high; DONE -> IDLE after one cycle. busy is high in BUSY and ack is high in DONE. The test pulses start once, then done_in once a few cycles later. Does the job complete?",
+  "expect": {
+    "signal": "tb.dut.state",
+    "time": 65,
+    "tolerance": 10,
+    "accept": [
+      "ack",
+      "busy"
+    ],
+    "check": {
+      "time": 77,
+      "value": "01"
+    }
+  },
+  "fix": [
+    [
+      "BUSY: if (start) state <= DONE;",
+      "BUSY: if (done_in) state <= DONE;"
+    ]
+  ],
+  "rubric": [
+    "Says the FSM stays in BUSY after done_in pulses (no DONE state, ack never asserted)",
+    "Attributes it to the BUSY transition testing the wrong signal (start instead of done_in) or ignoring done_in"
+  ],
+  "source": "hand-written"
+}

@@ -23,7 +23,14 @@ HELP = """\
                       @path attaches a workspace file (e.g. "why is @rtl/fifo.sv full early?")
   /debug <file> [ctx...]  review + fix one RTL file (writes <name>.fixed.<ext>);
                           extra files (packages, interfaces, submodules) are read-only context
-  /tb <file> [ctx...]     generate + run a self-checking testbench
+  /tb <file> [ctx...] [--random] [--seeds N]
+                          generate + run a self-checking testbench; --random makes it
+                          constrained-random with functional coverage, run with N seeds
+  /wave <vcd|fst> [signals...] [--window A:B] [--clock clk] [-q "question"] [--with rtl.sv]
+                          review a waveform: summarised locally, never sent raw;
+                          --list shows signal names, --summary skips the model
+  /formal <file> [ctx...] [--depth N] [--prove]
+                          write assertions and check them with Yosys + yosys-smtbmc
   /vplan <spec> [ctx...]  verification plan: features, checks, coverage, edge cases (Markdown)
   /uvmplan <spec> [ctx...] UVM environment architecture: agents, sequences, scoreboard, tests
   /filter [on|off]    pre-check /ask questions with a cheap model (off by default)
@@ -54,6 +61,52 @@ def build_context(args: argparse.Namespace) -> Context:
         model_override=args.model,
         assume_yes=args.yes,
     )
+
+
+def add_wave_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("file", help="VCD dump (or FST, converted with GTKWave's fst2vcd)")
+    p.add_argument("signals", nargs="*", help="signal names or globs (e.g. count, dut.*, *valid*); default all")
+    p.add_argument("--signals", dest="signal_opts", action="append", default=[], metavar="PATTERN",
+                   help="more signal patterns; repeatable, comma-separated allowed")
+    p.add_argument("--window", metavar="START:END", help="time window, e.g. 100:500 or 1us:2us (ns if no unit)")
+    p.add_argument("--clock", help="clock to sample on (default: a regular signal named clk/clock)")
+    p.add_argument("-q", "--question", default="", help="what to look for, or the intended behaviour")
+    p.add_argument("--with", dest="context", action="append", default=[], metavar="FILE",
+                   help="RTL file to show the model as context; repeatable")
+    p.add_argument("--list", action="store_true", help="list the signals in the dump and stop (no model call)")
+    p.add_argument("--summary", action="store_true", help="print the summary and stop (no model call)")
+
+
+def add_formal_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--depth", type=int, help="bounded model check depth in cycles (default modes.formal.depth)")
+    p.add_argument("--prove", action="store_true", help="also try a full proof with k-induction")
+
+
+def add_tb_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--random", action="store_true", help="constrained-random testbench with functional coverage")
+    p.add_argument("--seeds", type=int, help="seeds to run a random testbench with (default modes.tb.random_seeds)")
+
+
+def wave_from_args(ctx: Context, args: argparse.Namespace):
+    from bartmoss.modes.wave import run_wave
+
+    patterns = list(args.signals) + [x for opt in args.signal_opts for x in opt.split(",") if x]
+    return run_wave(ctx, args.file, patterns, args.window, args.clock, args.question, args.context,
+                    list_only=args.list, summary_only=args.summary)
+
+
+class ReplArgumentParser(argparse.ArgumentParser):
+    """Reports bad REPL arguments as a ValueError (shown once by the REPL) instead of exiting."""
+
+    def error(self, message: str):
+        raise ValueError(f"{message}\n  {self.format_usage().strip()}")
+
+
+def repl_args(command: str, rest: str, add) -> argparse.Namespace:
+    """Parse REPL arguments with the same options as the one-shot subcommand."""
+    parser = ReplArgumentParser(prog=command, add_help=False)
+    add(parser)
+    return parser.parse_args(shlex.split(rest))
 
 
 def cmd_doctor(ctx: Context) -> None:
@@ -111,18 +164,36 @@ def dispatch(ctx: Context, line: str) -> bool:
             ui.warn(f"usage: {command} <spec, README or RTL file> [context files...]")
         else:
             run_plan(ctx, command[1:], args[0], context_files=args[1:])
-    elif command in ("/debug", "/tb"):
+    elif command == "/wave":
+        wave_from_args(ctx, repl_args("/wave", rest, add_wave_args))
+    elif command == "/formal":
+        def add(p):
+            p.add_argument("file")
+            p.add_argument("context", nargs="*")
+            add_formal_args(p)
+
+        args = repl_args("/formal", rest, add)
+        from bartmoss.modes.formal import run_formal
+
+        run_formal(ctx, args.file, context_files=args.context, depth=args.depth, prove=args.prove)
+    elif command == "/tb":
+        def add(p):
+            p.add_argument("file")
+            p.add_argument("context", nargs="*")
+            add_tb_args(p)
+
+        args = repl_args("/tb", rest, add)
+        from bartmoss.modes.tb import run_tb
+
+        run_tb(ctx, args.file, context_files=args.context, random=args.random, seeds=args.seeds)
+    elif command == "/debug":
         args = shlex.split(rest)
         if not args:
             ui.warn(f"usage: {command} <file> [context files...]")
-        elif command == "/debug":
+        else:
             from bartmoss.modes.debug import run_debug
 
             run_debug(ctx, args[0], context_files=args[1:])
-        else:
-            from bartmoss.modes.tb import run_tb
-
-            run_tb(ctx, args[0], context_files=args[1:])
     elif command == "/model":
         if rest:
             parse_model_spec(rest)
@@ -214,19 +285,27 @@ def main(argv: list[str] | None = None) -> int:
     p_ask.add_argument("--web", action="store_true", help="allow Claude to search the web (billed per search)")
     for name, help_text in (("debug", "review and fix one RTL file"), ("tb", "generate and run a testbench for one RTL file"),
                             ("vplan", "write a verification plan from a spec, README or RTL file"),
-                            ("uvmplan", "design a UVM environment from a spec, README or RTL file")):
+                            ("uvmplan", "design a UVM environment from a spec, README or RTL file"),
+                            ("formal", "write assertions for one module and check them with Yosys + yosys-smtbmc")):
         p = sub.add_parser(name, help=help_text)
         p.add_argument("file")
         p.add_argument("--with", dest="context", action="append", default=[], metavar="FILE",
                        help="supporting file (package, interface, submodule); repeatable")
+        if name == "tb":
+            add_tb_args(p)
+        elif name == "formal":
+            add_formal_args(p)
+    add_wave_args(sub.add_parser("wave", help="review a VCD/FST waveform (summarised locally, never sent raw)"))
     p_eval = sub.add_parser("eval", help="score a model on the eval cases")
-    p_eval.add_argument("--mode", choices=["debug", "tb", "vplan", "uvmplan", "ask"], required=True)
+    p_eval.add_argument("--mode", choices=["debug", "tb", "vplan", "uvmplan", "ask", "wave", "formal"], required=True)
     p_eval.add_argument("--cases", default="evals/cases", help="cases directory (default: evals/cases)")
     p_eval.add_argument("--only", help="run only cases whose name contains this text")
     p_eval.add_argument("--repeat", type=int, default=1, metavar="N",
                         help="run each case N times and report mean, min/max and full passes (default 1)")
     p_eval.add_argument("--prompt", metavar="NAME", help="prompt variant to test, e.g. debug.v2 (prompts/debug.v2.md)")
-    p_eval.add_argument("--judge", metavar="PROVIDER:MODEL", help="judge model for vplan/uvmplan/ask rubrics")
+    p_eval.add_argument("--judge", metavar="PROVIDER:MODEL", help="judge model for vplan/uvmplan/ask/wave rubrics")
+    p_eval.add_argument("--random", action="store_true",
+                        help="tb mode: score constrained-random testbenches (tb --random) instead of directed ones")
     p_lb = sub.add_parser("leaderboard", help="summarise saved eval results by model")
     p_lb.add_argument("--results", default="evals/results", help="results directory (default: evals/results)")
     p_lb.add_argument("--write", metavar="FILE", help="also write the Markdown table to FILE")
@@ -258,7 +337,15 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "tb":
             from bartmoss.modes.tb import run_tb
 
-            return 0 if run_tb(ctx, args.file, context_files=args.context).verdict in ("pass", "unchecked") else 1
+            result = run_tb(ctx, args.file, context_files=args.context, random=args.random, seeds=args.seeds)
+            return 0 if result.verdict in ("pass", "unchecked") else 1
+        if args.command == "formal":
+            from bartmoss.modes.formal import run_formal
+
+            result = run_formal(ctx, args.file, context_files=args.context, depth=args.depth, prove=args.prove)
+            return 0 if result.status in ("pass", "unchecked") else 1
+        if args.command == "wave":
+            return 0 if wave_from_args(ctx, args).status in ("ok", "summary", "listed") else 1
         if args.command in ("vplan", "uvmplan"):
             from bartmoss.modes.plan import run_plan
 
@@ -275,7 +362,9 @@ def main(argv: list[str] | None = None) -> int:
                 parse_model_spec(args.judge)
                 ctx.config["eval"]["judge_model"] = args.judge
             try:
-                run_eval(ctx, args.mode, Path(args.cases), args.only, args.repeat)
+                if args.random and args.mode != "tb":
+                    parser.error("--random only applies to --mode tb")
+                run_eval(ctx, args.mode, Path(args.cases), args.only, args.repeat, random_tb=args.random)
             except ProviderError as e:
                 ctx.ui.error(f"eval aborted, no results saved: {e}")
                 return 2
@@ -313,7 +402,7 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         return 130
     finally:
-        if args.command in ("ask", "debug", "tb", "vplan", "uvmplan", "eval") and ctx.usage.calls:
+        if args.command in ("ask", "debug", "tb", "vplan", "uvmplan", "eval", "wave", "formal") and ctx.usage.calls:
             ctx.ui.dim(ctx.usage.summary())
 
 

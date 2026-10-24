@@ -1,0 +1,24 @@
+{
+  "mode": "wave",
+  "file": "wave.vcd",
+  "sources": [
+    "design.sv",
+    "tb.sv"
+  ],
+  "tb_top": "tb",
+  "simulator": "iverilog",
+  "category": "control",
+  "signals": [
+    "dut.*"
+  ],
+  "question": "gray3: after reset, bin counts 0..7 and wraps; gray is its Gray code (000, 001, 011, 010, 110, 111, 101, 100, then 000), so exactly one bit of gray changes per cycle. Is anything wrong?",
+  "expect": {
+    "signal": "none"
+  },
+  "fix": [],
+  "rubric": [
+    "Says the waveform matches the intended behaviour and reports no bug"
+  ],
+  "source": "hand-written",
+  "control": true
+}

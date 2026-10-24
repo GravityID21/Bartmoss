@@ -7,7 +7,7 @@ import re
 import shutil
 import subprocess
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
@@ -17,7 +17,12 @@ INSTALL_HINTS = {
     "nvc": "brew install nvc  (or apt install nvc)",
     "ghdl": "apt install ghdl  (the Homebrew cask is disabled on macOS; use nvc there)",
     "yosys": "brew install yosys  (or apt install yosys)",
+    "yosys-smtbmc": "installed with Yosys; /formal also needs an SMT solver",
+    "z3": "brew install z3  (or apt install z3); yices, boolector and bitwuzla also work for /formal",
+    "fst2vcd": "comes with GTKWave: apt install gtkwave  (or brew install gtkwave); only needed for .fst in /wave",
 }
+# SMT solvers yosys-smtbmc can use, fastest first: (executable, name for `-s`).
+SOLVERS = (("yices-smt2", "yices"), ("bitwuzla", "bitwuzla"), ("boolector", "boolector"), ("z3", "z3"))
 
 
 @dataclass
@@ -155,8 +160,10 @@ def synth_findings(output: str) -> Optional[set[str]]:
     return findings
 
 
-def simulate(files: list[Path], top: str, workdir: Path, simulator: str, timeout: int = 300) -> RunResult:
-    """Compile `files` with `top` as the root module, then run. Returns the first failing stage."""
+def simulate(files: list[Path], top: str, workdir: Path, simulator: str, timeout: int = 300,
+             plusargs: tuple = ()) -> RunResult:
+    """Compile `files` with `top` as the root module, then run. Returns the first failing stage.
+    `plusargs` (e.g. ("+seed=3",)) are passed to the run; see also `rerun`."""
     workdir.mkdir(parents=True, exist_ok=True)
     sources = [str(f) for f in files]
     if simulator == "verilator":
@@ -167,12 +174,12 @@ def simulate(files: list[Path], top: str, workdir: Path, simulator: str, timeout
         )
         if not build.ok:
             return build
-        return _run([str(workdir / "obj_dir" / "sim")], workdir, timeout, "run")
+        return rerun(workdir, top, simulator, plusargs, timeout)
     if simulator == "iverilog":
         build = _run(["iverilog", "-g2012", "-s", top, "-o", "sim.vvp", *sources], workdir, timeout, "compile")
         if not build.ok:
             return build
-        return _run(["vvp", "-n", "sim.vvp"], workdir, timeout, "run")
+        return rerun(workdir, top, simulator, plusargs, timeout)
     if simulator == "nvc":
         build = _run(["nvc", "--std=2008", "-a", *sources, "-e", top], workdir, timeout, "compile")
         if not build.ok:
@@ -186,6 +193,91 @@ def simulate(files: list[Path], top: str, workdir: Path, simulator: str, timeout
             return build
         return _run(["ghdl", "-r", "--std=08", top], workdir, timeout, "run")
     raise ValueError(f"Unsupported simulator {simulator!r}")
+
+
+def rerun(workdir: Path, top: str, simulator: str, plusargs: tuple = (), timeout: int = 300) -> RunResult:
+    """Run a design `simulate` already built in `workdir` again, e.g. with another +seed=N.
+    (System)Verilog simulators only."""
+    if simulator == "verilator":
+        return _run([str(workdir / "obj_dir" / "sim"), *plusargs], workdir, timeout, "run")
+    if simulator == "iverilog":
+        return _run(["vvp", "-n", "sim.vvp", *plusargs], workdir, timeout, "run")
+    raise ValueError(f"rerun doesn't support {simulator!r}")
+
+
+def coverage(output: str) -> Optional[tuple[int, int, set]]:
+    """(bins hit, total bins, uncovered bin names) from the `COVERAGE: <hit>/<total>` and
+    `UNCOVERED: <bin>` lines random testbenches print; None if there's no COVERAGE line."""
+    match = re.search(r"^\s*COVERAGE:\s*(\d+)\s*/\s*(\d+)", output, re.M)
+    if not match:
+        return None
+    uncovered = {m.strip() for m in re.findall(r"^\s*UNCOVERED:\s*(.+?)\s*$", output, re.M)}
+    return int(match.group(1)), int(match.group(2)), uncovered
+
+
+def fst_to_vcd(path: Path, out_dir: Path, timeout: int = 300) -> Optional[RunResult]:
+    """Convert an FST dump to VCD with GTKWave's fst2vcd; None if it isn't installed.
+    The VCD is written to out_dir/<stem>.vcd."""
+    if not shutil.which("fst2vcd"):
+        return None
+    out_dir.mkdir(parents=True, exist_ok=True)
+    return _run(["fst2vcd", "-f", str(path), "-o", str(out_dir / f"{path.stem}.vcd")], out_dir, timeout, "convert")
+
+
+def pick_solver() -> Optional[str]:
+    """Solver name for yosys-smtbmc `-s`, or None if no supported solver is installed."""
+    for exe, name in SOLVERS:
+        if shutil.which(exe):
+            return name
+    return None
+
+
+@dataclass
+class FormalResult:
+    status: str  # pass | fail | unproven (induction failed) | vacuous | error (doesn't elaborate) | unchecked
+    stage: str  # elaborate | bmc | prove
+    output: str
+    failed: list = field(default_factory=list)  # "file:line" of each failed assertion
+    step: Optional[int] = None  # BMC step of the first failure
+    trace: Optional[Path] = None  # counterexample VCD
+    timed_out: bool = False
+
+
+def formal_check(files: list[Path], top: str, workdir: Path, depth: int = 20, prove: bool = False,
+                 timeout: int = 300) -> FormalResult:
+    """Bounded model check (and with `prove`, k-induction) of the assertions inside `ifdef FORMAL`
+    blocks, using Yosys + yosys-smtbmc directly (the engine SymbiYosys drives). `files` must already
+    be in `workdir` with plain names, since Yosys scripts can't quote paths."""
+    solver = pick_solver()
+    if not shutil.which("yosys") or not shutil.which("yosys-smtbmc") or solver is None or not re.fullmatch(r"\w+", top):
+        return FormalResult("unchecked", "elaborate", "needs yosys, yosys-smtbmc and an SMT solver (z3 or yices)")
+    reads = "; ".join(f"read_verilog -formal -sv {f.name}" for f in files)
+    script = (f"{reads}; prep -top {top}; async2sync; chformal -assume -early; opt_clean; dffunmap; "
+              "write_smt2 -wires design.smt2")
+    build = _run(["yosys", "-q", "-p", script], workdir, timeout, "elaborate")
+    if not build.ok:
+        return FormalResult("error", "elaborate", build.output, timed_out=build.timed_out)
+    stages = [("bmc", ["--presat"])] + ([("prove", ["-i"])] if prove else [])
+    output = ""
+    for stage, flags in stages:
+        trace = workdir / f"{stage}_trace.vcd"
+        run = _run(["yosys-smtbmc", "-s", solver, "-t", str(depth), *flags, "--dump-vcd", trace.name, "design.smt2"],
+                   workdir, timeout, stage)
+        output += run.output
+        if run.timed_out:
+            return FormalResult("error", stage, output, timed_out=True)
+        if "Assumptions are unsatisfiable" in run.output:
+            return FormalResult("vacuous", stage, output)
+        failed = re.findall(r"Assert(?:ion)? failed in \S+: (\S+?:\d+)", run.output)
+        if failed or "Status: FAILED" in run.output:
+            steps = re.findall(r"in step (\d+)", run.output)
+            # An induction failure may start from an unreachable state, so it isn't a real
+            # counterexample: the properties hold to `depth` but aren't proven.
+            return FormalResult("fail" if stage == "bmc" else "unproven", stage, output, sorted(set(failed)),
+                                int(steps[-1]) if steps else None, trace if trace.is_file() else None)
+        if "Status: PASSED" not in run.output:
+            return FormalResult("error", stage, output)
+    return FormalResult("pass", stages[-1][0], output)
 
 
 def tb_verdict(output: str) -> str:

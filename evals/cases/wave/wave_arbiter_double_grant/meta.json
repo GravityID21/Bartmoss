@@ -1,0 +1,35 @@
+{
+  "mode": "wave",
+  "file": "wave.vcd",
+  "sources": [
+    "design.sv",
+    "tb.sv"
+  ],
+  "tb_top": "tb",
+  "simulator": "iverilog",
+  "category": "fsm",
+  "signals": [
+    "dut.*"
+  ],
+  "question": "rr_arb2 is a two-way round-robin arbiter. grant must be one-hot or zero. With both requesters active the grant should alternate between them, starting with requester 1 (grant 10). Is the grant sequence correct?",
+  "expect": {
+    "signal": "tb.dut.grant",
+    "time": 45,
+    "tolerance": 10,
+    "check": {
+      "time": 47,
+      "value": "11"
+    }
+  },
+  "fix": [
+    [
+      "        if (req == 2'b11 && !last_was_1)\n            grant = 2'b10;\n",
+      "        if (req == 2'b11 && !last_was_1)\n            grant = 2'b10;\n        else if (req == 2'b11)\n            grant = 2'b01;\n"
+    ]
+  ],
+  "rubric": [
+    "Says grant becomes 11 (both requesters granted at once, not one-hot) when both request",
+    "Says the arbiter then stops alternating (stays at 11), or attributes it to the both-requesting case not granting requester 0 when requester 1 was last"
+  ],
+  "source": "hand-written"
+}

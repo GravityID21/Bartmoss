@@ -20,9 +20,16 @@ DEFAULTS: dict = {
         # Measured defaults (P2.7, evals/LEADERBOARD.md): Haiku 5.5 was best or within 0.05 of best in every
         # evaluated mode, at 1/5 to 1/13 of Sonnet 5.5's cost. /ask has no eval yet and uses default_model.
         "debug": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 32000, "effort": "medium", "max_retries": 2},
-        "tb": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 32000, "effort": "medium", "max_retries": 2},
+        # random_seeds and coverage_target apply to `tb --random` (constrained-random + coverage, P3.5).
+        "tb": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 32000, "effort": "medium", "max_retries": 2,
+               "random_seeds": 3, "coverage_target": 0.9},
         "vplan": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 16000, "effort": "medium", "max_retries": 1},
         "uvmplan": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 16000, "effort": "medium", "max_retries": 1},
+        # Phase 3 modes. Not yet measured (their evals need a paid run), so they start on Haiku 5.5 like the rest.
+        "wave": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 16000, "effort": "medium", "max_retries": 1,
+                 "max_signals": 24, "max_rows": 150},
+        "formal": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 32000, "effort": "medium", "max_retries": 2,
+                   "depth": 20, "timeout_s": 300, "max_signals": 24},
     },
     # Providers other than "anthropic" and "mock" are OpenAI-compatible endpoints.
     # Check each provider's docs for the current base URL and model names.

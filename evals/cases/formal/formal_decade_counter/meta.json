@@ -1,0 +1,12 @@
+{
+  "mode": "formal",
+  "file": "decade_counter.sv",
+  "top": "decade_counter",
+  "mutants": [
+    "mutant_wrap10.sv",
+    "mutant_carry_no_en.sv",
+    "mutant_free_run.sv"
+  ],
+  "depth": 20,
+  "source": "hand-written"
+}

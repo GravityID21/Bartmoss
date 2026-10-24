@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Status** | Phase 1 complete · Phase 2 complete except two paid runs (P2.13 A/B, P2.14 Claude `/ask`) · Phase 3 next |
+| **Status** | Phases 1–2 complete (two paid runs outstanding: P2.13 A/B, P2.14 Claude `/ask`) · Phase 3 built and tested offline; its paid eval runs wait for API credit · UVM (P3.3, P3.4) deferred until a UVM-capable free simulator is found |
 | **Owner** | Elliot Stevenson |
 | **Language** | Python ≥ 3.9 (3.12 recommended) |
 | **Licence** | MIT (see `LICENSE`) |
@@ -84,13 +84,14 @@ bartmoss/
     openai_compat.py        any OpenAI-compatible endpoint via `openai` SDK (optional extra)
     mock.py         offline, deterministic provider for tests and demos
   sim/
-    tools.py        detect + run verilator / iverilog (SV) and nvc / ghdl (VHDL)
+    tools.py        detect + run verilator / iverilog (SV), nvc / ghdl (VHDL), yosys, yosys-smtbmc, fst2vcd
     loop.py         generate → check → feed back errors → retry
+    vcd.py          stdlib VCD reader + summariser for /wave (cycle table, X/Z, pulses, handshakes)
   modes/
-    ask.py  debug.py  tb.py   one run_<mode>() each, returning a result object (used by evals too)
+    ask.py  debug.py  tb.py  plan.py  wave.py  formal.py   one run_<mode>() each, returning a result object (used by evals too)
   prompts/          one Markdown system prompt per mode (+ shared guard.md rules, tb_vhdl.md variant)
   evals.py          eval runner (`bartmoss eval`)
-evals/cases/        eval cases (debug/, tb/), each a folder with RTL + meta.json
+evals/cases/        eval cases (debug/, tb/, vplan/, uvmplan/, ask/, wave/, formal/), each a folder with meta.json
 evals/results/      saved eval runs (JSON)
 tests/              stdlib unittest suite (no network, no API keys)
 ```
@@ -150,8 +151,10 @@ API keys are **only** read from environment variables or a git-ignored `.env`. T
 | 3 | Testbench generator | `/tb <file>` | `tb_<module>.sv` + `tb_<module>.md` (files only) | compile + run, PASS/FAIL | 1 |
 | 4 | Verification planner | `/vplan <spec>` | `<stem>.vplan.md`: features, checks, coverage, edge cases | structure check | 2 ✅ |
 | 5 | UVM architecture planner | `/uvmplan <spec>` | `<stem>.uvmplan.md`: components, sequences, scoreboard, tests, build order | structure check | 2 ✅ |
-| 6 | UVM component builder | `/uvm <component>` | SV/UVM files | compile with a UVM-capable simulator | 3 |
-| 7 | Waveform reviewer | `/wave <vcd> --signals … --window …` | text analysis | — | 3 |
+| 6 | UVM component builder | `/uvm <component>` | SV/UVM files | compile with a UVM-capable simulator | 3 (deferred) |
+| 7 | Waveform reviewer | `/wave <vcd\|fst> [signals] --window …` | `<stem>.wave.md`: observations, likely cause, first bad signal + time | — (summary built locally) | 3 ✅ |
+| 7a | Random testbench | `/tb <file> --random` | `tb_<module>.sv` + notes | compile + run N seeds, coverage target | 3 ✅ |
+| 7b | Formal properties | `/formal <file>` | `<stem>.formal.sv` (+ `.formal.md`, `.cex.vcd` on failure) | Yosys + yosys-smtbmc BMC (k-induction with `--prove`) | 3 ✅ |
 | 8 | Workflow orchestrator | `/flow …` | runs tool flows | tool exit codes | 5 |
 
 ---
@@ -228,15 +231,22 @@ Quality
 **Exit:** leaderboard published in README; each mode has a measured default model.
 
 ### Phase 3: Harder modes
-- [ ] **P3.1** `/wave` waveform reviewer, VCD only. Stdlib VCD parser; user picks signals + time window; values summarized (transitions, glitches, X/Z, handshake stalls) **before** sending to the model. Never send raw VCD.
-- [ ] **P3.2** `/wave` FST support (via `fst2vcd` from GTKWave if installed)
-- [ ] **P3.3** `/uvm` component builder (driver, monitor, sequencer, agent, scoreboard, env, test) from a `/uvmplan` output
+- [x] **P3.1** `/wave` waveform reviewer, VCD only. Stdlib VCD parser; user picks signals + time window; values summarized (transitions, glitches, X/Z, handshake stalls) **before** sending to the model. Never send raw VCD. *`sim/vcd.py` streams the dump and keeps only the selected signals inside the window. The summary has a cycle table sampled just before each rising clock edge (identical cycles collapsed, 150 rows max), per-signal values, X/Z spans, pulses shorter than a clock period, and valid/ready checks (stalls, valid dropped before ready, payload changed while stalled). The clock is auto-detected by name, regular period and a 25–75 % duty cycle, or set with `--clock`. Signals are picked by leaf name or glob (`count`, `dut.*`), and aliases are listed once. `--list` and `--summary` make no model call. The reply ends in a `<diagnosis>` (first bad signal + time) that the eval grades. **Eval:** 11 seeded waveform bugs in `evals/cases/wave/` (10 bugs + 1 control), each proved by `validate.py`: the committed dump matches a fresh Icarus run, a probe shows the symptom, and the fixed design removes it. **Not run yet** (paid; ~$0.55 for Haiku ×3 including the Sonnet judge).*
+- [x] **P3.2** `/wave` FST support (via `fst2vcd` from GTKWave if installed). *`.fst` files are converted to VCD in a temp dir, then summarised the same way; a clear error names GTKWave if `fst2vcd` is missing. GTKWave isn't installed locally, so the round-trip test (`vcd2fst` → `/wave`) runs in CI only.*
+- [ ] **P3.3** `/uvm` component builder (driver, monitor, sequencer, agent, scoreboard, env, test) from a `/uvmplan` output. **Deferred (2026-10-24):** skipped until P3.4's simulator question is answered, so UVM code isn't generated without a compile check.
 - [ ] **P3.4** UVM compile check.
   **Return when:** a free UVM-capable simulator is confirmed working locally. Options to evaluate: Verilator UVM support (improving but partial), Questa-Intel FPGA Starter Edition (free licence, UVM support to verify). Until then `/uvm` output is labelled **unverified**.
-- [ ] **P3.5** Testbench upgrade path: constrained-random + functional coverage TBs (SystemVerilog), optionally cocotb (Python) TBs since you already use cocotb
-- [ ] **P3.6** Formal property suggestions (SVA assertions) checked with SymbiYosys if installed
+- [x] **P3.5** Testbench upgrade path: constrained-random + functional coverage TBs (SystemVerilog). *`tb --random [--seeds N]` with a `tb_random` prompt. The TB reads `+seed=N`, seeds `$urandom` once, uses a scoreboard and plain counter-based coverage bins (`UNCOVERED: <bin>`, `COVERAGE: <hit>/<total> bins`). Classes, `randomize()` and covergroups are avoided because Icarus and Verilator 5.020 don't support them fully. It's built once and re-run for seeds 1..N (`modes.tb.random_seeds`, 3); any failing seed fails the test and is reported for rerun. Coverage is the union over seeds, and below `modes.tb.coverage_target` (90 %) the uncovered bins go back to the model. **Eval:** `eval --mode tb --random` reuses the 9 SystemVerilog tb cases (mutants run with every seed). **Not run yet** (~$0.30 for Haiku ×3).* cocotb moved to P3.7.
+- [x] **P3.6** Formal property suggestions (SVA assertions) checked with SymbiYosys if installed. *`/formal` runs Yosys (`read_verilog -formal`, `prep`, `async2sync`, `write_smt2`) and yosys-smtbmc directly, the engine SymbiYosys drives, with the first available solver (yices, bitwuzla, boolector, z3). That avoids SymbiYosys's own Python dependency (`click`, missing here). Properties go in an `` `ifdef FORMAL `` block before the top module's `endmodule`, so the design text is never changed. Elaboration errors and contradictory assumptions (vacuous) go back to the model. A failing assertion is reported with its line and a `/wave`-style counterexample summary, and `.cex.vcd` is written. `--prove` adds k-induction ("unproven" if only induction fails). The prompt teaches the open-source SVA subset: immediate assertions, `$past`/`$stable`/`$rose`, `f_past_valid` guards, `initial assume (rst)`. **Eval:** 5 designs × 3 mutants in `evals/cases/formal/`, each with reference properties proved valid by `validate.py`. Scored like tb, so trivial properties get 0.3. **Not run yet** (~$0.25 for Haiku ×3).*
+- [ ] **P3.7** cocotb (Python) testbenches as an optional extra. **Return when:** a user asks for it, or cocotb's runner API is stable enough to call without Makefiles. It adds a Python dependency and a simulator integration layer for little gain over the SV random TBs.
 
-**Exit:** `/wave` correctly diagnoses ≥ 70 % of seeded waveform bugs; `/uvm` output compiles on at least one simulator.
+**Exit:** `/wave` correctly diagnoses ≥ 70 % of seeded waveform bugs; `/uvm` output compiles on at least one simulator. *2026-10-24: built and tested offline (24 new unit tests; all 16 new eval cases validated). The `/wave` measurement is waiting for API credit, and the `/uvm` half is deferred with P3.3/P3.4. Paid runs to do once credit is back, about $1.10 in total for Haiku ×3:*
+
+```bash
+bartmoss eval --mode wave --repeat 3      # ~$0.55 (Sonnet judge included)
+bartmoss eval --mode formal --repeat 3    # ~$0.25
+bartmoss eval --mode tb --random --repeat 3   # ~$0.30
+```
 
 ### Phase 4: Agentic workspace
 - [ ] **P4.1** Tool-use loop: model can request `read_file`, `list_dir`, `run_lint`, `run_sim` inside the workspace (with a per-call confirmation prompt; auto-approve allowlist for read-only tools).
@@ -336,7 +346,9 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 | Verilator | recommended | free | lint, SV simulation (`--binary --timing`) |
 | Icarus Verilog | optional | free | alternative Verilog simulator |
 | NVC (or GHDL) | optional | free | VHDL-2008 lint and simulation |
-| Yosys | optional (Phase 2) | free | synthesizability check |
+| Yosys | optional (Phase 2) | free | synthesizability check; with yosys-smtbmc (ships with Yosys), `/formal` |
+| z3 (or yices, boolector, bitwuzla) | optional (Phase 3) | free | SMT solver for `/formal` |
+| GTKWave (`fst2vcd`) | optional (Phase 3) | free | FST input for `/wave` |
 | Ollama | optional | free (your hardware) | local open models |
 
 **Avoided on purpose:** LangChain/LlamaIndex (heavy, not needed), vector DBs (P4.6 retrieval uses stdlib BM25; embeddings are an optional extra), web frameworks (no web UI yet), `rich`/`textual` (ANSI codes are enough), LiteLLM (two SDKs already cover all providers).
@@ -350,7 +362,7 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 | Harmful/illegal inputs | Hosted providers enforce their own policies. Bartmoss adds scope rules in every system prompt and an optional pre-filter (P2.4). Local/open models may have weaker safeguards, so the README says so. |
 | Hosted-service liability for uploads | Not hosting (non-goal). BYO-key CLI means users interact with providers under the providers' own terms. |
 | File access | All paths resolved inside the workspace root; symlink escapes rejected; size caps; originals never modified; overwrite needs confirmation. |
-| Running tools | Only known executables (`verilator`, `iverilog`, `vvp`, `ghdl`, `yosys`) with argument lists (no shell), in a temp dir, with timeouts. |
+| Running tools | Only known executables (`verilator`, `iverilog`, `vvp`, `nvc`, `ghdl`, `yosys`, `yosys-smtbmc`, `fst2vcd`) with argument lists (no shell), in a temp dir, with timeouts. Waveform dumps are summarised locally and never uploaded. |
 | Git / account access | Not needed. Bartmoss never touches git credentials; users commit themselves. |
 | API keys | Env vars / `.env` only; `.env` is git-ignored; keys never logged or printed. |
 | Different safety features per model | Safety lives in Bartmoss's own code (paths, tools, confirmations), not in model behaviour. |
@@ -381,6 +393,13 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 ## 12. Decision log
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-24 | UVM (P3.3, P3.4) deferred; the rest of Phase 3 built ahead of its paid eval runs | Generating UVM with nothing to compile it against breaks the "simulator as judge" principle. The other modes are fully checkable offline, and their evals cost about $1.10 for Haiku ×3 once credit is back |
+| 2026-10-24 | `/formal` calls Yosys + yosys-smtbmc directly, not SymbiYosys | Same engine, one less dependency: SymbiYosys needs Python `click` (missing here), and a generated `.sby` adds nothing a script can't |
+| 2026-10-24 | `/formal` properties use the open-source Yosys SVA subset and are inserted by Bartmoss, not written into the design by the model | Open-source Yosys rejects `|->`, `##` and `property` blocks (Verific only). Inserting an `` `ifdef FORMAL `` block keeps the design text byte-identical, so a property set can't "pass" by changing the logic |
+| 2026-10-24 | `/formal` and formal evals are scored like `/tb`: failing assertions aren't sent back to the model | A model told its assertion failed tends to weaken the property; failures are reported as a possible design bug or wrong property, with a counterexample |
+| 2026-10-24 | `/tb --random` uses `$urandom` with a `+seed` plusarg and counter-based coverage bins, not classes, `randomize()` or covergroups | Works the same on Icarus and Verilator 5.020+ (CI) with no solver; a failing seed reproduces exactly |
+| 2026-10-24 | `/wave` sends a clock-sampled summary, and its eval grades the first bad signal and time objectively plus a rubric for the cause | Raw VCD is huge and mostly noise. Grading signal + time (±1 clock) needs no judge; only the cause uses the Sonnet judge |
+| 2026-10-24 | cocotb split out as P3.7 and deferred | It would add a Python dependency and a Makefile/runner layer; SV random TBs cover the same need with the tools already installed |
 | 2026-10-24 | Phase 2 closed without the P2.13 A/B and the Claude `/ask` runs | Budget: the Anthropic credit ran out twice. Both are built and costed (~$0.55 and ~$1.15), so they can run later without code changes |
 | 2026-10-24 | Debug evals include bug-free control cases | A prompt that pushes harder to find bugs must not win by changing correct code; Qwen 7B broke 3 of 4 controls |
 | 2026-10-24 | Leaderboard only recommends a model if the best score is at least 0.7 | With only Qwen measured on `/ask` (0.18), it would otherwise have been "recommended" |

@@ -26,7 +26,8 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install simulators
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends verilator iverilog ghdl
+        # yosys + z3 for /formal; gtkwave provides fst2vcd/vcd2fst for /wave FST support.
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends verilator iverilog ghdl yosys z3 gtkwave
       - name: Install Bartmoss (core only, no provider SDKs)
         run: pip install -e .
       - name: Run unit tests (offline, no API keys)
@@ -36,6 +37,7 @@ jobs:
           bartmoss --version
           bartmoss --no-color doctor
           bartmoss --no-color --model mock:echo ask "what is a latch?"
+          bartmoss --no-color --root evals/cases/wave/wave_counter_wrap wave wave.vcd 'dut.*' --summary
 
   eval-cases:
     name: Validate eval cases
@@ -46,8 +48,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install simulators
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends verilator iverilog ghdl
+        # yosys + z3 for /formal; gtkwave provides fst2vcd/vcd2fst for /wave FST support.
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends verilator iverilog ghdl yosys z3 gtkwave
       - name: Show tool versions
-        run: verilator --version && iverilog -V 2>&1 | head -1 && ghdl --version | head -1
+        run: verilator --version && iverilog -V 2>&1 | head -1 && ghdl --version | head -1 && yosys -V && z3 --version
       - name: Every bug fails, every fix passes, every mutant is caught
         run: python evals/validate.py

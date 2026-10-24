@@ -4,7 +4,7 @@
 
 An open-source AI assistant for RTL design and verification that runs in your terminal and works with any model. Generated and fixed RTL is checked with a real simulator before you see it.
 
-> Status: Phase 1 MVP, under active development. See [SPEC.md](SPEC.md) for the full roadmap and progress tracker.
+> Status: Phases 1–2 complete, Phase 3 built (waveform review, formal checks, random testbenches; not yet scored on paid models). Under active development. See [SPEC.md](SPEC.md) for the full roadmap and progress tracker.
 
 ![Bartmoss fixing an off-by-one counter and generating a passing testbench](docs/demo.svg)
 
@@ -17,9 +17,12 @@ An open-source AI assistant for RTL design and verification that runs in your te
 | `bartmoss ask "..."` | Hardware design theory Q&A (multi-turn in the REPL). `@path` attaches a file; `--web` (or `/web on`) lets Claude search the web, with sources listed. |
 | `bartmoss debug file.sv` | Lints with Verilator and checks synthesis with Yosys (if installed), asks the model for an analysis and a fixed file, re-checks the fix, retries if it introduced errors or latches, then writes `bartmoss_out/file.fixed.sv`. Your original is never touched. |
 | `bartmoss tb file.sv` | Generates a self-checking directed testbench plus Markdown notes, compiles and runs it, and retries on compile errors. Reports PASS/FAIL. |
+| `bartmoss tb file.sv --random` | Constrained-random testbench with a scoreboard and functional coverage, run with several seeds (`--seeds N`). Any failing seed fails the test and is named so you can rerun it; coverage below the target goes back to the model with the bins it missed. |
+| `bartmoss wave dump.vcd [signals] --window 100:500 -q "..."` | Reviews a waveform. The dump is summarised locally (clock-sampled cycle table, X/Z spans, short pulses, valid/ready violations) and only the summary is sent, never the raw VCD. Names the first signal that misbehaves and when. `--list` shows signal names and `--summary` skips the model. FST works if GTKWave's `fst2vcd` is installed. |
+| `bartmoss formal file.sv` | The model writes assertions; Bartmoss puts them in an `` `ifdef FORMAL `` block (your design is never edited) and runs a bounded model check with Yosys + yosys-smtbmc (`--prove` adds k-induction). A failing assertion is reported with a summarised counterexample as a possible design bug or wrong property. |
 | `bartmoss vplan spec.md` | Writes a verification plan (features → checks → coverage → edge cases) to `bartmoss_out/spec.vplan.md`. Takes a spec, README or RTL file. |
 | `bartmoss uvmplan spec.md` | Designs a UVM environment (agents, transactions, sequences, scoreboard, coverage, tests, build order) as `bartmoss_out/spec.uvmplan.md`. |
-| `bartmoss eval --mode debug\|tb` | Scores a model on the cases in `evals/cases/`, graded by the simulator. |
+| `bartmoss eval --mode debug\|tb\|wave\|formal\|…` | Scores a model on the cases in `evals/cases/`, graded by the simulator, the formal checker or a rubric judge. |
 | `bartmoss` | Interactive REPL (`/help` lists commands). |
 
 ## Install
@@ -29,6 +32,8 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[claude]"      # or ".[openai]" or ".[all]"; the core has no dependencies
 brew install verilator           # free SystemVerilog simulator/linter (5.050+ recommended)
 brew install nvc                 # optional: VHDL-2008 support (GHDL also works on Linux)
+brew install yosys z3            # optional: synthesis checks in /debug, and /formal
+brew install gtkwave             # optional: FST dumps in /wave (provides fst2vcd)
 cp .env.example .env             # add the API key(s) you want to use
                                  # (or put them in ~/.config/bartmoss/.env to use them from any folder)
 bartmoss doctor                  # check what's installed
@@ -66,6 +71,8 @@ Every case run three times per model (2026-10-24). Full table, per-category scor
 | Claude Sonnet 5.5 | 0.98 | 0.79 | **1.00** | **1.00** | not run | $1.70 |
 | Qwen2.5-Coder 7B (local) | 0.40 | 0.07 | 0.22 | 0.41 | 0.18 | $0 |
 
+Phase 3 modes have eval sets ready but no paid runs yet: `/wave` (11 seeded waveform bugs), `/formal` (5 designs, 15 mutants) and `/tb --random` (the tb set).
+
 The debug set covers 10 bug categories (reset, CDC, FSM, arithmetic, handshake, width, combinational, blocking, off-by-one, multi-bug) plus bug-free control designs. Haiku 5.5 is the measured default. Testbench generation is the hardest mode: both Claude models sometimes write wrong expected values for a correct design.
 
 ## Cost
@@ -75,7 +82,8 @@ You use your own API keys, so you pay only for what you run. `/usage` in the REP
 ## Development
 
 ```bash
-python -m unittest          # offline; simulator tests skip if Verilator is missing
+python -m unittest          # offline; simulator, formal and FST tests skip if their tools are missing
+python evals/validate.py    # prove every eval case is valid (no model calls)
 ```
 
 ## Licence

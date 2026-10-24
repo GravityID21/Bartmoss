@@ -1,0 +1,35 @@
+{
+  "mode": "wave",
+  "file": "wave.vcd",
+  "sources": [
+    "design.sv",
+    "tb.sv"
+  ],
+  "tb_top": "tb",
+  "simulator": "iverilog",
+  "category": "handshake",
+  "signals": [
+    "dut.*"
+  ],
+  "question": "count_src sends payloads 01, 02, 03, 04, 05, 06 on a valid/ready interface after start pulses. data must not change while valid is high and ready is low. The sink applies back-pressure for a few cycles. Does the sink receive 01 to 06 in order?",
+  "expect": {
+    "signal": "tb.dut.data",
+    "time": 55,
+    "tolerance": 10,
+    "check": {
+      "time": 57,
+      "value": "00000100"
+    }
+  },
+  "fix": [
+    [
+      "            data <= data + 8'd1;\n            if (ready) begin\n",
+      "            if (ready) begin\n                data <= data + 8'd1;\n"
+    ]
+  ],
+  "rubric": [
+    "Says data changes while valid is high and ready is low (during the stall)",
+    "Says the sink therefore misses or skips payloads, or attributes it to data advancing every valid cycle instead of only on a handshake"
+  ],
+  "source": "hand-written"
+}

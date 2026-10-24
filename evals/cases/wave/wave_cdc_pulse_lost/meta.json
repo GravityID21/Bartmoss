@@ -1,0 +1,43 @@
+{
+  "mode": "wave",
+  "file": "wave.vcd",
+  "sources": [
+    "design.sv",
+    "tb.sv"
+  ],
+  "tb_top": "tb",
+  "simulator": "iverilog",
+  "category": "cdc",
+  "signals": [
+    "dut.*"
+  ],
+  "question": "pulse_cdc carries one-cycle pulses from src_clk (100 MHz) to the slower dst_clk (25 MHz). Every src_pulse must produce exactly one one-cycle dst_pulse a few dst_clk cycles later. The test sends two pulses. Do both arrive?",
+  "expect": {
+    "signal": "tb.dut.dst_pulse",
+    "time": 380,
+    "tolerance": 80,
+    "accept": [
+      "sync",
+      "src_level"
+    ],
+    "check": {
+      "time": 390,
+      "value": "0"
+    }
+  },
+  "fix": [
+    [
+      "            src_level <= src_pulse;",
+      "            src_level <= src_level ^ src_pulse;"
+    ],
+    [
+      "assign dst_pulse = sync[1] & ~sync[2];",
+      "assign dst_pulse = sync[1] ^ sync[2];"
+    ]
+  ],
+  "rubric": [
+    "Says the second pulse never produces a dst_pulse (it is lost) because the one-cycle src_level pulse falls between dst_clk edges, and that the first one only arrived by luck of timing",
+    "Suggests a toggle (or handshake) synchroniser, or stretching the pulse, instead of synchronising the pulse directly"
+  ],
+  "source": "hand-written"
+}

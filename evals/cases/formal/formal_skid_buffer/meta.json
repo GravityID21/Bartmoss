@@ -1,0 +1,12 @@
+{
+  "mode": "formal",
+  "file": "pipe_reg.sv",
+  "top": "pipe_reg",
+  "mutants": [
+    "mutant_data_overwrite.sv",
+    "mutant_ready_always.sv",
+    "mutant_drop_valid.sv"
+  ],
+  "depth": 20,
+  "source": "hand-written"
+}

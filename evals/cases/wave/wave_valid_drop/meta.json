@@ -1,0 +1,35 @@
+{
+  "mode": "wave",
+  "file": "wave.vcd",
+  "sources": [
+    "design.sv",
+    "tb.sv"
+  ],
+  "tb_top": "tb",
+  "simulator": "iverilog",
+  "category": "handshake",
+  "signals": [
+    "dut.*"
+  ],
+  "question": "stream_src sends the words 11, 22, 33, 44 on a valid/ready interface after start pulses. Once valid is high it must stay high with data unchanged until ready is high. The sink stalls (ready low) for a few cycles in the middle. Did all four words get through correctly?",
+  "expect": {
+    "signal": "tb.dut.valid",
+    "time": 55,
+    "tolerance": 10,
+    "check": {
+      "time": 57,
+      "value": "0"
+    }
+  },
+  "fix": [
+    [
+      "            if (wait_cnt == 2'd1) valid <= 1'b0;\n",
+      ""
+    ]
+  ],
+  "rubric": [
+    "Says valid was dropped while ready was low, before the word was accepted",
+    "Notes that the remaining words (33 and 44, or the stalled word onwards) are never sent, or attributes it to a timeout or give-up counter in the source"
+  ],
+  "source": "hand-written"
+}

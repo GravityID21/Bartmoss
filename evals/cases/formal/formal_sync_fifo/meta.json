@@ -1,0 +1,12 @@
+{
+  "mode": "formal",
+  "file": "fifo4.sv",
+  "top": "fifo4",
+  "mutants": [
+    "mutant_full5.sv",
+    "mutant_read_empty.sv",
+    "mutant_count_simul.sv"
+  ],
+  "depth": 20,
+  "source": "hand-written"
+}

@@ -1,0 +1,35 @@
+{
+  "mode": "wave",
+  "file": "wave.vcd",
+  "sources": [
+    "design.sv",
+    "tb.sv"
+  ],
+  "tb_top": "tb",
+  "simulator": "iverilog",
+  "category": "combinational",
+  "signals": [
+    "dut.*"
+  ],
+  "question": "tick4: strobe should be high for exactly one full clock cycle out of every four, so logic clocked on clk sees it once per four cycles. Is strobe correct?",
+  "expect": {
+    "signal": "tb.dut.strobe",
+    "time": 35,
+    "tolerance": 10,
+    "check": {
+      "time": 42,
+      "value": "0"
+    }
+  },
+  "fix": [
+    [
+      "(cnt == 2'd3) & clk;",
+      "(cnt == 2'd3);"
+    ]
+  ],
+  "rubric": [
+    "Says strobe is only high for half a clock cycle (5 ns), so a flip-flop sampling on the rising edge never sees it high",
+    "Attributes it to strobe being gated with (ANDed with) the clock"
+  ],
+  "source": "hand-written"
+}
