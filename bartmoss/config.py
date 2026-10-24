@@ -12,11 +12,13 @@ import os
 from pathlib import Path
 
 DEFAULTS: dict = {
-    "default_model": "anthropic:claude-opus-5-5",
+    # Haiku 5.5 led or tied every evaluated mode (evals/LEADERBOARD.md); it's also the /ask default
+    # until /ask has its own eval (SPEC P2.14).
+    "default_model": "anthropic:claude-haiku-5-5",
     "modes": {
         "ask": {"model": None, "max_tokens": 4000, "effort": "low", "web_search_max_uses": 3},
         # Measured defaults (P2.7, evals/LEADERBOARD.md): Haiku 5.5 was best or within 0.05 of best in every
-        # evaluated mode, at 1/5 to 1/13 of Sonnet 5.5's cost. /ask has no eval yet, so it uses default_model.
+        # evaluated mode, at 1/5 to 1/13 of Sonnet 5.5's cost. /ask has no eval yet and uses default_model.
         "debug": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 32000, "effort": "medium", "max_retries": 2},
         "tb": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 32000, "effort": "medium", "max_retries": 2},
         "vplan": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 16000, "effort": "medium", "max_retries": 1},

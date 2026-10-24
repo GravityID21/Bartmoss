@@ -66,7 +66,7 @@ Built-in providers: `anthropic`, `openai`, `ollama`, `deepseek`, `openrouter`, `
 | Claude Sonnet 5.5 | 0.92 | 0.79 | **1.00** | **1.00** | $1.01 |
 | Qwen2.5-Coder 7B (local) | 0.44 | 0.07 | 0.22 | 0.41 | $0 |
 
-Haiku 5.5 is the measured default for every evaluated mode. Testbench generation is the hardest: both Claude models sometimes write wrong expected values for a correct design.
+Haiku 5.5 is the measured default for every evaluated mode and the overall default model (used by `/ask`, which doesn't have its own eval yet). Testbench generation is the hardest: both Claude models sometimes write wrong expected values for a correct design.
 
 ## Cost
 
