@@ -33,7 +33,11 @@ class MockProvider(Provider):
         on_text: Optional[Callable[[str], None]] = None,
         web_search: int = 0,
     ) -> ChatResult:
-        if "MODE: filter" in system:
+        if "MODE: judge" in system:
+            n = _last_user(messages).split("<rubric>")[-1].count("\n") - 1
+            items = ", ".join(f'{{"id": {i}, "met": {"true" if i % 2 else "false"}, "evidence": "mock"}}' for i in range(1, n + 1))
+            text = f'<result>{{"items": [{items}]}}</result>'
+        elif "MODE: filter" in system:
             question = _last_user(messages).lower()
             text = "OFF_TOPIC" if "recipe" in question else "HARMFUL" if "weapon" in question else "IN_SCOPE"
         elif "MODE: vplan" in system or "MODE: uvmplan" in system:

@@ -1,0 +1,20 @@
+{
+  "mode": "vplan",
+  "file": "axi4_arbiter.sv",
+  "rubric": [
+    "Checks that the first arbitration after reset grants requester 0 when several requesters are active",
+    "Checks round-robin order under continuous contention, with each requester served in turn",
+    "Checks the grant doesn't change while a burst is in progress even if req changes (no preemption)",
+    "Checks the grant is released after burst_done and a new arbitration only starts afterwards",
+    "Checks grant is always zero or one-hot and grant_valid equals the OR of grant",
+    "Covers a single requester being granted repeatedly when nobody else requests",
+    "Includes burst_done arriving on the first cycle of a grant (one-cycle burst) as an edge case",
+    "Covers the round-robin pointer wrapping from the last index back to index 0"
+  ],
+  "source": "RTL_projects_public/axi4_crossbar/rtl/axi4_arbiter.sv (MIT, Elliot Stevenson)",
+  "tags": [
+    "vplan",
+    "axi4_arbiter",
+    "own-project"
+  ]
+}

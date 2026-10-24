@@ -220,11 +220,16 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument("--with", dest="context", action="append", default=[], metavar="FILE",
                        help="supporting file (package, interface, submodule); repeatable")
     p_eval = sub.add_parser("eval", help="score a model on the eval cases")
-    p_eval.add_argument("--mode", choices=["debug", "tb"], required=True)
+    p_eval.add_argument("--mode", choices=["debug", "tb", "vplan", "uvmplan"], required=True)
     p_eval.add_argument("--cases", default="evals/cases", help="cases directory (default: evals/cases)")
     p_eval.add_argument("--only", help="run only cases whose name contains this text")
     p_eval.add_argument("--repeat", type=int, default=1, metavar="N",
                         help="run each case N times and report mean, min/max and full passes (default 1)")
+    p_eval.add_argument("--prompt", metavar="NAME", help="prompt variant to test, e.g. debug.v2 (prompts/debug.v2.md)")
+    p_eval.add_argument("--judge", metavar="PROVIDER:MODEL", help="judge model for vplan/uvmplan rubrics")
+    p_cmp = sub.add_parser("compare", help="compare two eval result files case by case")
+    p_cmp.add_argument("a")
+    p_cmp.add_argument("b")
     sub.add_parser("doctor", help="check simulators and provider SDKs")
     sub.add_parser("models", help="show configured providers and models")
     args = parser.parse_args(argv)
@@ -257,14 +262,27 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "eval":
             from bartmoss.evals import run_eval
 
+            if args.prompt:
+                from bartmoss.context import system_prompt
+
+                system_prompt(args.prompt)  # fail fast on a typo
+                ctx.prompt_overrides[args.mode] = args.prompt
+            if args.judge:
+                parse_model_spec(args.judge)
+                ctx.config["eval"]["judge_model"] = args.judge
             run_eval(ctx, args.mode, Path(args.cases), args.only, args.repeat)
+            return 0
+        if args.command == "compare":
+            from bartmoss.compare import compare
+
+            compare(ctx.ui, Path(args.a), Path(args.b))
             return 0
         if args.command == "doctor":
             cmd_doctor(ctx)
         elif args.command == "models":
             cmd_models(ctx)
         return 0
-    except (ProviderError, WorkspaceError) as e:
+    except (ProviderError, WorkspaceError, ValueError) as e:
         ctx.ui.error(str(e))
         return 2
     except KeyboardInterrupt:

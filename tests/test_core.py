@@ -138,6 +138,35 @@ class TestSimHelpers(unittest.TestCase):
         self.assertEqual(a, b)
 
 
+class TestPromptsAndEvalTools(unittest.TestCase):
+    def test_unknown_prompt_variant_is_rejected(self):
+        from bartmoss.context import system_prompt
+
+        self.assertIn("MODE: debug", system_prompt("debug"))
+        with self.assertRaises(ValueError):
+            system_prompt("debug.does-not-exist")
+
+    def test_compare_reports_deltas(self):
+        import json
+        from bartmoss.compare import compare
+
+        tmp = Path(tempfile.mkdtemp())
+        base = {"mode": "debug", "model": "m", "repeat": 1}
+        (tmp / "a.json").write_text(json.dumps({**base, "cases": [{"case": "x", "score": 0.25}, {"case": "y", "score": 1.0}]}))
+        (tmp / "b.json").write_text(json.dumps({**base, "prompt": "debug.v2",
+                                                "cases": [{"case": "x", "score": 1.0}, {"case": "y", "score": 1.0}]}))
+        result = compare(UI(color=False, out=io.StringIO()), tmp / "a.json", tmp / "b.json")
+        self.assertAlmostEqual(result["mean_b"] - result["mean_a"], 0.375)
+
+    def test_judge_parses_items(self):
+        from bartmoss.evals import judge
+
+        ctx = make_ctx(Path(tempfile.mkdtemp()))
+        ctx.config["eval"]["judge_model"] = "mock:echo"
+        graded = judge(ctx, "# Plan", ["first item", "second item", "third item"])
+        self.assertEqual([g["met"] for g in graded], [True, False, True])
+
+
 class TestLoop(unittest.TestCase):
     def test_keeps_last_output_when_final_reply_is_empty(self):
         from bartmoss.providers.base import ChatResult

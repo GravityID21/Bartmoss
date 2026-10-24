@@ -1,0 +1,20 @@
+{
+  "mode": "vplan",
+  "file": "axis_fifo.sv",
+  "rubric": [
+    "Checks data and the last flag come out in the order they were written",
+    "Checks full asserts after exactly DEPTH writes and that writes are refused while full",
+    "Checks rd_valid stays low and nothing is read while the FIFO is empty",
+    "Checks fill_level tracks occupancy, including during simultaneous read and write",
+    "Covers simultaneous read and write both when the FIFO is full and when it is empty",
+    "Covers read and write pointer wrap-around",
+    "Checks behaviour when reset is asserted while the FIFO holds data",
+    "Covers read-side back-pressure (rd_ready low while data is available)"
+  ],
+  "source": "RTL_projects_public/UDP/rtl/axis/axis_fifo.sv (MIT, Elliot Stevenson)",
+  "tags": [
+    "vplan",
+    "axis_fifo",
+    "own-project"
+  ]
+}

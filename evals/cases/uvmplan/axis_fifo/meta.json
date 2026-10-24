@@ -1,0 +1,20 @@
+{
+  "mode": "uvmplan",
+  "file": "axis_fifo.sv",
+  "rubric": [
+    "Defines separate agents (or agent instances) for the write and read interfaces",
+    "The read-side agent actively drives rd_ready back-pressure rather than only monitoring",
+    "Has a scoreboard that checks read data and the last flag against written data, in order",
+    "Defines a sequence item with data and last fields",
+    "Includes coverage of the full and empty conditions",
+    "States that a register model is not applicable (no software-visible registers)",
+    "Includes a test with simultaneous reads and writes",
+    "In the build order, some step that runs a test comes before the step that adds the scoreboard"
+  ],
+  "source": "RTL_projects_public/UDP/rtl/axis/axis_fifo.sv (MIT, Elliot Stevenson)",
+  "tags": [
+    "uvmplan",
+    "axis_fifo",
+    "own-project"
+  ]
+}

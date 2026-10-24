@@ -16,7 +16,9 @@ from dataclasses import replace
 from datetime import date
 from pathlib import Path
 
-from bartmoss.context import Context
+from bartmoss.config import parse_model_spec
+from bartmoss.context import PROMPT_DIR, Context
+from bartmoss.extract import tag
 from bartmoss.files import Workspace
 from bartmoss.sim.tools import is_vhdl, pick_simulator, simulate, tb_verdict, unmet_requirement
 from bartmoss.ui import UI
@@ -85,7 +87,7 @@ def _run_case(ctx: Context, mode: str, case: Path, meta: dict, simulator: str, a
     started = time.time()
     scratch = Path(tempfile.mkdtemp(prefix=f"bartmoss_eval_{case.name}_"))
     try:
-        scorer = _score_debug if mode == "debug" else _score_tb
+        scorer = {"debug": _score_debug, "tb": _score_tb}.get(mode, _score_plan)
         detail = scorer(case_ctx, case, meta, simulator, scratch)
     except Exception as e:  # one broken case shouldn't stop the run
         detail = {"score": 0.0, "error": f"{type(e).__name__}: {e}"}
@@ -102,13 +104,49 @@ def _run_case(ctx: Context, mode: str, case: Path, meta: dict, simulator: str, a
     return detail
 
 
+def judge(ctx: Context, document: str, rubric: list[str]) -> list[dict]:
+    """Grade a document against rubric items with the judge model (eval.judge_model).
+    Returns [{"id", "met", "evidence"}]; an unparsable reply counts every item as unmet."""
+    spec = ctx.config["eval"]["judge_model"]
+    provider_name, model = parse_model_spec(spec)
+    system = "MODE: judge\n\n" + (PROMPT_DIR / "judge.md").read_text().strip() + "\n"
+    items = "\n".join(f"{i}. {item}" for i, item in enumerate(rubric, 1))
+    result = ctx.provider(provider_name).chat(
+        system, [{"role": "user", "content": f"<document>\n{document}\n</document>\n<rubric>\n{items}\n</rubric>"}],
+        model=model, max_tokens=ctx.config["eval"].get("judge_max_tokens", 8000), effort="low")
+    ctx.usage.add(spec, result)
+    raw = tag(result.text, "result") or result.text
+    try:
+        graded = {int(x["id"]): x for x in json.loads(raw[raw.index("{"):raw.rindex("}") + 1])["items"]}
+    except (ValueError, KeyError, TypeError):
+        graded = {}
+    return [{"id": i, "item": item, "met": bool(graded.get(i, {}).get("met")),
+             "evidence": graded.get(i, {}).get("evidence", "")} for i, item in enumerate(rubric, 1)]
+
+
+def _score_plan(case_ctx: Context, case: Path, meta: dict, simulator: str, scratch: Path) -> dict:
+    """0.2 for a structurally complete plan + 0.8 × fraction of rubric items the judge finds."""
+    from bartmoss.modes.plan import run_plan
+
+    result = run_plan(case_ctx, meta["mode"], meta["file"], write=False, context_files=meta.get("context", []))
+    detail = {"status": result.status, "attempts": result.attempts, "truncated": result.truncated, "score": 0.0,
+              "_artifacts": {f"plan.{meta['mode']}.md": result.plan}}
+    if not result.plan:
+        return detail
+    graded = judge(case_ctx, result.plan, meta["rubric"])
+    met = sum(g["met"] for g in graded)
+    detail.update(rubric_met=f"{met}/{len(graded)}", rubric=graded,
+                  score=round((0.2 if result.status == "ok" else 0.0) + 0.8 * met / len(graded), 3))
+    return detail
+
+
 def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None, repeat: int = 1) -> dict:
     """Score every case `repeat` times. Reports per-case mean, min/max and full passes, plus the
     spread of the overall mean across repeats. Filtered (`only`) and repeated runs are saved under
     their own names so they never overwrite a plain full run."""
     ui = ctx.ui
     simulator = ctx.config.get("simulator", "auto")
-    if pick_simulator(simulator) is None:
+    if mode in ("debug", "tb") and pick_simulator(simulator) is None:
         raise SystemExit("Evals need a simulator: brew install verilator (and nvc for VHDL cases)")
     cases_dir = (cases_root / mode).resolve()
     cases = sorted(p for p in cases_dir.iterdir() if (p / "meta.json").is_file()) if cases_dir.is_dir() else []
@@ -122,6 +160,9 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
     run_name = f"{date.today().isoformat()}_{mode}_{re.sub(r'[^A-Za-z0-9.-]+', '-', spec)}"
     if only:
         run_name += f"_only-{re.sub(r'[^A-Za-z0-9.-]+', '-', only)}"
+    prompt = ctx.prompt_overrides.get(mode)
+    if prompt:
+        run_name += f"_p-{re.sub(r'[^A-Za-z0-9.-]+', '-', prompt)}"
     if repeat > 1:
         run_name += f"_x{repeat}"
     results_dir = cases_root.resolve().parent / "results"
@@ -151,7 +192,8 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
             extra = f"min {row['min']:.2f} max {row['max']:.2f} · full score {row['full_passes']}/{repeat}"
         else:
             only_run = runs[0]
-            extra = only_run.get("error") or only_run.get("mutants_caught") or only_run.get("ref_tb") or ""
+            extra = (only_run.get("error") or only_run.get("mutants_caught") or only_run.get("ref_tb")
+                     or only_run.get("rubric_met") or "")
         ui.print(f"  {score_text}  {case.name:28} {extra}")
 
     if not rows:
@@ -160,7 +202,7 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
     # Mean across cases for each repeat: the spread shows how much one full run can vary.
     run_means = [round(sum(r["runs"][i]["score"] for r in rows) / len(rows), 3) for i in range(repeat)]
     report = {"format": 2, "date": date.today().isoformat(), "mode": mode, "model": spec, "simulator": simulator,
-              "repeat": repeat, "mean_score": round(mean, 3), "run_means": run_means,
+              "repeat": repeat, "prompt": prompt or mode, "mean_score": round(mean, 3), "run_means": run_means,
               "usage": ctx.usage.summary(), "cases": rows, "skipped": skipped}
     results_dir.mkdir(exist_ok=True)
     out = results_dir / f"{run_name}.json"

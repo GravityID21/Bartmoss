@@ -1,0 +1,221 @@
+{
+  "format": 2,
+  "date": "2026-10-24",
+  "mode": "vplan",
+  "model": "anthropic:claude-haiku-5-5",
+  "simulator": "auto",
+  "repeat": 1,
+  "prompt": "vplan",
+  "mean_score": 0.967,
+  "run_means": [
+    0.967
+  ],
+  "usage": "6 calls \u00b7 20,276 in \u00b7 26,534 out \u00b7 2,634 cache-read \u00b7 est. $0.0555",
+  "cases": [
+    {
+      "case": "async_fifo",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "rubric_met": "7/7",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Uses independent write and read clocks with different, unrelated frequencies",
+              "met": true,
+              "evidence": "C14 sweeps clock pairs 1:1, 2:3, 3:2, 10:1, 1:10 with randomized phase; F12 asynchronous clock relationships"
+            },
+            {
+              "id": 2,
+              "item": "Checks end to end that no data is lost, duplicated or reordered across the clock crossing",
+              "met": true,
+              "evidence": "C9: scoreboard queue push on accepted write, pop and compare on accepted read; drained count equals accepted writes"
+            },
+            {
+              "id": 3,
+              "item": "Checks full asserts after exactly 2^ADDR_WIDTH writes with no reads",
+              "met": true,
+              "evidence": "C3: Write DEPTH words with wr_en held and no reads \u2192 all accepted; full=1 right after the DEPTH-th accepted write; DEPTH=2^ADDR_WIDTH"
+            },
+            {
+              "id": 4,
+              "item": "Notes that full and empty may assert late (pessimistically) because of synchronizer latency, and checks they are never optimistic",
+              "met": true,
+              "evidence": "F9 'flags are conservative'; F14 'never optimistic'; C7 no optimistic flag"
+            },
+            {
+              "id": 5,
+              "item": "Checks that the pointers crossing domains are Gray coded, with one bit changing per increment",
+              "met": true,
+              "evidence": "C8: $onehot(wr_ptr_gray ^ $past(wr_ptr_gray)) on each fire; F8 Gray pointer encoding"
+            },
+            {
+              "id": 6,
+              "item": "Covers resetting the write and read domains independently or at different times",
+              "met": true,
+              "evidence": "C15: (a) wr_rst_n only while rd active, (b) rd_rst_n only while wr active, (c) both; coverage reset event wr-only, rd-only, both"
+            },
+            {
+              "id": 7,
+              "item": "Covers pointer wrap-around",
+              "met": true,
+              "evidence": "C10: pointers wrap several times; coverage 'pointer wrap' bins; Edge case 5"
+            }
+          ],
+          "seconds": 54.5,
+          "input_tokens": 9132,
+          "output_tokens": 11157
+        }
+      ]
+    },
+    {
+      "case": "axi4_arbiter",
+      "score": 0.9,
+      "min": 0.9,
+      "max": 0.9,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.9,
+          "rubric_met": "7/8",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Checks that the first arbitration after reset grants requester 0 when several requesters are active",
+              "met": true,
+              "evidence": "C2: After reset, drive req=all-ones only; first grant is index 0 (not N-1)."
+            },
+            {
+              "id": 2,
+              "item": "Checks round-robin order under continuous contention, with each requester served in turn",
+              "met": true,
+              "evidence": "C5: grant sequence is 0,1,\u2026,N-1,0,\u2026 with no skips or repeats."
+            },
+            {
+              "id": 3,
+              "item": "Checks the grant doesn't change while a burst is in progress even if req changes (no preemption)",
+              "met": true,
+              "evidence": "C8: toggle req of all other indices for 1000 cycles \u2192 grant unchanged."
+            },
+            {
+              "id": 4,
+              "item": "Checks the grant is released after burst_done and a new arbitration only starts afterwards",
+              "met": true,
+              "evidence": "C10/C11: burst_done at edge T \u2192 grant==0; grant appears after edge T+1 (not T)."
+            },
+            {
+              "id": 5,
+              "item": "Checks grant is always zero or one-hot and grant_valid equals the OR of grant",
+              "met": true,
+              "evidence": "C3: grant is one-hot or zero at every cycle; C13: grant_valid == (|grant)."
+            },
+            {
+              "id": 6,
+              "item": "Covers a single requester being granted repeatedly when nobody else requests",
+              "met": true,
+              "evidence": "C6: requester k granted again when req high only for k; edge case 11 back-to-back same requester."
+            },
+            {
+              "id": 7,
+              "item": "Includes burst_done arriving on the first cycle of a grant (one-cycle burst) as an edge case",
+              "met": false,
+              "evidence": ""
+            },
+            {
+              "id": 8,
+              "item": "Covers the round-robin pointer wrapping from the last index back to index 0",
+              "met": true,
+              "evidence": "C7: wrap to 0 after serving 3; cp_last_idx notes wrap N-1\u21920; edge case 2."
+            }
+          ],
+          "seconds": 42.1,
+          "input_tokens": 6422,
+          "output_tokens": 6931
+        }
+      ]
+    },
+    {
+      "case": "axis_fifo",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "rubric_met": "8/8",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Checks data and the last flag come out in the order they were written",
+              "met": true,
+              "evidence": "C5 drains in write order; C12 'rd_last equals the wr_last written for that entry, in order'; C8 scoreboard order"
+            },
+            {
+              "id": 2,
+              "item": "Checks full asserts after exactly DEPTH writes and that writes are refused while full",
+              "met": true,
+              "evidence": "C3: 'Exactly DEPTH writes accepted; full=1 after the DEPTH-th; wr_ready=0 thereafter'; C4 blocks writes at full"
+            },
+            {
+              "id": 3,
+              "item": "Checks rd_valid stays low and nothing is read while the FIFO is empty",
+              "met": true,
+              "evidence": "C7: 'With rd_ready=1 and empty=1... rd_ptr does not move; count stays 0; rd_valid=0'"
+            },
+            {
+              "id": 4,
+              "item": "Checks fill_level tracks occupancy, including during simultaneous read and write",
+              "met": true,
+              "evidence": "C8 count unchanged with both fires; C1/C3 fill_level checks; F5 fill_level derived from count; C14 fill_level width"
+            },
+            {
+              "id": 5,
+              "item": "Covers simultaneous read and write both when the FIFO is full and when it is empty",
+              "met": true,
+              "evidence": "C9 at full wr_valid and rd_ready together; C10 empty with wr_valid and rd_ready together"
+            },
+            {
+              "id": 6,
+              "item": "Covers read and write pointer wrap-around",
+              "met": true,
+              "evidence": "C11 'Pointer wrap observed'; cp_ptr_wrap coverpoint; edge case 4"
+            },
+            {
+              "id": 7,
+              "item": "Checks behaviour when reset is asserted while the FIFO holds data",
+              "met": true,
+              "evidence": "C2 'Reset mid-operation with entries stored'; C15 reset while full; C1"
+            },
+            {
+              "id": 8,
+              "item": "Covers read-side back-pressure (rd_ready low while data is available)",
+              "met": true,
+              "evidence": "C6 rd_ready=0 with rd_valid=1 data stable; cp_stall_len; edge case 8"
+            }
+          ],
+          "seconds": 40.2,
+          "input_tokens": 7356,
+          "output_tokens": 8446
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}

@@ -1,0 +1,22 @@
+{
+  "mode": "vplan",
+  "file": "async_fifo.sv",
+  "context": [
+    "cdc_sync_2ff.sv"
+  ],
+  "rubric": [
+    "Uses independent write and read clocks with different, unrelated frequencies",
+    "Checks end to end that no data is lost, duplicated or reordered across the clock crossing",
+    "Checks full asserts after exactly 2^ADDR_WIDTH writes with no reads",
+    "Notes that full and empty may assert late (pessimistically) because of synchronizer latency, and checks they are never optimistic",
+    "Checks that the pointers crossing domains are Gray coded, with one bit changing per increment",
+    "Covers resetting the write and read domains independently or at different times",
+    "Covers pointer wrap-around"
+  ],
+  "source": "RTL_projects_public/axi4_crossbar/rtl/cdc/async_fifo.sv (MIT, Elliot Stevenson)",
+  "tags": [
+    "vplan",
+    "async_fifo",
+    "own-project"
+  ]
+}

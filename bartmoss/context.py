@@ -19,11 +19,15 @@ def context_blocks(files: list[tuple[Path, str]]) -> str:
     return "".join(f'\n<file name="{p.name}" role="context">\n{text}</file>\n' for p, text in files)
 
 
-def system_prompt(mode: str) -> str:
-    """Shared guard rules + the mode's prompt. Kept byte-stable so it can be prompt-cached."""
+def system_prompt(name: str) -> str:
+    """Shared guard rules + a mode prompt. `name` is a mode ("debug") or a variant of one
+    ("debug.v2" -> prompts/debug.v2.md); variants keep the base mode's MODE line.
+    Kept byte-stable so it can be prompt-cached."""
+    path = PROMPT_DIR / f"{name}.md"
+    if not path.is_file():
+        raise ValueError(f"unknown prompt {name!r}: no {path.name} in {PROMPT_DIR}")
     guard = (PROMPT_DIR / "guard.md").read_text()
-    body = (PROMPT_DIR / f"{mode}.md").read_text()
-    return f"{guard.strip()}\n\nMODE: {mode}\n\n{body.strip()}\n"
+    return f"{guard.strip()}\n\nMODE: {name.split('.')[0]}\n\n{path.read_text().strip()}\n"
 
 
 @dataclass
@@ -37,6 +41,7 @@ class Context:
     ask_history: list = field(default_factory=list)  # replaced wholesale by /load
     web_search: bool = False  # /web on|off; allows Claude web searches in /ask
     use_filter: Optional[bool] = None  # /filter on|off; None means use config["filter"]["enabled"]
+    prompt_overrides: dict = field(default_factory=dict)  # mode -> prompt variant, e.g. {"debug": "debug.v2"}
     _providers: dict = field(default_factory=dict)
 
     def model_spec(self, mode: str) -> str:
@@ -49,12 +54,15 @@ class Context:
 
     def ask_model(self, mode: str, messages: list[dict], on_text: Optional[Callable[[str], None]] = None,
                   prompt: Optional[str] = None, web_search: int = 0) -> ChatResult:
-        """`prompt` picks a prompt variant (e.g. tb_vhdl); model and limits still come from `mode`."""
+        """`prompt` picks a prompt explicitly (e.g. tb_vhdl); otherwise a variant set with
+        `eval --prompt` or `modes.<mode>.prompt` in config, else the mode's own prompt.
+        Model and limits always come from `mode`."""
         spec = self.model_spec(mode)
         provider_name, model = parse_model_spec(spec)
         mode_cfg = self.config["modes"].get(mode, {})
+        name = prompt or self.prompt_overrides.get(mode) or mode_cfg.get("prompt") or mode
         result = self.provider(provider_name).chat(
-            system_prompt(prompt or mode),
+            system_prompt(name),
             messages,
             model=model,
             max_tokens=mode_cfg.get("max_tokens", 8000),

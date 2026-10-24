@@ -50,6 +50,9 @@ DEFAULTS: dict = {
     },
     # Optional /ask pre-filter (P2.4): a cheap model labels questions before the main model sees them.
     "filter": {"enabled": False, "model": "anthropic:claude-haiku-5-5", "max_tokens": 1024},
+    # Judge for vplan/uvmplan evals (rubric grading). Sonnet by default: in a spot check Haiku flipped
+    # verdicts between runs on the same plan, which would make prompt A/B comparisons meaningless.
+    "eval": {"judge_model": "anthropic:claude-sonnet-5-5", "judge_max_tokens": 8000},
     "simulator": "auto",  # auto | verilator | iverilog
     "output_dir": "bartmoss_out",
     "sim_timeout_s": 300,

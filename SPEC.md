@@ -213,7 +213,7 @@ Quality
 - [x] **P2.2** `/uvmplan`: UVM environment architecture from a spec (agents, sequences, scoreboard, coverage, reg model), text only. *10 required sections ending in a build order; live run on axis_fifo needed one structure retry and then passed ($0.013).*
 - [x] **P2.3** Optional web search for `/ask` (Claude server-side web search tool, off by default, `max_uses` cap; each search is billed). *`ask --web` or `/web on`; up to `modes.ask.web_search_max_uses` (3) searches; `pause_turn` resumed up to 3 times; sources listed and searches costed at $0.01 each. Uses `web_search_20260209` on Opus/Sonnet 4.6+ and `web_search_20250305` otherwise. Live-tested on Haiku 5.5.*
 - [x] **P2.4** Optional pre-filter: cheap classifier call (in-scope / off-topic / harmful), off by default. Reuse the pattern from the course `content_filter` notebook. *`filter.enabled` in config or `/filter on`; Haiku 5.5 by default (~$0.00006 per question); fails open; refused questions stay out of the conversation. Live check 5/5, including a hardware-security question kept in scope and a prompt-injection attempt.*
-- [ ] **P2.5** Prompt evaluation pipeline: versioned prompts (`prompts/<mode>.v2.md`), A/B on the eval set, model-graded rubric for text modes (as in course lesson 11)
+- [x] **P2.5** Prompt evaluation pipeline: versioned prompts (`prompts/<mode>.v2.md`), A/B on the eval set, model-graded rubric for text modes (as in course lesson 11). *`eval --prompt debug.v2` (or `modes.<mode>.prompt`), `bartmoss compare A.json B.json`, and 5 rubric-graded planning cases scored 0.2 for structure + 0.8 × rubric items met. The judge defaults to Sonnet 5.5 because Haiku flipped verdicts on re-grading. Baseline: Haiku plans score 0.97 (vplan) and 1.00 (uvmplan).*
 - [ ] **P2.6** Model leaderboard: run every configured model on every mode, Markdown table of pass rate, tokens, cost, latency
 - [ ] **P2.7** Per-mode default model chosen from leaderboard results (cheapest model that meets the quality bar)
 - [x] **P2.11** `eval --repeat N`: run each case N times and report mean ± spread. Single runs are noisy (Haiku failed and then passed crc32_bitrev on two runs). *Reports per-case mean, min/max and full passes, plus each repeat's overall mean; results format 2.*
@@ -370,6 +370,7 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 ## 12. Decision log
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-24 | Rubric judge defaults to Sonnet 5.5, not Haiku | Re-grading the same plan, Haiku flipped a verdict and missed a met item; Sonnet was consistent. About 1.4¢ per judged plan |
 | 2026-10-24 | CI uses GHDL; local macOS uses NVC | NVC isn't packaged in Ubuntu 24.04, and GHDL's macOS cask is disabled. Together they test both VHDL backends |
 | 2026-10-24 | Eval cases can declare `requires` (minimum tool versions) | Your axis_fifo SVA needs Verilator 5.050, and an old simulator shouldn't count as a model failure |
 | 2026-10-24 | MIT licence | Same as the RTL repos the eval cases come from; simplest for an open-source CLI |

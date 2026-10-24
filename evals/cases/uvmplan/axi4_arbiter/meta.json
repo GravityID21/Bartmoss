@@ -1,0 +1,19 @@
+{
+  "mode": "uvmplan",
+  "file": "axi4_arbiter.sv",
+  "rubric": [
+    "Has a driver or agent for the req and burst_done inputs and a monitor for grant",
+    "Has a reference model that predicts the round-robin grant order",
+    "Checks (in the scoreboard or with assertions) that the grant doesn't change during a burst",
+    "Coverage includes which requester was granted and how many requests were active at once",
+    "States that a register model is not applicable",
+    "Includes a test that holds every requester active for many bursts and checks each one is served (no starvation)",
+    "Makes the parameter N configurable in the environment or tests"
+  ],
+  "source": "RTL_projects_public/axi4_crossbar/rtl/axi4_arbiter.sv (MIT, Elliot Stevenson)",
+  "tags": [
+    "uvmplan",
+    "axi4_arbiter",
+    "own-project"
+  ]
+}

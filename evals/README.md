@@ -32,7 +32,26 @@ Score: 1.0 if the fix passes the reference testbench, 0.25 if it compiles but fa
 
 Score: 0.1 compiles, +0.2 passes on the correct DUT, +0.7 × fraction of mutants caught.
 
-## Current set (16 cases)
+## vplan / uvmplan cases: `cases/vplan/<case>/`, `cases/uvmplan/<case>/`
+
+| Field / file | Purpose |
+|---|---|
+| `file`, `context` | spec, README or RTL given to the model |
+| `rubric` | items a good plan for this design must contain, each specific and checkable |
+
+Score: 0.2 if the plan has every required section and table, + 0.8 × fraction of rubric items met, as graded by the judge model (`eval.judge_model`, Sonnet 5.5 by default; override with `--judge`).
+
+## Prompt A/B
+
+Put a variant next to the original (`bartmoss/prompts/debug.v2.md`), then:
+
+```bash
+bartmoss eval --mode debug --repeat 3                      # baseline
+bartmoss eval --mode debug --repeat 3 --prompt debug.v2    # variant
+bartmoss compare evals/results/<baseline>.json evals/results/<variant>.json
+```
+
+## Current set (21 cases)
 
 | Case | Source | What makes it hard |
 |---|---|---|
@@ -52,6 +71,8 @@ Score: 0.1 compiles, +0.2 passes on the correct DUT, +0.7 × fraction of mutants
 | tb/debounce_btn | UDP `debounce` | must override parameters to get a usable window; bounce timing |
 | debug/vhdl_mux_sensitivity | hand-written (VHDL) | incomplete sensitivity list: simulation/synthesis mismatch |
 | tb/vhdl_pwm | hand-written (VHDL) | duty latching and period boundaries; VHDL-2008 testbench structure |
+| vplan/axi4_arbiter, axis_fifo, async_fifo | your repos | 7–8 design-specific rubric items each |
+| uvmplan/axis_fifo, axi4_arbiter | your repos | agents, scoreboard, coverage, build order |
 
 ## Adding a case
 
