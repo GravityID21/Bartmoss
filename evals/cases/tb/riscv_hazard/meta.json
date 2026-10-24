@@ -1,0 +1,21 @@
+{
+  "mode": "tb",
+  "file": "riscv_hazard_unit.sv",
+  "context": [
+    "riscv_pkg.sv"
+  ],
+  "top": "riscv_hazard_unit",
+  "mutants": [
+    "mutant_fwd_a_rs2.sv",
+    "mutant_fwd_b_x0.sv",
+    "mutant_stall_rs1_only.sv"
+  ],
+  "source": "RTL_projects_public/riscv_piplined/rtl/riscv_hazard_unit.sv (MIT, Elliot Stevenson)",
+  "tags": [
+    "risc-v",
+    "forwarding",
+    "hazards",
+    "package",
+    "own-project"
+  ]
+}

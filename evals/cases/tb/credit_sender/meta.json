@@ -1,0 +1,16 @@
+{
+  "mode": "tb",
+  "file": "credit_sender.sv",
+  "top": "credit_sender",
+  "mutants": [
+    "mutant_simul_leak.sv",
+    "mutant_last_credit.sv",
+    "mutant_ignore_credits.sv"
+  ],
+  "source": "RTL_projects_public/axi4_crossbar/rtl/credits/credit_sender.sv (MIT, Elliot Stevenson)",
+  "tags": [
+    "flow-control",
+    "credits",
+    "own-project"
+  ]
+}

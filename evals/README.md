@@ -51,7 +51,7 @@ bartmoss eval --mode debug --repeat 3 --prompt debug.v2    # variant
 bartmoss compare evals/results/<baseline>.json evals/results/<variant>.json
 ```
 
-## Current set (21 cases)
+## Current set (31 cases)
 
 | Case | Source | What makes it hard |
 |---|---|---|
@@ -71,6 +71,16 @@ bartmoss compare evals/results/<baseline>.json evals/results/<variant>.json
 | tb/debounce_btn | UDP `debounce` | must override parameters to get a usable window; bounce timing |
 | debug/vhdl_mux_sensitivity | hand-written (VHDL) | incomplete sensitivity list: simulation/synthesis mismatch |
 | tb/vhdl_pwm | hand-written (VHDL) | duty latching and period boundaries; VHDL-2008 testbench structure |
+| debug/riscv_hazard_fwd | riscv `riscv_hazard_unit` + pkg | copy-paste bug visible only on one operand's MEM/WB path |
+| debug/cdc_pulse_rising | crossbar `cdc_pulse_sync` + 2FF | toggle synchronizer that drops every second pulse; two clocks |
+| debug/rmii_tx_ready | UDP `rmii_tx` | ready one dibit early: only back-to-back bytes are lost |
+| debug/credit_simul | crossbar `credit_sender` | credit leak only on a simultaneous send and return |
+| debug/sat_add_overflow | hand-written | carry vs signed overflow in a saturating adder |
+| debug/div4_rounding | hand-written | `>>>` rounds toward minus infinity, spec says toward zero |
+| tb/riscv_hazard | riscv `riscv_hazard_unit` + pkg | forwarding priority, x0 and load-use mutants need double-hazard stimulus |
+| tb/cdc_pulse_sync | crossbar `cdc_pulse_sync` + 2FF | pulse counting across clocks, spurious pulse after reset |
+| tb/rmii_tx | UDP `rmii_tx` | back-to-back bytes, bit order, going idle between frames |
+| tb/credit_sender | crossbar `credit_sender` | last-credit and simultaneous send/return corner cases |
 | vplan/axi4_arbiter, axis_fifo, async_fifo | your repos | 7–8 design-specific rubric items each |
 | uvmplan/axis_fifo, axi4_arbiter | your repos | agents, scoreboard, coverage, build order |
 
@@ -80,5 +90,6 @@ bartmoss compare evals/results/<baseline>.json evals/results/<variant>.json
 2. Write the reference testbench (debug) or `reference_tb.sv` + mutants (tb), then run `python evals/validate.py --only <case>` until it says `ok`.
 3. Don't leave hints in the RTL (`// BUG`, `// fixed`).
 4. Watch for SystemVerilog keywords used as names (`matches`, `before`, …), and for loop-local `int x = …` declarations, which are static unless marked `automatic`.
+5. Avoid bugs whose visibility depends on the simulator. For example, an `always_comb` loop that reads a bit before writing it fails in Icarus but passes in Verilator, which re-evaluates the block until it settles.
 
 Results are written to `results/<date>_<mode>_<model>[_only-…][_xN].json`, with model outputs in a folder of the same name. Use `bartmoss eval --mode debug --repeat 3` to measure run-to-run spread. Format 2 files nest each attempt under `cases[].runs` and add `run_means`; older files have one flat entry per case.

@@ -1,0 +1,23 @@
+{
+  "mode": "debug",
+  "file": "cdc_pulse_sync.sv",
+  "context": [
+    "cdc_sync_2ff.sv"
+  ],
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "edge detect only fires on rising toggles, so every second pulse is lost",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/cdc/cdc_pulse_sync.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "cdc",
+    "toggle-synchronizer",
+    "dual-clock",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "assign dst_pulse = dst_toggle & ~dst_toggle_q;",
+      "assign dst_pulse = dst_toggle ^ dst_toggle_q;"
+    ]
+  ]
+}

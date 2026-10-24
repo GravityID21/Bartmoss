@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "rmii_tx.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "tx_ready is raised one dibit early, so a byte accepted back-to-back is overwritten before it is loaded",
+  "source": "RTL_projects_public/UDP/rtl/mac/rmii_tx.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "ethernet",
+    "rmii",
+    "handshake",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "assign tx_ready = !active || (dibit_cnt == 2'd2);",
+      "assign tx_ready = !active || (dibit_cnt == 2'd3);"
+    ]
+  ]
+}

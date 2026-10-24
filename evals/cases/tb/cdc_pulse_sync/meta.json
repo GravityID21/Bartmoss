@@ -1,0 +1,20 @@
+{
+  "mode": "tb",
+  "file": "cdc_pulse_sync.sv",
+  "context": [
+    "cdc_sync_2ff.sv"
+  ],
+  "top": "cdc_pulse_sync",
+  "mutants": [
+    "mutant_rising_only.sv",
+    "mutant_reset_value.sv",
+    "mutant_level_copy.sv"
+  ],
+  "source": "RTL_projects_public/axi4_crossbar/rtl/cdc/cdc_pulse_sync.sv (MIT, Elliot Stevenson)",
+  "tags": [
+    "cdc",
+    "toggle-synchronizer",
+    "dual-clock",
+    "own-project"
+  ]
+}

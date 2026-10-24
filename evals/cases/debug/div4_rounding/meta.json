@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "div4_trunc.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "arithmetic shift rounds negative values toward minus infinity (-5 >>> 2 = -2), not toward zero as specified",
+  "source": "hand-written",
+  "tags": [
+    "arithmetic",
+    "rounding",
+    "signed",
+    "dsp"
+  ],
+  "fix": [
+    [
+      "assign y = a >>> 2;",
+      "assign y = a / 4;"
+    ]
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "mode": "debug",
+  "file": "sat_add8.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "overflow is taken from bit 8 of a sign-extended 9-bit sum (effectively a carry), not from the sign rule, so e.g. -1 + -1 saturates",
+  "source": "hand-written",
+  "tags": [
+    "arithmetic",
+    "signed-overflow",
+    "saturation"
+  ],
+  "fix": [
+    [
+      "    logic [8:0] wide;\n\n    assign wide = a + b;\n    assign ovf  = wide[8];\n    assign y    = ovf ? (a[7] ? 8'sh80 : 8'sh7f) : wide[7:0];",
+      "    logic signed [7:0] sum;\n\n    assign sum = a + b;\n    assign ovf = (a[7] == b[7]) && (sum[7] != a[7]);\n    assign y   = ovf ? (a[7] ? 8'sh80 : 8'sh7f) : sum;"
+    ]
+  ]
+}

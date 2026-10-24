@@ -1,0 +1,17 @@
+{
+  "mode": "tb",
+  "file": "rmii_tx.sv",
+  "top": "rmii_tx",
+  "mutants": [
+    "mutant_ready_early.sv",
+    "mutant_shift_dir.sv",
+    "mutant_never_idle.sv"
+  ],
+  "source": "RTL_projects_public/UDP/rtl/mac/rmii_tx.sv (MIT, Elliot Stevenson)",
+  "tags": [
+    "ethernet",
+    "rmii",
+    "serializer",
+    "own-project"
+  ]
+}

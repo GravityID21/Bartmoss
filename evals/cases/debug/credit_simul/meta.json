@@ -1,0 +1,20 @@
+{
+  "mode": "debug",
+  "file": "credit_sender.sv",
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "a send and a credit return in the same cycle add a credit instead of leaving the count unchanged, so credits leak upward",
+  "source": "RTL_projects_public/axi4_crossbar/rtl/credits/credit_sender.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "flow-control",
+    "credits",
+    "counter",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "        2'b01, 2'b11: credits_r <= credits_r + 1'b1;",
+      "        2'b01: credits_r <= credits_r + 1'b1;"
+    ]
+  ]
+}

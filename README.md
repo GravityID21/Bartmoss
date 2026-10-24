@@ -58,7 +58,7 @@ Built-in providers: `anthropic`, `openai`, `ollama`, `deepseek`, `openrouter`, `
 
 ## Early results
 
-16 simulator-graded cases (10 debug, 6 testbench; 2 in VHDL), one run each, 2026-10-24. Scores are means; see [evals/README.md](evals/README.md) for how they're graded.
+16 simulator-graded cases (10 debug, 6 testbench; 2 in VHDL), one run each, 2026-10-24. The set has since grown to 31 cases; the P2.6 model sweep will replace this table. Scores are means; see [evals/README.md](evals/README.md) for how they're graded.
 
 | Model | `/debug` | `/tb` | Mutants caught | Cost |
 |---|---|---|---|---|

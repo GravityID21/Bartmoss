@@ -1,0 +1,24 @@
+{
+  "mode": "debug",
+  "file": "riscv_hazard_unit.sv",
+  "context": [
+    "riscv_pkg.sv"
+  ],
+  "tb": "tb_ref.sv",
+  "tb_top": "tb_ref",
+  "bug": "copy-paste: forward_a's MEM/WB comparison uses id_ex_rs2_addr instead of id_ex_rs1_addr",
+  "source": "RTL_projects_public/riscv_piplined/rtl/riscv_hazard_unit.sv (MIT, Elliot Stevenson), bug injected",
+  "tags": [
+    "risc-v",
+    "forwarding",
+    "copy-paste",
+    "package",
+    "own-project"
+  ],
+  "fix": [
+    [
+      "                 (mem_wb_rd_addr == id_ex_rs2_addr))\n            forward_a = FWD_MEM_WB;",
+      "                 (mem_wb_rd_addr == id_ex_rs1_addr))\n            forward_a = FWD_MEM_WB;"
+    ]
+  ]
+}
