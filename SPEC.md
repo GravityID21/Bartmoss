@@ -203,7 +203,7 @@ Evaluation
 
 Quality
 - [x] **P1.22** Offline unit tests (extractor, file safety, config, modes with the mock provider, simulator wrapper skipped if no tool)
-- [~] **P1.23** README with install, quick start, cost notes, screenshots/GIF *(text done; screenshots/GIF to add)*
+- [x] **P1.23** README with install, quick start, cost notes, screenshots/GIF. *`docs/demo.svg` is rendered from a real session by `scripts/term2svg.py` (stdlib, no recording tools needed).*
 - [~] **P1.24** GitHub Actions CI: run unit tests + Verilator smoke test (free for public repos). *`.github/workflows/ci.yml`: unit tests on Python 3.9 and 3.12, a mock-model CLI smoke test, and `evals/validate.py`, using apt Verilator/Icarus/NVC on Ubuntu 24.04. Not yet run: it needs a push, and apt's Verilator 5.020 is older than the 5.050 used locally.*
 
 **Exit:** on the seed eval set, at least one model reaches ≥ 80 % pass on `/tb` and `/debug`; README lets a stranger install and run it in under 10 minutes.

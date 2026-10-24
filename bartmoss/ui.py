@@ -31,7 +31,8 @@ MASCOT = r"""
 class UI:
     def __init__(self, color: bool | None = None, out=sys.stdout, quiet: bool = False):
         if color is None:
-            color = out.isatty() and "NO_COLOR" not in os.environ
+            # NO_COLOR always wins; FORCE_COLOR keeps colours when output is captured (e.g. docs/demo.svg).
+            color = "NO_COLOR" not in os.environ and ("FORCE_COLOR" in os.environ or out.isatty())
         self.color = color
         self.out = out
         self.quiet = quiet

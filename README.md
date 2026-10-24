@@ -4,6 +4,10 @@ An open-source AI assistant for RTL design and verification that runs in your te
 
 > Status: Phase 1 MVP, under active development. See [SPEC.md](SPEC.md) for the full roadmap and progress tracker.
 
+![Bartmoss fixing an off-by-one counter and generating a passing testbench](docs/demo.svg)
+
+*A real session: Claude Haiku 5.5 finds the bug, the fix is re-linted by Verilator, and the generated testbench is compiled and run before it's written out.*
+
 ## What it does
 
 | Command | What happens |
@@ -22,6 +26,7 @@ pip install -e ".[claude]"      # or ".[openai]" or ".[all]"; the core has no de
 brew install verilator           # free SystemVerilog simulator/linter used for checks
 brew install nvc                 # optional: VHDL-2008 support (GHDL also works on Linux)
 cp .env.example .env             # add the API key(s) you want to use
+                                 # (or put them in ~/.config/bartmoss/.env to use them from any folder)
 bartmoss doctor                  # check what's installed
 ```
 

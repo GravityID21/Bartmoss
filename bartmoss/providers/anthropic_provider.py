@@ -9,6 +9,8 @@ from bartmoss.providers.base import ChatResult, Provider, ProviderError
 # Models that accept server-side refusal fallback in its `"default"` form.
 FALLBACK_MODELS = {"claude-opus-5-5", "claude-opus-5", "claude-fable-5-1", "claude-sonnet-5-5"}
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
+NO_CREDENTIALS = ("No Claude credentials found. Set ANTHROPIC_API_KEY in your environment, in .env in the "
+                  "workspace, or in ~/.config/bartmoss/.env (or run `ant auth login`).")
 # Model families that accept output_config.effort (it errors on Haiku 4.5 / Sonnet 4.5).
 EFFORT_PREFIXES = ("claude-opus-", "claude-fable-", "claude-mythos-", "claude-sonnet-5", "claude-sonnet-4-6", "claude-haiku-5")
 
@@ -57,7 +59,7 @@ class AnthropicProvider(Provider):
                         on_text(text)
                 message = stream.get_final_message()
         except sdk.AuthenticationError:
-            raise ProviderError("Claude rejected the credentials: set ANTHROPIC_API_KEY (or run `ant auth login`).")
+            raise ProviderError("Claude rejected the credentials: check ANTHROPIC_API_KEY (or run `ant auth login`).")
         except sdk.NotFoundError:
             raise ProviderError(f"Unknown Claude model: {model}")
         except sdk.RateLimitError:
@@ -70,6 +72,11 @@ class AnthropicProvider(Provider):
             raise ProviderError("Could not reach the Claude API; check your connection.")
         except sdk.AnthropicError as e:
             raise ProviderError(f"Claude client error: {e}")
+        except TypeError as e:
+            # The SDK raises a bare TypeError when it finds no credentials at all.
+            if "authentication" in str(e).lower():
+                raise ProviderError(NO_CREDENTIALS)
+            raise
 
         text = "".join(block.text for block in message.content if block.type == "text")
         usage = message.usage

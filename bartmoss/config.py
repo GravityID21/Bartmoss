@@ -52,6 +52,7 @@ DEFAULTS: dict = {
 }
 
 USER_CONFIG = Path.home() / ".config" / "bartmoss" / "config.json"
+USER_ENV = Path.home() / ".config" / "bartmoss" / ".env"
 PROJECT_CONFIG = Path("bartmoss.json")
 
 
@@ -82,6 +83,7 @@ def load_dotenv(path: Path) -> None:
 def load_config(root: Path | None = None) -> dict:
     root = root or Path.cwd()
     load_dotenv(root / ".env")
+    load_dotenv(USER_ENV)  # lets keys work from any directory; the workspace .env wins
     config = copy.deepcopy(DEFAULTS)
     for path in (USER_CONFIG, root / PROJECT_CONFIG):
         if path.is_file():
