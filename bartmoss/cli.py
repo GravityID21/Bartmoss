@@ -19,7 +19,8 @@ from bartmoss.usage import Usage
 
 HELP = """\
   <question>          ask a hardware design question (same as /ask)
-  /ask <question>     theory Q&A, remembers the conversation until /clear
+  /ask <question>     theory Q&A, remembers the conversation until /clear;
+                      @path attaches a workspace file (e.g. "why is @rtl/fifo.sv full early?")
   /debug <file> [ctx...]  review + fix one RTL file (writes <name>.fixed.<ext>);
                           extra files (packages, interfaces, submodules) are read-only context
   /tb <file> [ctx...]     generate + run a self-checking testbench

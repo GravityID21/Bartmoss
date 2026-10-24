@@ -220,7 +220,7 @@ Quality
 - [ ] **P2.12** Grow the eval set to 30+ with harder tb cases. Haiku already catches every mutant in the current 5, so add protocol-level DUTs (AXI-Lite slave, credit link, CDC handshake) and more subtle mutants.
 - [ ] **P2.8** Yosys synthesizability check as an extra `/debug` signal (`yosys -p "read_verilog -sv f.sv; synth"`)
 - [x] **P2.9** Session transcript save/load (`/save`, `/load`) as JSON. *Saves the `/ask` conversation and model to the output dir; `/load` validates role order before restoring.*
-- [~] **P2.10** Multi-file context: attach extra files (packages, includes) to a request. *Done: `--with FILE` on `debug`/`tb` (REPL: extra args), sent read-only and compiled in every lint/sim run. Left: `@file` mentions in `/ask`, automatic dependency discovery.*
+- [x] **P2.10** Multi-file context: attach extra files (packages, includes) to a request. *`--with FILE` on `debug`/`tb` (REPL: extra args), sent read-only and compiled in every lint/sim run; `@path` mentions in `/ask` (path-like only, up to 5, workspace-confined). Automatic dependency discovery moved to P4.2.*
 
 **Exit:** leaderboard published in README; each mode has a measured default model.
 

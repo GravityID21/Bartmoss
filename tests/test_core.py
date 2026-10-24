@@ -150,6 +150,21 @@ class TestModesWithMock(unittest.TestCase):
         self.assertIn("setup time", run_ask(self.ctx, "what is setup time?"))
         self.assertEqual(len(self.ctx.ask_history), 2)
 
+    def test_ask_attaches_mentions_but_not_emails(self):
+        from bartmoss.modes.ask import attach_mentions
+
+        (self.root / "rtl").mkdir()
+        (self.root / "rtl" / "f.sv").write_text("module f; endmodule\n")
+        text = attach_mentions(self.ctx, "explain @rtl/f.sv on @clk, mail me at a@b.com")
+        self.assertIn('<file name="f.sv">', text)
+        self.assertEqual(text.count("<file"), 1)
+
+    def test_ask_mention_outside_workspace_is_refused(self):
+        from bartmoss.modes.ask import attach_mentions
+
+        with self.assertRaises(WorkspaceError):
+            attach_mentions(self.ctx, "look at @../../etc/hosts")
+
     def test_session_round_trip(self):
         from bartmoss.modes.ask import run_ask
         from bartmoss.session import load_session, save_session
