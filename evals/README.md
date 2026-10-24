@@ -15,10 +15,15 @@ python evals/validate.py            # all cases; --only <text> to filter
 | `file` | buggy RTL given to the model |
 | `context` | optional supporting files, compiled before `file` |
 | `tb`, `tb_top` | reference testbench the fixed file must pass |
+| `category` | one of the bug categories below (required) |
 | `fix` | `[[old, new], ...]` edits that turn the bug into the correct design (used only by `validate.py`) |
+| `simulator` | optional grading simulator, e.g. `iverilog` for 4-state X checks |
+| `control` | `true` for a bug-free design; there is no `fix`, and the file as given must pass |
 | `bug`, `source`, `tags` | for humans |
 
-Score: 1.0 if the fix passes the reference testbench, 0.25 if it compiles but fails, 0 otherwise.
+Score: 1.0 if the fix passes the reference testbench, 0.25 if it compiles but fails, 0 otherwise. A failing assertion inside the design counts as a fail.
+
+**Categories (54 cases):** reset 5, cdc 5, fsm 5, arithmetic 6, handshake 5, width 5, combinational 5, blocking 4, off-by-one 5, multi-bug 5, control 4. Missing-reset bugs are invisible to Verilator, which treats every bit as 0 or 1, so those cases are graded on Icarus. CDC cases are bugs that deterministic simulation can show (wrong clock, wrong encoding, lost pulses, early reset release); metastability-level CDC checks wait for formal grading (SPEC P3.6). Most cases inject a new bug into one of your modules that already has a validated reference testbench.
 
 ## tb cases: `cases/tb/<case>/`
 
@@ -41,6 +46,10 @@ Score: 0.1 compiles, +0.2 passes on the correct DUT, +0.7 × fraction of mutants
 
 Score: 0.2 if the plan has every required section and table, + 0.8 × fraction of rubric items met, as graded by the judge model (`eval.judge_model`, Sonnet 5.5 by default; override with `--judge`).
 
+## ask cases: `cases/ask/<case>/`
+
+12 theory questions (`question`) with 4–5 rubric items each, covering CDC, coding style, timing, protocols, verification and one FIFO-depth calculation. Score: fraction of rubric items the judge finds in the answer. Web search and the pre-filter are off during evals.
+
 ## Prompt A/B
 
 Put a variant next to the original (`bartmoss/prompts/debug.v2.md`), then:
@@ -51,7 +60,7 @@ bartmoss eval --mode debug --repeat 3 --prompt debug.v2    # variant
 bartmoss compare evals/results/<baseline>.json evals/results/<variant>.json
 ```
 
-## Current set (31 cases)
+## Case list (first 31 cases; the generated taxonomy cases are listed by folder name)
 
 | Case | Source | What makes it hard |
 |---|---|---|

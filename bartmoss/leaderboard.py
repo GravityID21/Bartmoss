@@ -103,9 +103,10 @@ def render_trend(runs: list[dict]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def recommend(best: dict, margin: float = 0.05) -> dict:
+def recommend(best: dict, margin: float = 0.05, floor: float = 0.7) -> dict:
     """Per mode, the cheapest model whose mean is within `margin` of the best mean. Only runs on
-    the mode's largest case set count, so an old run on fewer cases can't win by being easier."""
+    the mode's largest case set count, so an old run on fewer cases can't win by being easier,
+    and nothing is recommended when even the best model scores below `floor`."""
     picks = {}
     for mode in MODES:
         rows = [r for (m, _, p), r in best.items() if m == mode and p == mode]
@@ -115,6 +116,8 @@ def recommend(best: dict, margin: float = 0.05) -> dict:
         if not rows:
             continue
         top = max(r["mean_score"] for r in rows)
+        if top < floor:
+            continue
         good = [r for r in rows if r["mean_score"] >= top - margin and r.get("cost_usd") is not None]
         if good:
             pick = min(good, key=lambda r: (r["cost_usd"] / r.get("repeat", 1), -r["mean_score"]))

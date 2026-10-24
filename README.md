@@ -58,15 +58,15 @@ Built-in providers: `anthropic`, `openai`, `ollama`, `deepseek`, `openrouter`, `
 
 ## Results
 
-31 cases, each run three times per model (2026-10-24). Full table and notes: [evals/LEADERBOARD.md](evals/LEADERBOARD.md). See [evals/README.md](evals/README.md) for how scores are graded.
+Every case run three times per model (2026-10-24). Full table, per-category scores and notes: [evals/LEADERBOARD.md](evals/LEADERBOARD.md). See [evals/README.md](evals/README.md) for how scores are graded.
 
-| Model | `/debug` (16) | `/tb` (10) | `/vplan` (3) | `/uvmplan` (2) | Cost per debug + tb pass |
-|---|---|---|---|---|---|
-| Claude Haiku 5.5 | **1.00** | **0.91** | 0.95 | **1.00** | $0.13 |
-| Claude Sonnet 5.5 | 0.92 | 0.79 | **1.00** | **1.00** | $1.01 |
-| Qwen2.5-Coder 7B (local) | 0.44 | 0.07 | 0.22 | 0.41 | $0 |
+| Model | `/debug` (54) | `/tb` (10) | `/vplan` (3) | `/uvmplan` (2) | `/ask` (12) | Cost per debug + tb pass |
+|---|---|---|---|---|---|---|
+| Claude Haiku 5.5 | **0.99** | **0.91** | 0.95 | **1.00** | not run | $0.19 |
+| Claude Sonnet 5.5 | 0.98 | 0.79 | **1.00** | **1.00** | not run | $1.70 |
+| Qwen2.5-Coder 7B (local) | 0.40 | 0.07 | 0.22 | 0.41 | 0.18 | $0 |
 
-Haiku 5.5 is the measured default for every evaluated mode and the overall default model (used by `/ask`, which doesn't have its own eval yet). Testbench generation is the hardest: both Claude models sometimes write wrong expected values for a correct design.
+The debug set covers 10 bug categories (reset, CDC, FSM, arithmetic, handshake, width, combinational, blocking, off-by-one, multi-bug) plus bug-free control designs. Haiku 5.5 is the measured default. Testbench generation is the hardest mode: both Claude models sometimes write wrong expected values for a correct design.
 
 ## Cost
 

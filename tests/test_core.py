@@ -171,6 +171,8 @@ class TestPromptsAndEvalTools(unittest.TestCase):
         self.assertEqual(best[("debug", "a:big", "debug")]["repeat"], 3)
         self.assertEqual(recommend(best)["debug"][0], "a:small")
         self.assertIn("| debug | a:big | 1 | **0.95** |", render(best))
+        weak = best_runs([run("a:only", 0.2, 3, 0.0)])
+        self.assertEqual(recommend(weak), {})  # below the quality floor: no recommendation
 
     def test_eval_aborts_on_provider_error(self):
         from bartmoss.evals import run_eval
