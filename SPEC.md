@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Status** | Phase 1 complete · Phase 2 mostly complete (P2.13, P2.14 open) |
+| **Status** | Phase 1 complete · Phase 2 mostly complete (P2.13–P2.15 open) |
 | **Owner** | Elliot Stevenson |
 | **Language** | Python ≥ 3.9 (3.12 recommended) |
 | **Licence** | MIT (see `LICENSE`) |
@@ -219,6 +219,11 @@ Quality
 - [x] **P2.11** `eval --repeat N`: run each case N times and report mean ± spread. Single runs are noisy (Haiku failed and then passed crc32_bitrev on two runs). *Reports per-case mean, min/max and full passes, plus each repeat's overall mean; results format 2.*
 - [ ] **P2.14** `/ask` eval: about 12 rubric-graded theory questions ×3, comparing Haiku 5.5, Sonnet 5.5 and local Qwen 7B (Sonnet judge, ~$1.75). Opus is left out: no mode so far gained from a bigger model, and it costs ~40× Haiku. Test it only if Sonnet clearly beats Haiku here.
 - [ ] **P2.13** A/B the debug prompt's "if you find no real bugs, return the file unchanged" line: Sonnet twice called a buggy CDC synchronizer correct. Use `eval --prompt debug.v2 --repeat 3`.
+- [ ] **P2.15** Bug taxonomy and a 50-case debug set, with per-category scores.
+  - Add a `category` field to every debug case: reset, CDC, FSM, arithmetic/signedness, handshake/flow control, width/truncation, latch/combinational, blocking/non-blocking, off-by-one, multi-bug. Grow from 16 to about 50 cases, at least 3 per category, still mostly from your own RTL.
+  - Leaderboard: per-category scores for each model, and a trend view across dated runs so prompt and model changes show up over time.
+  - Grading by category: bugs that 2-state simulation can't see need another grader. Missing resets and X-propagation use Icarus 4-state runs (Verilator treats every bit as 0/1). Races and CDC bugs use SymbiYosys properties (with P3.6) or are marked "lint-graded" only. Every case must still pass `evals/validate.py` on the simulator its category uses, so nothing depends on simulator quirks (see the dropped Gray-code case).
+  - Cost: building cases is free. One Haiku ×3 pass over 50 cases is about $0.07; adding Sonnet is about $0.85.
 - [x] **P2.12** Grow the eval set to 30+ with harder tb cases. Haiku already catches every mutant in the current 5, so add protocol-level DUTs (AXI-Lite slave, credit link, CDC handshake) and more subtle mutants. *31 cases: 16 debug, 10 tb, 3 vplan, 2 uvmplan. New: forwarding, CDC pulse, RMII handshake, credit flow, saturation and rounding bugs. Whether they're harder is measured in the P2.6 sweep.*
 - [x] **P2.8** Yosys synthesizability check as an extra `/debug` signal. *Runs `hierarchy; proc; opt_clean; check` before and after the fix; findings (latches, multiple drivers, loops) go into the prompt, and only new ones trigger a retry. Skipped for VHDL and for designs Yosys can't elaborate (e.g. package imports in the module header).*
 - [x] **P2.9** Session transcript save/load (`/save`, `/load`) as JSON. *Saves the `/ask` conversation and model to the output dir; `/load` validates role order before restoring.*
@@ -238,11 +243,19 @@ Quality
 **Exit:** `/wave` correctly diagnoses ≥ 70 % of seeded waveform bugs; `/uvm` output compiles on at least one simulator.
 
 ### Phase 4: Agentic workspace
-- [ ] **P4.1** Tool-use loop: model can request `read_file`, `list_dir`, `run_lint`, `run_sim` inside the workspace (with a per-call confirmation prompt; auto-approve allowlist for read-only tools)
+- [ ] **P4.1** Tool-use loop: model can request `read_file`, `list_dir`, `run_lint`, `run_sim` inside the workspace (with a per-call confirmation prompt; auto-approve allowlist for read-only tools).
+  - Also an `ast` tool: Verilator's `--json-only` parse tree (modules, ports, always blocks, signal drivers and loads), so the model can query structure instead of reading whole files. No new dependency. Confirmed on Verilator 5.050; pass `-Wno-fatal`, or lint warnings end the run even though the JSON is still written.
+  - Let the model write and run its own small testbench while debugging (`run_sim`), and use the VCD summaries from P3.1 once they exist.
+  - **Adoption gate:** A/B the agent against today's fixed lint → fix → re-check workflow on the same eval set (score, cost, time per case, ×3). Make it the default only if it scores higher at an acceptable cost; otherwise keep it as an opt-in mode.
 - [ ] **P4.2** Project awareness: read a filelist (`.f`) or `rtl/`+`tb/` layout to build context automatically
 - [ ] **P4.3** Context budget manager: summarise or drop old tool output instead of letting context grow
-- [ ] **P4.4** Hallucination guards: generated code must reference only ports/signals that exist in the parsed DUT; flag mismatches before simulation
+- [ ] **P4.4** Hallucination guards: generated code must reference only ports/signals that exist in the parsed DUT; flag mismatches before simulation (can reuse the P4.1 Verilator AST)
 - [ ] **P4.5** MCP server exposing Bartmoss checkers as tools (so Claude Code / other MCP clients can use them). Builds on the course MCP project.
+- [ ] **P4.6** Lightweight retrieval for project-scale context (multi-module codebases, long specs for `/vplan`).
+  - Chunk RTL by structure (module, always block, interface, package) using the P4.1 Verilator JSON AST, not by token count. Chunk documents by heading.
+  - Keyword search with BM25 in the standard library, which is good at exact signal and register names. Optional semantic search through an embeddings extra (local Ollama embeddings or an API), combined with BM25 (hybrid). Never required.
+  - Users index their own documents. Standards such as IEEE 1800 are copyrighted and can't be shipped.
+  - **Return when:** P4.2 makes projects bigger than a comfortable prompt. **Adoption gate:** a multi-file retrieval eval (questions that need the right module or spec section) shows retrieval beats putting the relevant files straight in the prompt.
 
 ### Phase 5: Vendor tool orchestration
 **Return when:** Phases 1–3 are stable and you have regular access to the vendor tools for testing.
@@ -330,7 +343,7 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 | Yosys | optional (Phase 2) | free | synthesizability check |
 | Ollama | optional | free (your hardware) | local open models |
 
-**Avoided on purpose:** LangChain/LlamaIndex (heavy, not needed), vector DBs (no RAG yet), web frameworks (no web UI yet), `rich`/`textual` (ANSI codes are enough), LiteLLM (two SDKs already cover all providers).
+**Avoided on purpose:** LangChain/LlamaIndex (heavy, not needed), vector DBs (P4.6 retrieval uses stdlib BM25; embeddings are an optional extra), web frameworks (no web UI yet), `rich`/`textual` (ANSI codes are enough), LiteLLM (two SDKs already cover all providers).
 
 ---
 
@@ -372,6 +385,9 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 ## 12. Decision log
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-24 | Debug evals get a bug taxonomy, a 50-case target and per-category scores (P2.15); no Braintrust or LangSmith | The existing JSON results, `compare` and the leaderboard already cover tracking; paid services add cost and a dependency. Categories show *where* a model fails, not just the mean |
+| 2026-10-24 | Agentic debugging (P4.1) needs an AST tool and must beat the fixed workflow in an A/B before becoming the default | Today's lint → fix → re-check loop already scores 1.00 with Haiku on debug; agents cost more per task, so autonomy has to earn its place on measured results |
+| 2026-10-24 | Retrieval (P4.6) is BM25 + structural chunking first, embeddings optional, and only once projects outgrow the prompt | Single-file modes fit in context; exact signal names favour keyword search; required embeddings or a vector DB would break the zero-dependency rule |
 | 2026-10-24 | `default_model` switched from Opus 5.5 to Haiku 5.5 | Opus was a scaffolding-time choice, never evaluated; Haiku led or tied every measured mode at ~1/40 of Opus's per-token price. `/ask` was the only place still using Opus |
 | 2026-10-24 | Haiku 5.5 is the default for debug, tb, vplan and uvmplan | Full ×3 sweep: best or within 0.05 of best in every mode, at 1/5 to 1/13 of Sonnet 5.5's cost (evals/LEADERBOARD.md) |
 | 2026-10-24 | Evals abort on provider errors | A credit-balance error mid-sweep was scored as 0.0; infrastructure failures must not look like model failures |
