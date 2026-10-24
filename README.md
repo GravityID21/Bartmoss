@@ -15,7 +15,7 @@ An open-source AI assistant for RTL design and verification that runs in your te
 | Command | What happens |
 |---|---|
 | `bartmoss ask "..."` | Hardware design theory Q&A (multi-turn in the REPL). |
-| `bartmoss debug file.sv` | Lints with Verilator, asks the model for an analysis and a fixed file, re-lints the fix, retries if it introduced errors, then writes `bartmoss_out/file.fixed.sv`. Your original is never touched. |
+| `bartmoss debug file.sv` | Lints with Verilator and checks synthesis with Yosys (if installed), asks the model for an analysis and a fixed file, re-checks the fix, retries if it introduced errors or latches, then writes `bartmoss_out/file.fixed.sv`. Your original is never touched. |
 | `bartmoss tb file.sv` | Generates a self-checking directed testbench plus Markdown notes, compiles and runs it, and retries on compile errors. Reports PASS/FAIL. |
 | `bartmoss eval --mode debug\|tb` | Scores a model on the cases in `evals/cases/`, graded by the simulator. |
 | `bartmoss` | Interactive REPL (`/help` lists commands). |

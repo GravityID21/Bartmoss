@@ -130,6 +130,31 @@ def lint_errors(output: str) -> set[str]:
     return errors
 
 
+def synth_check(path: Path, top: str, context: tuple = (), timeout: int = 120) -> Optional[RunResult]:
+    """Elaborate with Yosys and run its structural checks (latches, multiple drivers, logic loops).
+    Verilog/SystemVerilog only; returns None when Yosys isn't installed or the file is VHDL."""
+    if is_vhdl(path) or not shutil.which("yosys") or not re.fullmatch(r"\w+", top):
+        return None
+    script = f"hierarchy -check -top {top}; proc; opt_clean; check"
+    # Files go on the command line (not inside the script) so paths with spaces are safe.
+    return _run(["yosys", "-p", script, *map(str, context), str(path)], path.parent, timeout, "synth")
+
+
+def synth_findings(output: str) -> Optional[set[str]]:
+    """Synthesis problems with locations removed, or None if Yosys couldn't elaborate the design
+    (often unsupported SystemVerilog, such as package imports in a module header)."""
+    findings = set()
+    for line in output.splitlines():
+        latch = re.search(r"Latch inferred for signal `([^']+)'", line)
+        if latch:
+            findings.add(f"latch inferred for {latch.group(1)}")
+        elif "ERROR:" in line:
+            return None
+        elif line.startswith("Warning:") and ("driver" in line or "logic loop" in line):
+            findings.add(line[len("Warning:"):].strip())
+    return findings
+
+
 def simulate(files: list[Path], top: str, workdir: Path, simulator: str, timeout: int = 300) -> RunResult:
     """Compile `files` with `top` as the root module, then run. Returns the first failing stage."""
     workdir.mkdir(parents=True, exist_ok=True)

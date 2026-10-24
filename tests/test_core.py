@@ -114,6 +114,24 @@ class TestSimHelpers(unittest.TestCase):
         self.assertEqual(tb_verdict("** Note: 10ns+0: TEST PASSED"), "pass")
         self.assertEqual(tb_verdict("** Failure: 5ns+0: Assertion violation."), "fail")
 
+    def test_synth_findings(self):
+        from bartmoss.sim.tools import synth_findings
+
+        out = ("ERROR: Latch inferred for signal `\\m.\\q' from always_comb process `\\m.$proc$/x.sv:2$1'.\n"
+               "Warning: Wire m.\\y is used but has no driver.\nWarning: Replacing memory with registers.")
+        self.assertEqual(synth_findings(out), {"latch inferred for \\m.\\q", "Wire m.\\y is used but has no driver."})
+        self.assertIsNone(synth_findings("x.sv:5: ERROR: syntax error, unexpected TOK_IMPORT"))
+        self.assertEqual(synth_findings("Found and reported 0 problems."), set())
+
+    @unittest.skipUnless(shutil.which("yosys"), "yosys not installed")
+    def test_synth_check_catches_latch(self):
+        from bartmoss.sim.tools import synth_check, synth_findings
+
+        f = Path(tempfile.mkdtemp()) / "l.sv"
+        f.write_text("module l(input logic en, input logic d, output logic q);\n  always_comb if (en) q = d;\nendmodule\n")
+        findings = synth_findings(synth_check(f, "l").output)
+        self.assertTrue(any("latch" in x for x in findings))
+
     def test_lint_errors_ignore_location(self):
         a = lint_errors("%Error: /tmp/a/x.sv:3:5: syntax error, unexpected endmodule\n%Error: Exiting due to 1 error(s)")
         b = lint_errors("%Error: /other/x.sv:9:1: syntax error, unexpected endmodule")
@@ -220,6 +238,21 @@ class TestModesWithMock(unittest.TestCase):
         result = run_debug(self.ctx, "inv.vhd")
         self.assertEqual(result.status, "clean")
         self.assertTrue(result.lint_before.ok)
+
+    @unittest.skipUnless(shutil.which("yosys") and HAS_VERILATOR, "yosys/verilator not installed")
+    def test_debug_retries_when_fix_adds_latch(self):
+        from bartmoss.modes.debug import run_debug
+        from bartmoss.providers.base import ChatResult
+
+        good = "module m(input logic en, input logic d, output logic q);\n  always_comb q = en & d;\nendmodule\n"
+        latchy = "module m(input logic en, input logic d, output logic q);\n  always_comb if (en) q = d;\nendmodule\n"
+        (self.root / "m.sv").write_text(good)
+        replies = iter([latchy, good])
+        self.ctx.ask_model = lambda mode, messages, **kw: ChatResult(
+            text=f"<analysis>x</analysis><fixed_file>{next(replies)}</fixed_file>", model="fake")
+        result = run_debug(self.ctx, "m.sv", write=False)
+        self.assertEqual(result.attempts, 2)
+        self.assertEqual(result.status, "clean")
 
     def test_debug_refuses_file_outside_workspace(self):
         from bartmoss.modes.debug import run_debug

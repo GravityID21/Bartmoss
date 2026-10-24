@@ -9,14 +9,14 @@ from pathlib import Path
 from typing import Optional
 
 from bartmoss.context import Context, context_blocks
-from bartmoss.extract import hdl_block, tag
+from bartmoss.extract import hdl_block, tag, top_module
 from bartmoss.sim.loop import CheckOutcome, generate_with_checks, hit_token_limit
-from bartmoss.sim.tools import RunResult, lint, lint_errors, tail
+from bartmoss.sim.tools import RunResult, lint, lint_errors, synth_check, synth_findings, tail
 
 
 @dataclass
 class DebugResult:
-    status: str  # clean | new_lint_errors | no_fix | refused | unchecked
+    status: str  # clean | new_lint_errors | new_synth_problems | no_fix | refused | unchecked
     analysis: Optional[str] = None
     fixed: Optional[str] = None
     lint_before: Optional[RunResult] = None
@@ -24,9 +24,12 @@ class DebugResult:
     written: Optional[Path] = None
     attempts: int = 0
     truncated: bool = False
+    synth_before: Optional[set] = None  # Yosys findings; None if Yosys was unavailable or unsupported
+    synth_after: Optional[set] = None
 
 
-def build_message(name: str, source: str, lint_result: Optional[RunResult], context: list = ()) -> str:
+def build_message(name: str, source: str, lint_result: Optional[RunResult], context: list = (),
+                  synth: Optional[set] = None) -> str:
     message = f'<file name="{name}">\n{source}</file>\n' + context_blocks(context)
     if lint_result is None:
         message += "\nNo linter is available, so review the file by reading it.\n"
@@ -34,6 +37,11 @@ def build_message(name: str, source: str, lint_result: Optional[RunResult], cont
         message += f"\n{lint_result.tool} lint output:\n<lint>\n{tail(lint_result.output)}\n</lint>\n"
     else:
         message += f"\n{lint_result.tool} lint reported nothing.\n"
+    if synth:
+        listing = "\n".join(sorted(synth))
+        message += f"\nYosys synthesis check findings:\n<synth>\n{tail(listing)}\n</synth>\n"
+    elif synth is not None:
+        message += "\nYosys synthesis check found no latches, multiple drivers or logic loops.\n"
     return message
 
 
@@ -52,6 +60,14 @@ def run_debug(ctx: Context, path: str | Path, write: bool = True, context_files=
         n_warn = before.output.count("%Warning") + before.output.count("** Warning")
         ui.dim(f"  lint before: {n_err} errors, {n_warn} warnings")
     known_errors = lint_errors(before.output) if before else set()
+
+    top = top_module(source)
+    synth_run = synth_check(src_path, top, context_paths) if top else None
+    synth_before = synth_findings(synth_run.output) if synth_run else None
+    if synth_before is not None:
+        ui.dim(f"  synth before: {len(synth_before)} findings (latches, drivers, loops)")
+    elif synth_run is not None:
+        ui.dim("  synth check skipped: Yosys can't elaborate this design")
 
     scratch = Path(tempfile.mkdtemp(prefix="bartmoss_debug_"))
 
@@ -72,7 +88,18 @@ def run_debug(ctx: Context, path: str | Path, write: bool = True, context_files=
                                 f"Your fixed file introduced new {after.tool} errors:\n<lint>\n{tail(listing)}\n</lint>\n"
                                 "Fix them and reply again in the same format with the complete file.",
                                 data={"fixed": fixed, "lint": after})
-        return CheckOutcome(True, data={"fixed": fixed, "lint": after})
+        data = {"fixed": fixed, "lint": after}
+        if synth_before is not None:
+            synth_after = synth_findings(synth_check(candidate, top, context_paths).output)
+            data["synth"] = synth_after
+            new_synth = (synth_after or set()) - synth_before
+            if new_synth:
+                listing = "\n".join(sorted(new_synth))
+                return CheckOutcome(False, True,
+                                    f"Your fixed file introduced new synthesis problems (Yosys):\n<synth>\n{tail(listing)}\n"
+                                    "</synth>\nFix them and reply again in the same format with the complete file.",
+                                    data=data)
+        return CheckOutcome(True, data=data)
 
     def on_attempt(attempt: int, previous: Optional[CheckOutcome]) -> None:
         if attempt == 1:
@@ -82,7 +109,7 @@ def run_debug(ctx: Context, path: str | Path, write: bool = True, context_files=
 
     loop = generate_with_checks(
         lambda messages: ctx.ask_model("debug", messages),
-        build_message(src_path.name, source, before, context),
+        build_message(src_path.name, source, before, context, synth_before),
         check,
         ctx.config["modes"]["debug"].get("max_retries", 2),
         on_attempt,
@@ -100,10 +127,15 @@ def run_debug(ctx: Context, path: str | Path, write: bool = True, context_files=
         status = "no_fix"
     elif before is None:
         status = "unchecked"
+    elif lint_after is not None and lint_errors(lint_after.output) - known_errors:
+        status = "new_lint_errors"
+    elif synth_before is not None and (data.get("synth") or set()) - synth_before:
+        status = "new_synth_problems"
     else:
-        status = "clean" if loop.outcome.ok else "new_lint_errors"
+        status = "clean"
     result = DebugResult(status, analysis, fixed, before, lint_after, attempts=loop.attempts,
-                         truncated=bool(loop.reply and hit_token_limit(loop.reply.stop_reason)))
+                         truncated=bool(loop.reply and hit_token_limit(loop.reply.stop_reason)),
+                         synth_before=synth_before, synth_after=data.get("synth"))
     if result.truncated:
         ui.warn("The reply hit max_tokens and may be incomplete; raise modes.debug.max_tokens in bartmoss.json.")
 
@@ -117,8 +149,9 @@ def run_debug(ctx: Context, path: str | Path, write: bool = True, context_files=
         if result.written:
             ui.ok(f"fixed file written to {ctx.workspace.relative(result.written)}")
     status_text = {
-        "clean": ui.style("lint clean (no new errors)", "green"),
+        "clean": ui.style("lint clean (no new errors)" + (", synth clean" if synth_before is not None else ""), "green"),
         "new_lint_errors": ui.style("fix still has new lint errors; review it carefully", "yellow"),
+        "new_synth_problems": ui.style("fix adds synthesis problems (latch/driver/loop); review it", "yellow"),
         "unchecked": ui.style("fix not lint-checked", "yellow"),
         "no_fix": ui.style("model did not return a fixed file", "red"),
     }[status]

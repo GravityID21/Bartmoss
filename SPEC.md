@@ -218,7 +218,7 @@ Quality
 - [ ] **P2.7** Per-mode default model chosen from leaderboard results (cheapest model that meets the quality bar)
 - [x] **P2.11** `eval --repeat N`: run each case N times and report mean ± spread. Single runs are noisy (Haiku failed and then passed crc32_bitrev on two runs). *Reports per-case mean, min/max and full passes, plus each repeat's overall mean; results format 2.*
 - [ ] **P2.12** Grow the eval set to 30+ with harder tb cases. Haiku already catches every mutant in the current 5, so add protocol-level DUTs (AXI-Lite slave, credit link, CDC handshake) and more subtle mutants.
-- [ ] **P2.8** Yosys synthesizability check as an extra `/debug` signal (`yosys -p "read_verilog -sv f.sv; synth"`)
+- [x] **P2.8** Yosys synthesizability check as an extra `/debug` signal. *Runs `hierarchy; proc; opt_clean; check` before and after the fix; findings (latches, multiple drivers, loops) go into the prompt, and only new ones trigger a retry. Skipped for VHDL and for designs Yosys can't elaborate (e.g. package imports in the module header).*
 - [x] **P2.9** Session transcript save/load (`/save`, `/load`) as JSON. *Saves the `/ask` conversation and model to the output dir; `/load` validates role order before restoring.*
 - [x] **P2.10** Multi-file context: attach extra files (packages, includes) to a request. *`--with FILE` on `debug`/`tb` (REPL: extra args), sent read-only and compiled in every lint/sim run; `@path` mentions in `/ask` (path-like only, up to 5, workspace-confined). Automatic dependency discovery moved to P4.2.*
 
