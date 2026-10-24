@@ -198,15 +198,15 @@ Interface
 Evaluation
 - [x] **P1.18** Eval case format (`evals/cases/<mode>/<case>/meta.json` + RTL files), plus `evals/validate.py` to prove each case is valid without model calls
 - [x] **P1.19** `bartmoss eval --mode debug|tb --model provider:model`: simulator-graded scoring, JSON results + Markdown summary
-- [x] **P1.20** Seed eval set: 10–20 cases (hand-written bugs + modules from your own `RTL_projects_public` repos). *14 cases (9 debug, 5 tb); 9 come from your UDP, axi4_crossbar and riscv repos, and 3 need context files. All pass `python evals/validate.py`; see `evals/README.md`.*
-- [~] **P1.21** First model comparison run (at least: one Claude model, one open model via Ollama or an API), results committed to `evals/results/`. *2026-10-24: Claude Haiku 5.5 scored 1.00 on debug (3/3) and 1.00 on tb (6/6 mutants caught) for about $0.03 in total. The seed set is too easy to tell models apart, so P1.20 needs harder cases. Still to do: an open-model run.* *2026-10-24, 14-case set: Haiku 5.5 scored debug 0.92 (8/9; missed crc32_bitrev on one run but fixed it on a rerun) and tb 1.00 (15/15 mutants) for about $0.06. Model outputs are now saved under `evals/results/<run>/<case>/`.*
+- [x] **P1.20** Seed eval set: 10–20 cases (hand-written bugs + modules from your own `RTL_projects_public` repos). *16 cases (10 debug, 6 tb, 2 of them VHDL); 9 come from your UDP, axi4_crossbar and riscv repos, and 3 need context files. All pass `python evals/validate.py`; see `evals/README.md`.*
+- [x] **P1.21** First model comparison run (at least: one Claude model, one open model via Ollama or an API), results committed to `evals/results/`. *2026-10-24, 16 cases: Haiku 5.5 scored debug 0.93 and tb 1.00 (18/18 mutants) for ~$0.10; local Qwen2.5-Coder 7B scored debug 0.45 and tb 0.05. Table in README.* *2026-10-24: Claude Haiku 5.5 scored 1.00 on debug (3/3) and 1.00 on tb (6/6 mutants caught) for about $0.03 in total. The seed set is too easy to tell models apart, so P1.20 needs harder cases. Still to do: an open-model run.* *2026-10-24, 14-case set: Haiku 5.5 scored debug 0.92 (8/9; missed crc32_bitrev on one run but fixed it on a rerun) and tb 1.00 (15/15 mutants) for about $0.06. Model outputs are now saved under `evals/results/<run>/<case>/`.*
 
 Quality
 - [x] **P1.22** Offline unit tests (extractor, file safety, config, modes with the mock provider, simulator wrapper skipped if no tool)
 - [x] **P1.23** README with install, quick start, cost notes, screenshots/GIF. *`docs/demo.svg` is rendered from a real session by `scripts/term2svg.py` (stdlib, no recording tools needed).*
 - [~] **P1.24** GitHub Actions CI: run unit tests + Verilator smoke test (free for public repos). *`.github/workflows/ci.yml`: unit tests on Python 3.9 and 3.12, a mock-model CLI smoke test, and `evals/validate.py`, using apt Verilator/Icarus/NVC on Ubuntu 24.04. Not yet run: it needs a push, and apt's Verilator 5.020 is older than the 5.050 used locally.*
 
-**Exit:** on the seed eval set, at least one model reaches ≥ 80 % pass on `/tb` and `/debug`; README lets a stranger install and run it in under 10 minutes.
+**Exit:** on the seed eval set, at least one model reaches ≥ 80 % pass on `/tb` and `/debug`; README lets a stranger install and run it in under 10 minutes. *Met by Haiku 5.5 (0.93 / 1.00). The install path has only been tested on this Mac, and CI (P1.24) will confirm Linux once pushed.*
 
 ### Phase 2: Planning modes, filtering and model comparison
 - [ ] **P2.1** `/vplan`: verification plan template (features → checks → coverpoints → edge cases → open questions), text only

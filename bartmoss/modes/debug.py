@@ -93,8 +93,9 @@ def run_debug(ctx: Context, path: str | Path, write: bool = True, context_files=
 
     reply_text = loop.reply.text if loop.reply else ""
     analysis = tag(reply_text, "analysis") or reply_text.split("<fixed_file>")[0].strip() or None
-    fixed = loop.outcome.data.get("fixed") if loop.outcome else None
-    lint_after = loop.outcome.data.get("lint") if loop.outcome else None
+    data = (loop.outcome.data if loop.outcome else {}) or loop.last_data
+    fixed = data.get("fixed")
+    lint_after = data.get("lint")
     if fixed is None:
         status = "no_fix"
     elif before is None:

@@ -2,9 +2,9 @@
   "date": "2026-10-24",
   "mode": "tb",
   "model": "anthropic:claude-haiku-5-5",
-  "simulator": "verilator",
+  "simulator": "auto",
   "mean_score": 1.0,
-  "usage": "5 calls \u00b7 8,511 in \u00b7 89,639 out \u00b7 4,140 cache-read \u00b7 est. $0.0457",
+  "usage": "8 calls \u00b7 16,826 in \u00b7 182,217 out \u00b7 6,210 cache-read \u00b7 est. $0.0929",
   "cases": [
     {
       "verdict": "pass",
@@ -13,20 +13,20 @@
       "score": 1.0,
       "mutants_caught": "3/3",
       "case": "alu8",
-      "seconds": 38.4,
+      "seconds": 48.0,
       "input_tokens": 1562,
-      "output_tokens": 7745
+      "output_tokens": 10046
     },
     {
       "verdict": "pass",
-      "attempts": 1,
+      "attempts": 3,
       "truncated": false,
       "score": 1.0,
       "mutants_caught": "3/3",
       "case": "async_fifo_gray",
-      "seconds": 131.5,
-      "input_tokens": 4223,
-      "output_tokens": 29152
+      "seconds": 421.7,
+      "input_tokens": 12750,
+      "output_tokens": 91757
     },
     {
       "verdict": "pass",
@@ -35,9 +35,9 @@
       "score": 1.0,
       "mutants_caught": "3/3",
       "case": "axi4_arbiter_rr",
-      "seconds": 63.3,
+      "seconds": 54.1,
       "input_tokens": 2134,
-      "output_tokens": 13208
+      "output_tokens": 10410
     },
     {
       "verdict": "pass",
@@ -46,9 +46,9 @@
       "score": 1.0,
       "mutants_caught": "3/3",
       "case": "axis_fifo_udp",
-      "seconds": 87.4,
+      "seconds": 129.9,
       "input_tokens": 2847,
-      "output_tokens": 19191
+      "output_tokens": 29751
     },
     {
       "verdict": "pass",
@@ -57,9 +57,20 @@
       "score": 1.0,
       "mutants_caught": "3/3",
       "case": "debounce_btn",
-      "seconds": 93.5,
+      "seconds": 118.6,
       "input_tokens": 1885,
-      "output_tokens": 20343
+      "output_tokens": 25628
+    },
+    {
+      "verdict": "pass",
+      "attempts": 1,
+      "truncated": false,
+      "score": 1.0,
+      "mutants_caught": "3/3",
+      "case": "vhdl_pwm",
+      "seconds": 66.6,
+      "input_tokens": 1858,
+      "output_tokens": 14625
     }
   ]
 }

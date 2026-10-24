@@ -26,6 +26,9 @@ class LoopResult:
     outcome: Optional[CheckOutcome]
     attempts: int
     refused: bool = False
+    # Data from the most recent attempt that produced any (e.g. a broken testbench), so a final
+    # reply with nothing extractable doesn't throw away earlier output and logs.
+    last_data: dict = field(default_factory=dict)
 
 
 def generate_with_checks(
@@ -39,6 +42,7 @@ def generate_with_checks(
     messages = [{"role": "user", "content": first_message}]
     reply: Optional[ChatResult] = None
     outcome: Optional[CheckOutcome] = None
+    last_data: dict = {}
     for attempt in range(1, max_retries + 2):
         if on_attempt:
             on_attempt(attempt, outcome)
@@ -47,7 +51,8 @@ def generate_with_checks(
             return LoopResult(reply, None, attempt, refused=True)
         messages.append({"role": "assistant", "content": reply.text})
         outcome = check(reply.text)
+        last_data = outcome.data or last_data
         if outcome.ok or not outcome.retryable:
-            return LoopResult(reply, outcome, attempt)
+            return LoopResult(reply, outcome, attempt, last_data=last_data)
         messages.append({"role": "user", "content": outcome.feedback})
-    return LoopResult(reply, outcome, max_retries + 1)
+    return LoopResult(reply, outcome, max_retries + 1, last_data=last_data)

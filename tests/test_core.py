@@ -114,6 +114,25 @@ class TestSimHelpers(unittest.TestCase):
         self.assertEqual(a, b)
 
 
+class TestLoop(unittest.TestCase):
+    def test_keeps_last_output_when_final_reply_is_empty(self):
+        from bartmoss.providers.base import ChatResult
+        from bartmoss.sim.loop import CheckOutcome, generate_with_checks
+
+        replies = iter(["<tb_file>broken</tb_file>", "no tags at all"])
+        ask = lambda messages: ChatResult(text=next(replies), model="m")
+
+        def check(text):
+            if "<tb_file>" in text:
+                return CheckOutcome(False, True, "fix it", data={"tb": "broken"})
+            return CheckOutcome(False, True, "missing tag")
+
+        loop = generate_with_checks(ask, "go", check, max_retries=1)
+        self.assertEqual(loop.attempts, 2)
+        self.assertEqual(loop.outcome.data, {})
+        self.assertEqual(loop.last_data, {"tb": "broken"})
+
+
 class TestModesWithMock(unittest.TestCase):
     def setUp(self):
         self.root = Path(tempfile.mkdtemp())

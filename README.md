@@ -52,6 +52,17 @@ Built-in providers: `anthropic`, `openai`, `ollama`, `deepseek`, `openrouter`, `
 }
 ```
 
+## Early results
+
+16 simulator-graded cases (10 debug, 6 testbench; 2 in VHDL), one run each, 2026-10-24. Scores are means; see [evals/README.md](evals/README.md) for how they're graded.
+
+| Model | `/debug` | `/tb` | Mutants caught | Cost |
+|---|---|---|---|---|
+| Claude Haiku 5.5 (API) | **0.93** (9/10 fixed) | **1.00** (6/6) | 18/18 | ~$0.10 |
+| Qwen2.5-Coder 7B (local, Ollama) | 0.45 (3/10 fixed) | 0.05 (0/6 working) | 0/3 | $0 |
+
+The small local model mostly returned files that compiled but kept the bug. Its testbenches failed to compile even after simulator feedback (for example, ports that don't exist, or non-constant declarations). Single runs are noisy: Haiku has missed a different debug case on each run so far.
+
 ## Cost
 
 You use your own API keys, so you pay only for what you run. `/usage` in the REPL shows tokens and an estimated cost. Ways to keep it cheap: use the `mock` provider or a local Ollama model while developing, give `/ask` a cheap model, and save frontier models for `/debug`, `/tb` and eval runs.

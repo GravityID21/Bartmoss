@@ -101,7 +101,7 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=())
         ui.warn("The model declined this request. Try another model with --model.")
         return TbResult("refused", top=top, attempts=loop.attempts)
 
-    data = loop.outcome.data if loop.outcome else {}
+    data = (loop.outcome.data if loop.outcome else {}) or loop.last_data
     result = TbResult(data.get("verdict", "broken"), top, data.get("tb"), data.get("notes"), data.get("sim"),
                       simulator, attempts=loop.attempts,
                       truncated=bool(loop.reply and hit_token_limit(loop.reply.stop_reason)))
