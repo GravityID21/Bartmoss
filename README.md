@@ -71,7 +71,7 @@ Every case run three times per model (2026-10-24 to 2026-10-27). Full table, per
 | Claude Sonnet 5.5 | 0.98 | 0.79 | **1.00** | **1.00** | **0.95** | $1.70 |
 | Qwen2.5-Coder 7B (local) | 0.40 | 0.07 | 0.22 | 0.41 | 0.18 | $0 |
 
-Phase 3 modes, Claude Haiku 5.5 only: `/wave` **0.96** (right signal and time in 33/33 runs on 11 seeded waveform bugs), `/formal` **1.00** (all 15 mutants caught across 5 designs) and `/tb --random` **0.83** (9 cases; random testbenches more often get expected values wrong than directed ones).
+Phase 3 modes, Claude Haiku 5.5 only: `/wave` **0.96** (right signal and time in 33/33 runs on 11 seeded waveform bugs), `/formal` **1.00** (all 15 mutants caught across 5 designs) and `/tb --random` **0.83**, about 0.90 after raising its token cap fixed the one case that ran out of tokens (9 cases; random testbenches more often get expected values wrong than directed ones).
 
 The debug set covers 10 bug categories (reset, CDC, FSM, arithmetic, handshake, width, combinational, blocking, off-by-one, multi-bug) plus bug-free control designs. Haiku 5.5 is the measured default. Testbench generation is the hardest mode: both Claude models sometimes write wrong expected values for a correct design.
 

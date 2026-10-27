@@ -236,6 +236,19 @@ class TestRandomTb(unittest.TestCase):
         self.assertEqual(one.attempts, 3)  # below coverage_target, sent back twice
         self.assertEqual(one.verdict, "pass")
 
+    def test_random_uses_its_own_token_cap(self):
+        from bartmoss.modes.tb import run_tb
+        from bartmoss.providers.base import ChatResult
+
+        root = Path(tempfile.mkdtemp())
+        ctx = make_ctx(root)
+        (root / "inv.sv").write_text("module inv(input logic a, output logic y);\n  assign y = ~a;\nendmodule\n")
+        caps = []
+        ctx.ask_model = lambda mode, messages, **kw: caps.append(kw.get("max_tokens")) or ChatResult(text="", model="m")
+        run_tb(ctx, "inv.sv", random=True, write=False)
+        run_tb(ctx, "inv.sv", write=False)
+        self.assertEqual(set(caps), {64000, None})  # random TBs use modes.tb.random_max_tokens; directed keep max_tokens
+
     def test_random_vhdl_is_rejected(self):
         from bartmoss.modes.tb import run_tb
 

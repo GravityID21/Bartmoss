@@ -53,10 +53,10 @@ class Context:
         return self._providers[name]
 
     def ask_model(self, mode: str, messages: list[dict], on_text: Optional[Callable[[str], None]] = None,
-                  prompt: Optional[str] = None, web_search: int = 0) -> ChatResult:
+                  prompt: Optional[str] = None, web_search: int = 0, max_tokens: Optional[int] = None) -> ChatResult:
         """`prompt` picks a prompt explicitly (e.g. tb_vhdl); otherwise a variant set with
         `eval --prompt` or `modes.<mode>.prompt` in config, else the mode's own prompt.
-        Model and limits always come from `mode`."""
+        Model and limits come from `mode`, unless `max_tokens` overrides the cap."""
         spec = self.model_spec(mode)
         provider_name, model = parse_model_spec(spec)
         mode_cfg = self.config["modes"].get(mode, {})
@@ -65,7 +65,7 @@ class Context:
             system_prompt(name),
             messages,
             model=model,
-            max_tokens=mode_cfg.get("max_tokens", 8000),
+            max_tokens=max_tokens or mode_cfg.get("max_tokens", 8000),
             effort=mode_cfg.get("effort"),
             on_text=on_text,
             web_search=web_search,

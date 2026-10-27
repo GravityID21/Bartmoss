@@ -1,0 +1,65 @@
+{
+  "format": 2,
+  "date": "2026-10-27",
+  "mode": "tb",
+  "model": "anthropic:claude-haiku-5-5",
+  "simulator": "auto",
+  "repeat": 3,
+  "prompt": "tb_random",
+  "mean_score": 1.0,
+  "run_means": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "cost_usd": 0.0834,
+  "seconds": 724.6,
+  "usage": "3 calls \u00b7 10,974 in \u00b7 164,560 out \u00b7 2,820 cache-read \u00b7 est. $0.0834",
+  "cases": [
+    {
+      "case": "async_fifo_gray",
+      "category": null,
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "coverage": "29/29",
+          "mutants_caught": "3/3",
+          "seconds": 234.3,
+          "input_tokens": 4598,
+          "output_tokens": 53093
+        },
+        {
+          "verdict": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "coverage": "36/36",
+          "mutants_caught": "3/3",
+          "seconds": 264.1,
+          "input_tokens": 4598,
+          "output_tokens": 60488
+        },
+        {
+          "verdict": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "coverage": "27/27",
+          "mutants_caught": "3/3",
+          "seconds": 226.1,
+          "input_tokens": 4598,
+          "output_tokens": 50979
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}

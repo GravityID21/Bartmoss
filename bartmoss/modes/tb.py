@@ -152,7 +152,8 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=(),
     message = (f"Top module: {top}\nTestbench module name: {tb_name}\n\n"
                f'<file name="{src_path.name}">\n{source}</file>\n' + context_blocks(context))
     prompt = "tb_vhdl" if vhdl else "tb_random" if random else "tb"
-    loop = generate_with_checks(lambda messages: ctx.ask_model("tb", messages, prompt=prompt), message, check,
+    cap = cfg.get("random_max_tokens") if random else None
+    loop = generate_with_checks(lambda messages: ctx.ask_model("tb", messages, prompt=prompt, max_tokens=cap), message, check,
                                 ctx.config["modes"]["tb"].get("max_retries", 2), on_attempt)
     if loop.refused:
         ui.warn("The model declined this request. Try another model with --model.")
@@ -164,7 +165,8 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=(),
                       truncated=bool(loop.reply and hit_token_limit(loop.reply.stop_reason)),
                       seeds=seeds, failing_seed=data.get("failing_seed"), coverage=data.get("coverage"))
     if result.truncated:
-        ui.warn("The reply hit max_tokens and may be incomplete; raise modes.tb.max_tokens in bartmoss.json.")
+        ui.warn("The reply hit max_tokens and may be incomplete; raise modes.tb."
+                f"{'random_max_tokens' if random else 'max_tokens'} in bartmoss.json.")
 
     if result.tb and write:
         written = [ctx.workspace.write_text(tb_file, result.tb, ctx.confirm_overwrite)]

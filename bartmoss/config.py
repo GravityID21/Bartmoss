@@ -19,9 +19,10 @@ DEFAULTS: dict = {
         # Measured defaults (P2.7, evals/LEADERBOARD.md): Haiku 5.5 was best or within 0.05 of best in every
         # evaluated mode, at 1/5 to 1/13 of Sonnet 5.5's cost. /ask uses default_model.
         "debug": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 32000, "effort": "medium", "max_retries": 2},
-        # random_seeds and coverage_target apply to `tb --random` (constrained-random + coverage, P3.5).
+        # random_seeds, coverage_target and random_max_tokens apply to `tb --random` (P3.5). Random TBs get a
+        # bigger cap: Haiku 5.5 spent all 32k tokens thinking on async_fifo_gray in 2 of 3 runs (its limit is 128k).
         "tb": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 32000, "effort": "medium", "max_retries": 2,
-               "random_seeds": 3, "coverage_target": 0.9},
+               "random_seeds": 3, "coverage_target": 0.9, "random_max_tokens": 64000},
         "vplan": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 16000, "effort": "medium", "max_retries": 1},
         "uvmplan": {"model": "anthropic:claude-haiku-5-5", "max_tokens": 16000, "effort": "medium", "max_retries": 1},
         # Phase 3 modes, measured 2026-10-27: Haiku 5.5 scored 0.96 on /wave and 1.00 on /formal.
