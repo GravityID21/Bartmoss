@@ -1,0 +1,1048 @@
+{
+  "format": 2,
+  "date": "2026-10-27",
+  "mode": "wave",
+  "model": "anthropic:claude-haiku-5-5",
+  "simulator": "auto",
+  "repeat": 3,
+  "prompt": "wave",
+  "mean_score": 0.958,
+  "run_means": [
+    0.982,
+    0.964,
+    0.927
+  ],
+  "cost_usd": 0.1581,
+  "seconds": 424.6,
+  "usage": "66 calls \u00b7 65,406 in \u00b7 72,765 out \u00b7 30,294 cache-read \u00b7 est. $0.1581",
+  "cases": [
+    {
+      "case": "wave_arbiter_double_grant",
+      "category": "fsm",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.grant",
+          "time": 45.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says grant becomes 11 (both requesters granted at once, not one-hot) when both request",
+              "met": true,
+              "evidence": "At t=45 both requesters are active and the grant goes to both at once (3, not one-hot)"
+            },
+            {
+              "id": 2,
+              "item": "Says the arbiter then stops alternating (stays at 11), or attributes it to the both-requesting case not granting requester 0 when requester 1 was last",
+              "met": true,
+              "evidence": "it stays at 3 until the requests drop at t=95; should have given grant to requester 0 since requester 1 won previous cycle; grant remains 3, should alternate"
+            }
+          ],
+          "seconds": 16.3,
+          "input_tokens": 2661,
+          "output_tokens": 2119
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.grant",
+          "time": 45.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says grant becomes 11 (both requesters granted at once, not one-hot) when both request",
+              "met": true,
+              "evidence": "t=45 where both requesters are active and grant goes to 3 (both bits set), which violates the one-hot-or-zero rule"
+            },
+            {
+              "id": 2,
+              "item": "Says the arbiter then stops alternating (stays at 11), or attributes it to the both-requesting case not granting requester 0 when requester 1 was last",
+              "met": true,
+              "evidence": "grant stays at 3 for five cycles while req stays at 3... the arbiter is not rotating; requester 0 should win when last_was_1=1"
+            }
+          ],
+          "seconds": 14.2,
+          "input_tokens": 2683,
+          "output_tokens": 2381
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.grant",
+          "time": 45.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says grant becomes 11 (both requesters granted at once, not one-hot) when both request",
+              "met": true,
+              "evidence": "grant goes to 3 (both high) at t=45 with req=3, breaking the one-hot-or-zero rule"
+            },
+            {
+              "id": 2,
+              "item": "Says the arbiter then stops alternating (stays at 11), or attributes it to the both-requesting case not granting requester 0 when requester 1 was last",
+              "met": true,
+              "evidence": "grant remains 3 while req remains 3... the arbiter is not rotating or masking at all under contention"
+            }
+          ],
+          "seconds": 15.2,
+          "input_tokens": 2665,
+          "output_tokens": 2771
+        }
+      ]
+    },
+    {
+      "case": "wave_burst_last",
+      "category": "off-by-one",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.last",
+          "time": 65.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says the burst has five beats (valid high one cycle too long) and last arrives on the fifth beat instead of the fourth",
+              "met": true,
+              "evidence": "Valid stays high for five beats (beat 0 to 4), not four, and last is asserted on beat 4 instead of beat 3."
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to last comparing beat with 4 instead of 3",
+              "met": true,
+              "evidence": "The last flag and the valid/active deassertion compare beat against 4 ... instead of 3 (`beat == 3` / `beat == LEN-1`)."
+            }
+          ],
+          "seconds": 9.6,
+          "input_tokens": 2727,
+          "output_tokens": 1598
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.last",
+          "time": 65.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says the burst has five beats (valid high one cycle too long) and last arrives on the fifth beat instead of the fourth",
+              "met": true,
+              "evidence": "Valid is high for five beats (beat 0 to 4) instead of four, and last is asserted on beat 4 instead of beat 3; \"last=1 on beat 4, the fifth beat\""
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to last comparing beat with 4 instead of 3",
+              "met": true,
+              "evidence": "The last flag and the valid clear are keyed to beat==4 ... rather than beat==3 (BURST_LEN-1)"
+            }
+          ],
+          "seconds": 11.4,
+          "input_tokens": 2635,
+          "output_tokens": 1781
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.last",
+          "time": 65.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says the burst has five beats (valid high one cycle too long) and last arrives on the fifth beat instead of the fourth",
+              "met": true,
+              "evidence": "Valid is high for five beats (beat 0 to 4) instead of four, and last is asserted on beat 4 instead of beat 3."
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to last comparing beat with 4 instead of 3",
+              "met": true,
+              "evidence": "The terminal-beat compare appears to use 4 where the design needs 3 (for example `beat == 4`...)"
+            }
+          ],
+          "seconds": 12.1,
+          "input_tokens": 2598,
+          "output_tokens": 2174
+        }
+      ]
+    },
+    {
+      "case": "wave_cdc_pulse_lost",
+      "category": "cdc",
+      "score": 0.8,
+      "min": 0.6,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.8,
+          "signal": "tb.dut.src_level",
+          "time": 325.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "1/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says the second pulse never produces a dst_pulse (it is lost) because the one-cycle src_level pulse falls between dst_clk edges, and that the first one only arrived by luck of timing",
+              "met": true,
+              "evidence": "\"The first pulse only got through because its high window happened to overlap a dst_clk sampling edge at t=105. The second window (310\u2013320) falls between dst edges at 305 and 345.\""
+            },
+            {
+              "id": 2,
+              "item": "Suggests a toggle (or handshake) synchroniser, or stretching the pulse, instead of synchronising the pulse directly",
+              "met": false,
+              "evidence": "The document recommends fixing src_level so it holds as a toggle ('confirm it only toggles on src_pulse and holds otherwise'). It treats the intended design as already being a toggle synchroniser, and does not suggest switching to a toggle/handshake synchroniser or stretching the pulse in place of direct pulse synchronisation."
+            }
+          ],
+          "seconds": 27.5,
+          "input_tokens": 4004,
+          "output_tokens": 4851
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.src_level",
+          "time": 325.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says the second pulse never produces a dst_pulse (it is lost) because the one-cycle src_level pulse falls between dst_clk edges, and that the first one only arrived by luck of timing",
+              "met": true,
+              "evidence": "\"a 10 ns high pulse is missed when its phase does not line up with a dst_clk rising edge. Pulse 1 was caught only by phase luck.\""
+            },
+            {
+              "id": 2,
+              "item": "Suggests a toggle (or handshake) synchroniser, or stretching the pulse, instead of synchronising the pulse directly",
+              "met": true,
+              "evidence": "\"it should be `level <= ~level` on src_pulse, with no clear on the next cycle\" and \"holding a toggle that persists until the slower dst domain samples it\""
+            }
+          ],
+          "seconds": 19.5,
+          "input_tokens": 4006,
+          "output_tokens": 3689
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.6,
+          "signal": "tb.dut.sync",
+          "time": 315.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "0/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says the second pulse never produces a dst_pulse (it is lost) because the one-cycle src_level pulse falls between dst_clk edges, and that the first one only arrived by luck of timing",
+              "met": false,
+              "evidence": "Attributes the loss to a blocked capture (busy/ack/enable), not a pulse falling between dst_clk edges."
+            },
+            {
+              "id": 2,
+              "item": "Suggests a toggle (or handshake) synchroniser, or stretching the pulse, instead of synchronising the pulse directly",
+              "met": false,
+              "evidence": "No toggle/handshake synchroniser or pulse-stretching suggestion; handshake is only named as a possible cause."
+            }
+          ],
+          "seconds": 20.5,
+          "input_tokens": 3879,
+          "output_tokens": 3701
+        }
+      ]
+    },
+    {
+      "case": "wave_control_gray",
+      "category": "control",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "none",
+          "time": null,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "1/1",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says the waveform matches the intended behaviour and reports no bug",
+              "met": true,
+              "evidence": "Summary: \"Every sampled value matches the intended Gray sequence\"; \"Likely cause: none. No mismatch was found in the window.\""
+            }
+          ],
+          "seconds": 7.7,
+          "input_tokens": 2342,
+          "output_tokens": 1387
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "none",
+          "time": null,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "1/1",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says the waveform matches the intended behaviour and reports no bug",
+              "met": true,
+              "evidence": "Summary: \"Nothing is wrong.\" and \"Likely cause: none. The design matches the stated intent.\""
+            }
+          ],
+          "seconds": 6.8,
+          "input_tokens": 2280,
+          "output_tokens": 1082
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "none",
+          "time": null,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "1/1",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says the waveform matches the intended behaviour and reports no bug",
+              "met": true,
+              "evidence": "Summary: \"The design matches the intended behaviour in every sampled cycle.\" and \"Likely cause: none. No mismatch with the intended sequence was found.\""
+            }
+          ],
+          "seconds": 7.6,
+          "input_tokens": 2411,
+          "output_tokens": 1200
+        }
+      ]
+    },
+    {
+      "case": "wave_counter_wrap",
+      "category": "off-by-one",
+      "score": 0.867,
+      "min": 0.8,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.count",
+          "time": 115.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says count goes to 10 (0xa) after 9 instead of wrapping to 0",
+              "met": true,
+              "evidence": "The first failure is the wrap: after 9 the counter goes to 'a' (10) instead of returning to 0."
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to the wrap condition comparing against 10 instead of 9 (an off-by-one in the wrap compare)",
+              "met": true,
+              "evidence": "It may compare against the wrong constant (for example 4'd10 instead of 4'd9)"
+            }
+          ],
+          "seconds": 11.5,
+          "input_tokens": 2653,
+          "output_tokens": 1846
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.8,
+          "signal": "tb.dut.count",
+          "time": 115.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "1/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says count goes to 10 (0xa) after 9 instead of wrapping to 0",
+              "met": true,
+              "evidence": "It counts on to 10 (a) before returning to 0; \"t=115 count: shows a (10) when it should show 0\""
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to the wrap condition comparing against 10 instead of 9 (an off-by-one in the wrap compare)",
+              "met": false,
+              "evidence": "The document attributes the bug to a missing wrap or the wrong constant, giving 4'hF as its example. It never names a compare against 10 or an off-by-one."
+            }
+          ],
+          "seconds": 9.1,
+          "input_tokens": 2572,
+          "output_tokens": 1419
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.8,
+          "signal": "tb.dut.count",
+          "time": 115.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "1/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says count goes to 10 (0xa) after 9 instead of wrapping to 0",
+              "met": true,
+              "evidence": "count=a (10) when it should be 0 after wrapping from 9"
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to the wrap condition comparing against 10 instead of 9 (an off-by-one in the wrap compare)",
+              "met": false,
+              "evidence": "The document only lists `count == 4'd10` as one example among possibilities (\"The wrap is missing or uses the wrong compare, such as ... or no wrap check at all\"). It does not clearly attribute the bug to the off-by-one compare."
+            }
+          ],
+          "seconds": 8.7,
+          "input_tokens": 2617,
+          "output_tokens": 1508
+        }
+      ]
+    },
+    {
+      "case": "wave_data_unstable",
+      "category": "handshake",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.data",
+          "time": 65.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says data changes while valid is high and ready is low (during the stall)",
+              "met": true,
+              "evidence": "t=65 tb.dut.data: data is 04 while valid=1 and ready=0. It should still be 03"
+            },
+            {
+              "id": 2,
+              "item": "Says the sink therefore misses or skips payloads, or attributes it to data advancing every valid cycle instead of only on a handshake",
+              "met": true,
+              "evidence": "payloads 03, 04 and 05 are never accepted; the data increment must be enabled only when valid && ready, not on every clock while valid is asserted"
+            }
+          ],
+          "seconds": 15.4,
+          "input_tokens": 3151,
+          "output_tokens": 2532
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.data",
+          "time": 65.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says data changes while valid is high and ready is low (during the stall)",
+              "met": true,
+              "evidence": "Observation 1-2: data changes from 03 to 04 to 05 while valid=1, ready=0 (stalled); \"Data must hold at 03 until ready goes high\""
+            },
+            {
+              "id": 2,
+              "item": "Says the sink therefore misses or skips payloads, or attributes it to data advancing every valid cycle instead of only on a handshake",
+              "met": true,
+              "evidence": "\"Payloads 03, 04 and 05 are overwritten... so the sink never sees them\"; \"source advances its payload counter every cycle instead of only on a completed handshake\""
+            }
+          ],
+          "seconds": 11.5,
+          "input_tokens": 3021,
+          "output_tokens": 2091
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.data",
+          "time": 65.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says data changes while valid is high and ready is low (during the stall)",
+              "met": true,
+              "evidence": "t=65 tb.dut.data: the value is 04, but the source is stalled (valid=1, ready=0...) and data should hold 03; data goes 03, 04, 05, 06 during it."
+            },
+            {
+              "id": 2,
+              "item": "Says the sink therefore misses or skips payloads, or attributes it to data advancing every valid cycle instead of only on a handshake",
+              "met": true,
+              "evidence": "payloads 03, 04 and 05 are skipped and the sink accepts 06 after 02; The source advances its payload counter every cycle instead of only on a valid&ready transfer."
+            }
+          ],
+          "seconds": 14.2,
+          "input_tokens": 2963,
+          "output_tokens": 2158
+        }
+      ]
+    },
+    {
+      "case": "wave_fifo_full_late",
+      "category": "handshake",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.full",
+          "time": 65.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says full stays low when count reaches 4, so a fifth write is accepted and count reaches 5",
+              "met": true,
+              "evidence": "t=65 full: count is 4 but full is 0... write of 50 is accepted (wptr 3\u21920, count 4\u21925)"
+            },
+            {
+              "id": 2,
+              "item": "Says this overwrites the oldest entry or corrupts the read data, or attributes it to full comparing against 5 instead of 4",
+              "met": true,
+              "evidence": "overwrites the oldest entry (10), and the reads return 50 first instead of 10"
+            }
+          ],
+          "seconds": 14.9,
+          "input_tokens": 3747,
+          "output_tokens": 2726
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.full",
+          "time": 65.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says full stays low when count reaches 4, so a fifth write is accepted and count reaches 5",
+              "met": true,
+              "evidence": "Observation 1: count is 4 but full is still 0; Observation 2: write of 50 accepted while count is 4; Observation 3: count reaches 5 on a 4-entry FIFO"
+            },
+            {
+              "id": 2,
+              "item": "Says this overwrites the oldest entry or corrupts the read data, or attributes it to full comparing against 5 instead of 4",
+              "met": true,
+              "evidence": "Summary: the write at t=65 overwrites entry 0 (10), and reads return 50, 20, 30, 40, 50 instead of 10, 20, 30, 40"
+            }
+          ],
+          "seconds": 14.8,
+          "input_tokens": 3666,
+          "output_tokens": 2562
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.full",
+          "time": 65.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says full stays low when count reaches 4, so a fifth write is accepted and count reaches 5",
+              "met": true,
+              "evidence": "\"t=65 full: count is 4 here... full is still 0, and the 50 write is accepted\" and \"count goes to 5, which exceeds the depth of 4\""
+            },
+            {
+              "id": 2,
+              "item": "Says this overwrites the oldest entry or corrupts the read data, or attributes it to full comparing against 5 instead of 4",
+              "met": true,
+              "evidence": "\"The 50 overwrote entry 0... so the oldest entry is lost\" and \"The stored 10 was overwritten.\""
+            }
+          ],
+          "seconds": 17.3,
+          "input_tokens": 3618,
+          "output_tokens": 3214
+        }
+      ]
+    },
+    {
+      "case": "wave_fsm_stuck",
+      "category": "fsm",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.state",
+          "time": 75.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says the FSM stays in BUSY after done_in pulses (no DONE state, ack never asserted)",
+              "met": true,
+              "evidence": "state stays at BUSY (1) and `ack` never goes high"
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to the BUSY transition testing the wrong signal (start instead of done_in) or ignoring done_in",
+              "met": true,
+              "evidence": "BUSY branch of the next-state logic does not take the DONE transition when `done_in` is high... a case/if condition that tests the wrong signal or polarity"
+            }
+          ],
+          "seconds": 12.8,
+          "input_tokens": 2815,
+          "output_tokens": 2033
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.state",
+          "time": 75.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says the FSM stays in BUSY after done_in pulses (no DONE state, ack never asserted)",
+              "met": true,
+              "evidence": "FSM stays in BUSY after done_in goes high at t=65 and never reaches DONE; ack stays 0"
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to the BUSY transition testing the wrong signal (start instead of done_in) or ignoring done_in",
+              "met": true,
+              "evidence": "BUSY-state next-state logic does not take transition when done_in is high; case arm for BUSY that omits ... the done_in condition"
+            }
+          ],
+          "seconds": 11.3,
+          "input_tokens": 2654,
+          "output_tokens": 1895
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.state",
+          "time": 75.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says the FSM stays in BUSY after done_in pulses (no DONE state, ack never asserted)",
+              "met": true,
+              "evidence": "state is still 1 at t=75 and stays there through t=125; ack stays 0... DONE is never entered"
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to the BUSY transition testing the wrong signal (start instead of done_in) or ignoring done_in",
+              "met": true,
+              "evidence": "The BUSY branch of the next-state logic does not take the done_in transition... done_in condition that is missing or mistyped in the BUSY case arm"
+            }
+          ],
+          "seconds": 10.2,
+          "input_tokens": 2789,
+          "output_tokens": 1780
+        }
+      ]
+    },
+    {
+      "case": "wave_reset_x",
+      "category": "reset",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.parity",
+          "time": 15.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says parity is still X (unknown) after reset is released, and stays X because XOR with X is X",
+              "met": true,
+              "evidence": "\"parity never leaves x in the window\"; \"The XOR of x with any input stays x, so in_valid cannot clear the error.\""
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to parity missing from the reset branch",
+              "met": true,
+              "evidence": "\"the parity accumulator has no reset assignment, or its reset branch is missing from the always block\""
+            }
+          ],
+          "seconds": 12.9,
+          "input_tokens": 2689,
+          "output_tokens": 2255
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.parity",
+          "time": 15.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says parity is still X (unknown) after reset is released, and stays X because XOR with X is X",
+              "met": true,
+              "evidence": "\"t=15 tb.dut.parity: x at the first sample after reset is released\" and \"Once parity is x, `parity ^ f(in_data)` stays x forever\""
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to parity missing from the reset branch",
+              "met": true,
+              "evidence": "\"Likely cause: parity is missing from the synchronous reset branch\""
+            }
+          ],
+          "seconds": 10.0,
+          "input_tokens": 2395,
+          "output_tokens": 1727
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.parity",
+          "time": 15.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says parity is still X (unknown) after reset is released, and stays X because XOR with X is X",
+              "met": true,
+              "evidence": "\"parity is never cleared by reset and stays x for the whole 0\u2013100 ns window\" and \"Once x, XOR keeps it x, so even correct inputs cannot recover it.\""
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to parity missing from the reset branch",
+              "met": true,
+              "evidence": "\"the reset branch of the always block assigns `sum` to 0 but has no matching assignment for `parity`, or `parity` is not in the reset list.\""
+            }
+          ],
+          "seconds": 11.7,
+          "input_tokens": 2497,
+          "output_tokens": 1946
+        }
+      ]
+    },
+    {
+      "case": "wave_short_strobe",
+      "category": "combinational",
+      "score": 0.867,
+      "min": 0.8,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.strobe",
+          "time": 35.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says strobe is only high for half a clock cycle (5 ns), so a flip-flop sampling on the rising edge never sees it high",
+              "met": true,
+              "evidence": "each pulse is only 5 ns wide, so no rising clock edge ever samples it high"
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to strobe being gated with (ANDed with) the clock",
+              "met": true,
+              "evidence": "a combinational term that includes clk (for example `assign strobe = ~clk & (cnt == 3)`)"
+            }
+          ],
+          "seconds": 11.6,
+          "input_tokens": 2672,
+          "output_tokens": 1950
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.8,
+          "signal": "tb.dut.strobe",
+          "time": 35.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "1/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says strobe is only high for half a clock cycle (5 ns), so a flip-flop sampling on the rising edge never sees it high",
+              "met": true,
+              "evidence": "three 5 ns pulses, half a clock period wide, that do not span a rising edge... sampled values at every rising edge are 0"
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to strobe being gated with (ANDed with) the clock",
+              "met": false,
+              "evidence": "Attributes cause to combinational decode of cnt or wrong clock phase (negedge/delayed assignment), not gating with the clock"
+            }
+          ],
+          "seconds": 13.2,
+          "input_tokens": 2740,
+          "output_tokens": 2256
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.8,
+          "signal": "tb.dut.strobe",
+          "time": 35.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "1/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says strobe is only high for half a clock cycle (5 ns), so a flip-flop sampling on the rising edge never sees it high",
+              "met": true,
+              "evidence": "strobe never reads high at a rising clk edge in the sampled window... glitch high for 5 ns, not one full 10 ns cycle"
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to strobe being gated with (ANDed with) the clock",
+              "met": false,
+              "evidence": "Document attributes it to combinational decode of cnt, not gating with the clock"
+            }
+          ],
+          "seconds": 11.1,
+          "input_tokens": 2733,
+          "output_tokens": 2003
+        }
+      ]
+    },
+    {
+      "case": "wave_valid_drop",
+      "category": "handshake",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.valid",
+          "time": 65.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says valid was dropped while ready was low, before the word was accepted",
+              "met": true,
+              "evidence": "t=65 valid falls 1\u21920 while ready is still 0 and data is still 22... Word 22 is never accepted"
+            },
+            {
+              "id": 2,
+              "item": "Notes that the remaining words (33 and 44, or the stalled word onwards) are never sent, or attributes it to a timeout or give-up counter in the source",
+              "met": true,
+              "evidence": "33 and 44 are never presented; stall timeout or wait-counter compare that deasserts valid"
+            }
+          ],
+          "seconds": 12.1,
+          "input_tokens": 2913,
+          "output_tokens": 2277
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.valid",
+          "time": 65.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says valid was dropped while ready was low, before the word was accepted",
+              "met": true,
+              "evidence": "t=65 tb.dut.valid: valid falls to 0 while ready is still 0 and data is still 22... word 22 is dropped."
+            },
+            {
+              "id": 2,
+              "item": "Notes that the remaining words (33 and 44, or the stalled word onwards) are never sent, or attributes it to a timeout or give-up counter in the source",
+              "met": true,
+              "evidence": "Data 33 and 44 are never presented; source drops valid when wait_cnt reaches 2, which looks like a stall timeout or abort condition"
+            }
+          ],
+          "seconds": 10.4,
+          "input_tokens": 2930,
+          "output_tokens": 1890
+        },
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.valid",
+          "time": 65.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says valid was dropped while ready was low, before the word was accepted",
+              "met": true,
+              "evidence": "valid falls to 0 while ready is still 0 and data is still 22. This violates the valid/ready rule"
+            },
+            {
+              "id": 2,
+              "item": "Notes that the remaining words (33 and 44, or the stalled word onwards) are never sent, or attributes it to a timeout or give-up counter in the source",
+              "met": true,
+              "evidence": "valid remains 0 through t=155, so 33 and 44 are never sent; also suggests a stall/timeout counter that clears valid"
+            }
+          ],
+          "seconds": 11.5,
+          "input_tokens": 2974,
+          "output_tokens": 1963
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}

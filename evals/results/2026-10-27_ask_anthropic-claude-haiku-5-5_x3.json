@@ -1,0 +1,1575 @@
+{
+  "format": 2,
+  "date": "2026-10-27",
+  "mode": "ask",
+  "model": "anthropic:claude-haiku-5-5",
+  "simulator": "auto",
+  "repeat": 3,
+  "prompt": "ask",
+  "mean_score": 0.922,
+  "run_means": [
+    0.917,
+    0.917,
+    0.933
+  ],
+  "cost_usd": 0.2035,
+  "seconds": 272.0,
+  "usage": "72 calls \u00b7 47,802 in \u00b7 39,300 out \u00b7 24,815 cache-read \u00b7 est. $0.2035",
+  "cases": [
+    {
+      "case": "async_fifo_gray",
+      "category": "cdc",
+      "score": 0.933,
+      "min": 0.8,
+      "max": 1.0,
+      "full_passes": 2,
+      "repeat": 3,
+      "runs": [
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "States that only one bit changes per increment in Gray code",
+              "met": true,
+              "evidence": "\"a Gray code changes only one bit per increment\"; \"only one bit toggles per step\""
+            },
+            {
+              "id": 2,
+              "item": "Explains that the synchronized value is therefore either the old or the new pointer, never a mix of bits",
+              "met": true,
+              "evidence": "\"The synchronizer either captures the old or the new value, so the receiver sees either the previous or the next pointer.\""
+            },
+            {
+              "id": 3,
+              "item": "Explains that a binary pointer can change several bits at once and be captured as an unrelated value",
+              "met": true,
+              "evidence": "\"A binary counter can change many bits at once (e.g. 0111 \u2192 1000)... producing a pointer value that never existed, such as 1111 or 0000.\""
+            },
+            {
+              "id": 4,
+              "item": "Notes that the synchronized pointer lags, so full/empty are pessimistic (conservative) rather than unsafe",
+              "met": true,
+              "evidence": "\"Both are conservative, so the FIFO never overflows or underflows, at the cost of a few cycles of latency.\""
+            },
+            {
+              "id": 5,
+              "item": "Mentions the extra pointer bit (or equivalent) used to tell full from empty",
+              "met": true,
+              "evidence": "\"Pointer width needs one extra bit beyond the address width so full and empty can be distinguished.\""
+            }
+          ],
+          "seconds": 7.1,
+          "input_tokens": 1922,
+          "output_tokens": 980
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "States that only one bit changes per increment in Gray code",
+              "met": true,
+              "evidence": "A Gray code changes exactly one bit per increment."
+            },
+            {
+              "id": 2,
+              "item": "Explains that the synchronized value is therefore either the old or the new pointer, never a mix of bits",
+              "met": true,
+              "evidence": "At the sampling instant the destination sees either the old value or the new value"
+            },
+            {
+              "id": 3,
+              "item": "Explains that a binary pointer can change several bits at once and be captured as an unrelated value",
+              "met": true,
+              "evidence": "0111 \u2192 1000 flips four bits... a pointer value that never existed"
+            },
+            {
+              "id": 4,
+              "item": "Notes that the synchronized pointer lags, so full/empty are pessimistic (conservative) rather than unsafe",
+              "met": true,
+              "evidence": "Since the full/empty logic is conservative, being one step stale is harmless"
+            },
+            {
+              "id": 5,
+              "item": "Mentions the extra pointer bit (or equivalent) used to tell full from empty",
+              "met": true,
+              "evidence": "Each pointer keeps an extra MSB so full and empty can be distinguished"
+            }
+          ],
+          "seconds": 6.1,
+          "input_tokens": 1934,
+          "output_tokens": 906
+        },
+        {
+          "score": 0.8,
+          "status": "ok",
+          "rubric_met": "4/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "States that only one bit changes per increment in Gray code",
+              "met": true,
+              "evidence": "Gray-coded so that only one bit changes on any increment"
+            },
+            {
+              "id": 2,
+              "item": "Explains that the synchronized value is therefore either the old or the new pointer, never a mix of bits",
+              "met": true,
+              "evidence": "the synchronized value is always either the old pointer or the new one... never a wrong intermediate"
+            },
+            {
+              "id": 3,
+              "item": "Explains that a binary pointer can change several bits at once and be captured as an unrelated value",
+              "met": true,
+              "evidence": "A binary 3\u21924 transition (011\u2192100) flips three bits. A 2-FF synchronizer may capture 111 or 000"
+            },
+            {
+              "id": 4,
+              "item": "Notes that the synchronized pointer lags, so full/empty are pessimistic (conservative) rather than unsafe",
+              "met": false,
+              "evidence": ""
+            },
+            {
+              "id": 5,
+              "item": "Mentions the extra pointer bit (or equivalent) used to tell full from empty",
+              "met": true,
+              "evidence": "The pointer is one bit wider than the address so that full and empty can be distinguished"
+            }
+          ],
+          "seconds": 9.5,
+          "input_tokens": 1946,
+          "output_tokens": 922
+        }
+      ]
+    },
+    {
+      "case": "axi_handshake",
+      "category": "protocol",
+      "score": 0.933,
+      "min": 0.8,
+      "max": 1.0,
+      "full_passes": 2,
+      "repeat": 3,
+      "runs": [
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "States that a transfer happens on a clock edge where both VALID and READY are high",
+              "met": true,
+              "evidence": "A transfer occurs on a rising clock edge when both VALID and READY are high."
+            },
+            {
+              "id": 2,
+              "item": "States that once VALID is asserted the source must keep VALID and the payload stable until the transfer",
+              "met": true,
+              "evidence": "it must keep VALID high and hold the payload stable until the transfer completes"
+            },
+            {
+              "id": 3,
+              "item": "States that the source must not wait for READY before asserting VALID",
+              "met": true,
+              "evidence": "VALID must not wait for READY. A source must not make VALID depend on READY being high."
+            },
+            {
+              "id": 4,
+              "item": "States that READY may be asserted before, with or after VALID, and the destination may wait for VALID",
+              "met": true,
+              "evidence": "The destination may make READY depend on VALID (wait until VALID, then assert READY); \"Assuming READY-before-VALID is required. It isn't; both orderings are legal.\""
+            },
+            {
+              "id": 5,
+              "item": "Explains that these rules prevent deadlock",
+              "met": true,
+              "evidence": "This is the rule that prevents deadlock; \"Any such loop deadlocks.\""
+            }
+          ],
+          "seconds": 7.3,
+          "input_tokens": 2125,
+          "output_tokens": 1192
+        },
+        {
+          "score": 0.8,
+          "status": "ok",
+          "rubric_met": "4/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "States that a transfer happens on a clock edge where both VALID and READY are high",
+              "met": true,
+              "evidence": "A transfer happens on a rising clock edge when both VALID and READY are high."
+            },
+            {
+              "id": 2,
+              "item": "States that once VALID is asserted the source must keep VALID and the payload stable until the transfer",
+              "met": true,
+              "evidence": "Once VALID is asserted, it must stay asserted until the handshake completes... cannot withdraw VALID or change the payload"
+            },
+            {
+              "id": 3,
+              "item": "States that the source must not wait for READY before asserting VALID",
+              "met": true,
+              "evidence": "Source must not wait for READY before asserting VALID."
+            },
+            {
+              "id": 4,
+              "item": "States that READY may be asserted before, with or after VALID, and the destination may wait for VALID",
+              "met": true,
+              "evidence": "Destination may wait for VALID before asserting READY... It can wait for VALID, or be held high ahead of it."
+            },
+            {
+              "id": 5,
+              "item": "Explains that these rules prevent deadlock",
+              "met": false,
+              "evidence": "Mentions combinational deadlock and loops in the dependency rule, but never explains that the rules prevent deadlock overall."
+            }
+          ],
+          "seconds": 7.1,
+          "input_tokens": 1912,
+          "output_tokens": 973
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "States that a transfer happens on a clock edge where both VALID and READY are high",
+              "met": true,
+              "evidence": "Transfer occurs only when VALID && READY are both high at a rising edge of ACLK."
+            },
+            {
+              "id": 2,
+              "item": "States that once VALID is asserted the source must keep VALID and the payload stable until the transfer",
+              "met": true,
+              "evidence": "Once VALID is asserted, it must stay asserted until the handshake completes. VALID cannot be dropped or payload changed while waiting for READY."
+            },
+            {
+              "id": 3,
+              "item": "States that the source must not wait for READY before asserting VALID",
+              "met": true,
+              "evidence": "Source must not wait for READY before asserting VALID."
+            },
+            {
+              "id": 4,
+              "item": "States that READY may be asserted before, with or after VALID, and the destination may wait for VALID",
+              "met": true,
+              "evidence": "Destination may wait for VALID before asserting READY, or assert READY first. Either is legal."
+            },
+            {
+              "id": 5,
+              "item": "Explains that these rules prevent deadlock",
+              "met": true,
+              "evidence": "Deadlock avoidance: because the source never waits on READY before raising VALID... a design where each side waits for the other will deadlock."
+            }
+          ],
+          "seconds": 6.6,
+          "input_tokens": 1916,
+          "output_tokens": 985
+        }
+      ]
+    },
+    {
+      "case": "blocking_vs_nonblocking",
+      "category": "coding",
+      "score": 0.933,
+      "min": 0.8,
+      "max": 1.0,
+      "full_passes": 2,
+      "repeat": 3,
+      "runs": [
+        {
+          "score": 0.8,
+          "status": "ok",
+          "rubric_met": "4/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Recommends non-blocking (<=) for sequential logic in clocked (always_ff) blocks",
+              "met": true,
+              "evidence": "use non-blocking (`<=`) for sequential logic in `always_ff`"
+            },
+            {
+              "id": 2,
+              "item": "Recommends blocking (=) for combinational logic in always_comb blocks",
+              "met": true,
+              "evidence": "blocking (`=`) for combinational logic in `always_comb`"
+            },
+            {
+              "id": 3,
+              "item": "Explains that blocking assignments in sequential logic let later statements see updated values (for example a shift register collapsing)",
+              "met": false,
+              "evidence": "The document mentions the swap idiom `a = b; b = a;` not swapping and event-order dependence, but never explains that later statements see updated values or gives a shift-register collapse example."
+            },
+            {
+              "id": 4,
+              "item": "Mentions simulation races or simulation/synthesis mismatch",
+              "met": true,
+              "evidence": "Race between flops; Simulation/hardware mismatch, possible gate-level race"
+            },
+            {
+              "id": 5,
+              "item": "Advises against using both kinds of assignment on the same variable",
+              "met": true,
+              "evidence": "Don't mix both styles for the same variable."
+            }
+          ],
+          "seconds": 6.4,
+          "input_tokens": 1941,
+          "output_tokens": 950
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Recommends non-blocking (<=) for sequential logic in clocked (always_ff) blocks",
+              "met": true,
+              "evidence": "use non-blocking (`<=`) for sequential logic in `always_ff`"
+            },
+            {
+              "id": 2,
+              "item": "Recommends blocking (=) for combinational logic in always_comb blocks",
+              "met": true,
+              "evidence": "blocking (`=`) for combinational logic in `always_comb`"
+            },
+            {
+              "id": 3,
+              "item": "Explains that blocking assignments in sequential logic let later statements see updated values (for example a shift register collapsing)",
+              "met": true,
+              "evidence": "`a = b; b = c;` makes `a` and `b` both take `c` in simulation"
+            },
+            {
+              "id": 4,
+              "item": "Mentions simulation races or simulation/synthesis mismatch",
+              "met": true,
+              "evidence": "Race conditions, nondeterministic results; sim/synth mismatch"
+            },
+            {
+              "id": 5,
+              "item": "Advises against using both kinds of assignment on the same variable",
+              "met": true,
+              "evidence": "Don't mix them on the same signal."
+            }
+          ],
+          "seconds": 6.3,
+          "input_tokens": 1851,
+          "output_tokens": 826
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Recommends non-blocking (<=) for sequential logic in clocked (always_ff) blocks",
+              "met": true,
+              "evidence": "use non-blocking (`<=`) for sequential logic (`always_ff`)"
+            },
+            {
+              "id": 2,
+              "item": "Recommends blocking (=) for combinational logic in always_comb blocks",
+              "met": true,
+              "evidence": "blocking (`=`) for combinational logic (`always_comb`)"
+            },
+            {
+              "id": 3,
+              "item": "Explains that blocking assignments in sequential logic let later statements see updated values (for example a shift register collapsing)",
+              "met": true,
+              "evidence": "`q1 = d; q2 = q1;` ... `q2` gets the new `d` in the same edge, so the chain collapses into one stage"
+            },
+            {
+              "id": 4,
+              "item": "Mentions simulation races or simulation/synthesis mismatch",
+              "met": true,
+              "evidence": "Race-dependent; the simulated result may not match the netlist"
+            },
+            {
+              "id": 5,
+              "item": "Advises against using both kinds of assignment on the same variable",
+              "met": true,
+              "evidence": "Don't mix both kinds of assignment to the same variable."
+            }
+          ],
+          "seconds": 6.4,
+          "input_tokens": 1940,
+          "output_tokens": 937
+        }
+      ]
+    },
+    {
+      "case": "cdc_two_flop",
+      "category": "cdc",
+      "score": 0.933,
+      "min": 0.8,
+      "max": 1.0,
+      "full_passes": 2,
+      "repeat": 3,
+      "runs": [
+        {
+          "score": 0.8,
+          "status": "ok",
+          "rubric_met": "4/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Explains that the first flop can go metastable when its setup or hold time is violated",
+              "met": true,
+              "evidence": "The first flop can go metastable when its D input changes close to the capture clock edge (setup/hold violation)."
+            },
+            {
+              "id": 2,
+              "item": "Explains that the second flop gives the first a clock period to resolve, making failures rare (MTBF)",
+              "met": true,
+              "evidence": "gives the first one roughly one full destination clock period to settle... MTBF = e^(t_r/\u03c4)..."
+            },
+            {
+              "id": 3,
+              "item": "States that the synchronizer reduces but doesn't eliminate the chance of metastability",
+              "met": false,
+              "evidence": "Document speaks of MTBF in years-to-millennia but never explicitly states metastability is reduced, not eliminated."
+            },
+            {
+              "id": 4,
+              "item": "Says it isn't suitable for multi-bit buses whose bits can change together, and names an alternative (Gray code, handshake or async FIFO)",
+              "met": true,
+              "evidence": "Multi-bit buses... Use Gray code, a handshake, or an async FIFO."
+            },
+            {
+              "id": 5,
+              "item": "Says a pulse shorter than the destination clock period can be missed, and names a remedy (toggle synchronizer, handshake or pulse stretching)",
+              "met": true,
+              "evidence": "A pulse narrower than the destination period can be missed entirely... Use a toggle synchroniser or a pulse stretcher with a handshake back."
+            }
+          ],
+          "seconds": 8.7,
+          "input_tokens": 2300,
+          "output_tokens": 1304
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Explains that the first flop can go metastable when its setup or hold time is violated",
+              "met": true,
+              "evidence": "The first flop may resolve to an invalid or intermediate voltage when its input changes close to its sampling edge."
+            },
+            {
+              "id": 2,
+              "item": "Explains that the second flop gives the first a clock period to resolve, making failures rare (MTBF)",
+              "met": true,
+              "evidence": "The second flop gives that signal almost a full destination clock period to resolve; MTBF formula"
+            },
+            {
+              "id": 3,
+              "item": "States that the synchronizer reduces but doesn't eliminate the chance of metastability",
+              "met": true,
+              "evidence": "A two-flop synchronizer reduces the probability that a metastable state ... propagates; MTBF could drop below product lifetime"
+            },
+            {
+              "id": 4,
+              "item": "Says it isn't suitable for multi-bit buses whose bits can change together, and names an alternative (Gray code, handshake or async FIFO)",
+              "met": true,
+              "evidence": "Multi-bit buses... Use a Gray-coded counter, a handshake, or an async FIFO."
+            },
+            {
+              "id": 5,
+              "item": "Says a pulse shorter than the destination clock period can be missed, and names a remedy (toggle synchronizer, handshake or pulse stretching)",
+              "met": true,
+              "evidence": "A pulse narrower than one destination clock can be missed entirely. Use a toggle synchronizer, pulse stretcher, or handshake."
+            }
+          ],
+          "seconds": 8.4,
+          "input_tokens": 2193,
+          "output_tokens": 1199
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Explains that the first flop can go metastable when its setup or hold time is violated",
+              "met": true,
+              "evidence": "The first flop can go metastable when its input changes near its sampling edge."
+            },
+            {
+              "id": 2,
+              "item": "Explains that the second flop gives the first a clock period to resolve, making failures rare (MTBF)",
+              "met": true,
+              "evidence": "The second flop samples the first flop's output one destination clock period later, which gives that resolution time to finish... MTBF improves exponentially"
+            },
+            {
+              "id": 3,
+              "item": "States that the synchronizer reduces but doesn't eliminate the chance of metastability",
+              "met": true,
+              "evidence": "The output is then a clean, synchronous logic level with a very low probability of being wrong."
+            },
+            {
+              "id": 4,
+              "item": "Says it isn't suitable for multi-bit buses whose bits can change together, and names an alternative (Gray code, handshake or async FIFO)",
+              "met": true,
+              "evidence": "Multi-bit buses... Use a Gray-coded counter or a handshake, or an asynchronous FIFO"
+            },
+            {
+              "id": 5,
+              "item": "Says a pulse shorter than the destination clock period can be missed, and names a remedy (toggle synchronizer, handshake or pulse stretching)",
+              "met": true,
+              "evidence": "A pulse narrower than one destination period can be missed entirely. Stretch it with a toggle, or use a pulse synchronizer"
+            }
+          ],
+          "seconds": 7.8,
+          "input_tokens": 2202,
+          "output_tokens": 1194
+        }
+      ]
+    },
+    {
+      "case": "fifo_depth",
+      "category": "calculation",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "4/4",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Works out that the burst lasts 1.2 microseconds (120 cycles at 100 MHz)",
+              "met": true,
+              "evidence": "Producer writes 120 words over 120 cycles at 100 MHz, so the burst lasts 1.2 \u00b5s."
+            },
+            {
+              "id": 2,
+              "item": "Works out that the consumer reads 96 words during the burst",
+              "met": true,
+              "evidence": "the consumer reads 80 MHz \u00d7 1.2 \u00b5s = 96 words during the burst"
+            },
+            {
+              "id": 3,
+              "item": "Gives a minimum depth of 24 words",
+              "met": true,
+              "evidence": "If the consumer starts reading immediately and has no extra latency, 24 is the true minimum."
+            },
+            {
+              "id": 4,
+              "item": "Recommends margin on top, for flag or synchronizer latency, or rounding up (for example to 32)",
+              "met": true,
+              "evidence": "pick 32 (power of two, covers the 24-word peak plus several cycles of latency and flag margin)"
+            }
+          ],
+          "seconds": 6.2,
+          "input_tokens": 2005,
+          "output_tokens": 978
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "4/4",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Works out that the burst lasts 1.2 microseconds (120 cycles at 100 MHz)",
+              "met": true,
+              "evidence": "Burst duration: 120 words \u00d7 10 ns (100 MHz) = 1.2 \u00b5s"
+            },
+            {
+              "id": 2,
+              "item": "Works out that the consumer reads 96 words during the burst",
+              "met": true,
+              "evidence": "1.2 \u00b5s \u00f7 12.5 ns (80 MHz) = 96 words"
+            },
+            {
+              "id": 3,
+              "item": "Gives a minimum depth of 24 words",
+              "met": true,
+              "evidence": "Minimum depth: 24 words"
+            },
+            {
+              "id": 4,
+              "item": "Recommends margin on top, for flag or synchronizer latency, or rounding up (for example to 32)",
+              "met": true,
+              "evidence": "32 if you want a power-of-two depth; Add a few words of margin for synchroniser latency"
+            }
+          ],
+          "seconds": 7.7,
+          "input_tokens": 1815,
+          "output_tokens": 1234
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "4/4",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Works out that the burst lasts 1.2 microseconds (120 cycles at 100 MHz)",
+              "met": true,
+              "evidence": "the burst lasts 120 \u00d7 10 ns = 1200 ns"
+            },
+            {
+              "id": 2,
+              "item": "Works out that the consumer reads 96 words during the burst",
+              "met": true,
+              "evidence": "In 1200 ns it removes 1200 / 12.5 = 96 words"
+            },
+            {
+              "id": 3,
+              "item": "Gives a minimum depth of 24 words",
+              "met": true,
+              "evidence": "Minimum depth: 24 words"
+            },
+            {
+              "id": 4,
+              "item": "Recommends margin on top, for flag or synchronizer latency, or rounding up (for example to 32)",
+              "met": true,
+              "evidence": "A depth of 32 (next power of two) gives margin; add roughly 4 entries for synchroniser latency"
+            }
+          ],
+          "seconds": 11.1,
+          "input_tokens": 1959,
+          "output_tokens": 2007
+        }
+      ]
+    },
+    {
+      "case": "fsm_encoding",
+      "category": "coding",
+      "score": 0.667,
+      "min": 0.6,
+      "max": 0.8,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "score": 0.6,
+          "status": "ok",
+          "rubric_met": "3/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "States that one-hot uses one flip-flop per state, while binary uses about log2(N)",
+              "met": false,
+              "evidence": "Document mentions extra registers for one-hot but never states one flop per state vs log2(N) for binary."
+            },
+            {
+              "id": 2,
+              "item": "Explains that one-hot next-state and output decoding is simpler or faster (fewer logic levels)",
+              "met": true,
+              "evidence": "Next-state logic for each bit is a small OR... typically one LUT level, versus a multi-level decode for binary."
+            },
+            {
+              "id": 3,
+              "item": "Notes that FPGAs have plenty of flip-flops, which favours one-hot",
+              "met": true,
+              "evidence": "Most FPGA fabrics have plenty of flip-flops per LUT, so the extra registers are usually cheap."
+            },
+            {
+              "id": 4,
+              "item": "Says binary (or Gray) suits designs with many states or where registers are scarce",
+              "met": false,
+              "evidence": "Document says binary suits small state counts (3\u20135 states) where flops are scarce, not many states; the 'registers scarce' part is met but the 'many states' part is contradicted."
+            },
+            {
+              "id": 5,
+              "item": "Mentions illegal-state recovery or that synthesis tools can choose the encoding automatically",
+              "met": true,
+              "evidence": "Synthesis tools often re-encode FSMs automatically; Add a default/illegal-state recovery branch."
+            }
+          ],
+          "seconds": 7.2,
+          "input_tokens": 1955,
+          "output_tokens": 1019
+        },
+        {
+          "score": 0.6,
+          "status": "ok",
+          "rubric_met": "3/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "States that one-hot uses one flip-flop per state, while binary uses about log2(N)",
+              "met": false,
+              "evidence": "Document says each state bit is a single flop and mentions extra state bits, but never states binary uses about log2(N) flops."
+            },
+            {
+              "id": 2,
+              "item": "Explains that one-hot next-state and output decoding is simpler or faster (fewer logic levels)",
+              "met": true,
+              "evidence": "\"next-state and output logic are shallower (often one LUT level per state bit)\""
+            },
+            {
+              "id": 3,
+              "item": "Notes that FPGAs have plenty of flip-flops, which favours one-hot",
+              "met": true,
+              "evidence": "\"FPGAs have abundant flip-flops in every logic cell, so the extra state bits are cheap.\""
+            },
+            {
+              "id": 4,
+              "item": "Says binary (or Gray) suits designs with many states or where registers are scarce",
+              "met": false,
+              "evidence": "Document says binary suits small state counts and scarce flops; rubric says 'many states or where registers are scarce'. The 'many states' part contradicts the document, which favors one-hot for large FSMs."
+            },
+            {
+              "id": 5,
+              "item": "Mentions illegal-state recovery or that synthesis tools can choose the encoding automatically",
+              "met": true,
+              "evidence": "\"Include an illegal-state recovery path with one-hot\" and \"synthesis tools often infer one-hot automatically\""
+            }
+          ],
+          "seconds": 7.2,
+          "input_tokens": 1879,
+          "output_tokens": 951
+        },
+        {
+          "score": 0.8,
+          "status": "ok",
+          "rubric_met": "4/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "States that one-hot uses one flip-flop per state, while binary uses about log2(N)",
+              "met": false,
+              "evidence": "Document says 'in state X is a single flop bit' but never states one flop per state vs log2(N) for binary."
+            },
+            {
+              "id": 2,
+              "item": "Explains that one-hot next-state and output decoding is simpler or faster (fewer logic levels)",
+              "met": true,
+              "evidence": "Next-state equations 'usually fits in one LUT level'; output logic is a direct flop tap."
+            },
+            {
+              "id": 3,
+              "item": "Notes that FPGAs have plenty of flip-flops, which favours one-hot",
+              "met": true,
+              "evidence": "'extra state flops are cheap compared with the LUT depth they save'; table: flop budget plenty -> one-hot."
+            },
+            {
+              "id": 4,
+              "item": "Says binary (or Gray) suits designs with many states or where registers are scarce",
+              "met": true,
+              "evidence": "'Binary (or gray) wins when state count is large and flip-flops are scarce.'"
+            },
+            {
+              "id": 5,
+              "item": "Mentions illegal-state recovery or that synthesis tools can choose the encoding automatically",
+              "met": true,
+              "evidence": "'Add an illegal-state check or use a safe default that recovers'; 'Many tools will re-encode FSMs automatically'."
+            }
+          ],
+          "seconds": 7.1,
+          "input_tokens": 1949,
+          "output_tokens": 990
+        }
+      ]
+    },
+    {
+      "case": "functional_coverage",
+      "category": "verification",
+      "score": 0.8,
+      "min": 0.8,
+      "max": 0.8,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "score": 0.8,
+          "status": "ok",
+          "rubric_met": "4/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Explains that code coverage automatically measures which lines, branches, toggles or FSM states were exercised",
+              "met": true,
+              "evidence": "Did every line/branch/expression/toggle execute? ... Automatically derived from the RTL; Line, branch, condition, FSM state/transition, toggle"
+            },
+            {
+              "id": 2,
+              "item": "Explains that functional coverage measures whether specified features or scenarios occurred, as defined by the engineer",
+              "met": true,
+              "evidence": "measures whether the verification environment has exercised the design features and scenarios you specified; Written by the verification engineer"
+            },
+            {
+              "id": 3,
+              "item": "Mentions covergroups, coverpoints, bins or crosses",
+              "met": true,
+              "evidence": "covergroups, cross products; coverpoint on burst_len with bins ... crossed"
+            },
+            {
+              "id": 4,
+              "item": "States that 100% code coverage doesn't mean the design is verified",
+              "met": true,
+              "evidence": "Code coverage is necessary but not sufficient. A line can execute with inputs that never trigger the bug."
+            },
+            {
+              "id": 5,
+              "item": "Mentions using coverage holes to steer constrained-random stimulus",
+              "met": false,
+              "evidence": "Only says low code coverage means missing directed or constrained-random stimulus; does not explicitly describe steering constrained-random stimulus using coverage holes."
+            }
+          ],
+          "seconds": 7.2,
+          "input_tokens": 2004,
+          "output_tokens": 1091
+        },
+        {
+          "score": 0.8,
+          "status": "ok",
+          "rubric_met": "4/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Explains that code coverage automatically measures which lines, branches, toggles or FSM states were exercised",
+              "met": true,
+              "evidence": "Code coverage ... generated automatically ... Line/statement, Branch, Toggle, FSM"
+            },
+            {
+              "id": 2,
+              "item": "Explains that functional coverage measures whether specified features or scenarios occurred, as defined by the engineer",
+              "met": true,
+              "evidence": "Functional coverage measures whether the design's specified behaviour has actually been exercised... defined by the verification engineer from the spec"
+            },
+            {
+              "id": 3,
+              "item": "Mentions covergroups, coverpoints, bins or crosses",
+              "met": true,
+              "evidence": "SystemVerilog `covergroup`/`coverpoint`/`cross`"
+            },
+            {
+              "id": 4,
+              "item": "States that 100% code coverage doesn't mean the design is verified",
+              "met": true,
+              "evidence": "100% code coverage with a missing feature is common... a design that is wrong but fully executed scores 100%"
+            },
+            {
+              "id": 5,
+              "item": "Mentions using coverage holes to steer constrained-random stimulus",
+              "met": false,
+              "evidence": ""
+            }
+          ],
+          "seconds": 6.4,
+          "input_tokens": 1977,
+          "output_tokens": 999
+        },
+        {
+          "score": 0.8,
+          "status": "ok",
+          "rubric_met": "4/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Explains that code coverage automatically measures which lines, branches, toggles or FSM states were exercised",
+              "met": true,
+              "evidence": "Code coverage is automatic, instrumented by the simulator... table: Line, Branch, Toggle, FSM"
+            },
+            {
+              "id": 2,
+              "item": "Explains that functional coverage measures whether specified features or scenarios occurred, as defined by the engineer",
+              "met": true,
+              "evidence": "Functional coverage measures whether the design's specified behaviour has been exercised... You define it yourself"
+            },
+            {
+              "id": 3,
+              "item": "Mentions covergroups, coverpoints, bins or crosses",
+              "met": true,
+              "evidence": "covergroups, coverpoints, bins, crosses"
+            },
+            {
+              "id": 4,
+              "item": "States that 100% code coverage doesn't mean the design is verified",
+              "met": true,
+              "evidence": "100% code coverage can miss bugs. A wrong arithmetic result on a path that executes correctly still passes line coverage."
+            },
+            {
+              "id": 5,
+              "item": "Mentions using coverage holes to steer constrained-random stimulus",
+              "met": false,
+              "evidence": "Only says to review holes to decide whether to add stimulus or waive; functional coverage 'drives closure in constrained-random' but no explicit steering of random stimulus using holes"
+            }
+          ],
+          "seconds": 7.0,
+          "input_tokens": 1972,
+          "output_tokens": 1045
+        }
+      ]
+    },
+    {
+      "case": "latch_inference",
+      "category": "coding",
+      "score": 0.867,
+      "min": 0.8,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 3,
+      "runs": [
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Explains that a combinational block that doesn't assign an output on every path infers a latch",
+              "met": true,
+              "evidence": "Unintended latches appear when a combinational always block can leave an output unassigned on some path... infers a latch."
+            },
+            {
+              "id": 2,
+              "item": "Names typical causes such as an if without else or a case without a default/full coverage",
+              "met": true,
+              "evidence": "`if` without `else`, or `case` without `default`"
+            },
+            {
+              "id": 3,
+              "item": "Recommends default assignments at the top of the block or complete else/default branches",
+              "met": true,
+              "evidence": "assign defaults at the top of the block; Always include `else` / `default`"
+            },
+            {
+              "id": 4,
+              "item": "Mentions always_comb or lint/synthesis warnings as a way to catch them",
+              "met": true,
+              "evidence": "Use `always_comb`...; Lint tools (Verilator -Wall, SpyGlass...) flag latch inference; Synthesis reports list inferred latches"
+            },
+            {
+              "id": 5,
+              "item": "Notes that latches are usually unintended and complicate timing analysis",
+              "met": true,
+              "evidence": "Treat any unexpected LATCH as a bug; Gate-level simulation and STA can behave differently around latches; a latch may still fail timing or glitch in silicon"
+            }
+          ],
+          "seconds": 7.7,
+          "input_tokens": 1936,
+          "output_tokens": 1012
+        },
+        {
+          "score": 0.8,
+          "status": "ok",
+          "rubric_met": "4/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Explains that a combinational block that doesn't assign an output on every path infers a latch",
+              "met": true,
+              "evidence": "Unintended latches are inferred when a combinational always block does not assign a signal on every path"
+            },
+            {
+              "id": 2,
+              "item": "Names typical causes such as an if without else or a case without a default/full coverage",
+              "met": true,
+              "evidence": "`if` without a matching `else`... `case` without `default`"
+            },
+            {
+              "id": 3,
+              "item": "Recommends default assignments at the top of the block or complete else/default branches",
+              "met": true,
+              "evidence": "Assign every output at the top of the block to a default value; Always include `default` in `case` and a final `else`"
+            },
+            {
+              "id": 4,
+              "item": "Mentions always_comb or lint/synthesis warnings as a way to catch them",
+              "met": true,
+              "evidence": "Use `always_comb`... Read the synthesis log for 'Inferred latch'... Lint flags incomplete assignments"
+            },
+            {
+              "id": 5,
+              "item": "Notes that latches are usually unintended and complicate timing analysis",
+              "met": false,
+              "evidence": "Document calls them 'unintended' and says treat as errors, but never mentions timing analysis complications"
+            }
+          ],
+          "seconds": 6.6,
+          "input_tokens": 1914,
+          "output_tokens": 960
+        },
+        {
+          "score": 0.8,
+          "status": "ok",
+          "rubric_met": "4/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Explains that a combinational block that doesn't assign an output on every path infers a latch",
+              "met": true,
+              "evidence": "Unintended latches are inferred when a combinational always block can leave an output unassigned on some execution path."
+            },
+            {
+              "id": 2,
+              "item": "Names typical causes such as an if without else or a case without a default/full coverage",
+              "met": true,
+              "evidence": "`if` without `else`, or `case` without `default`"
+            },
+            {
+              "id": 3,
+              "item": "Recommends default assignments at the top of the block or complete else/default branches",
+              "met": true,
+              "evidence": "Put a default value at the top of the block, then override it in the branches"
+            },
+            {
+              "id": 4,
+              "item": "Mentions always_comb or lint/synthesis warnings as a way to catch them",
+              "met": true,
+              "evidence": "Use `always_comb`... flags unintended latch inference; check the synthesis log; lint tools catch this"
+            },
+            {
+              "id": 5,
+              "item": "Notes that latches are usually unintended and complicate timing analysis",
+              "met": false,
+              "evidence": "The document calls latches unintended but never mentions timing analysis complications."
+            }
+          ],
+          "seconds": 6.6,
+          "input_tokens": 1861,
+          "output_tokens": 880
+        }
+      ]
+    },
+    {
+      "case": "reset_strategy",
+      "category": "coding",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "States that a synchronous reset only takes effect on a clock edge (needs a running clock)",
+              "met": true,
+              "evidence": "\"On the active clock edge while reset is asserted\"; \"Needs clock running: Yes, to reset\""
+            },
+            {
+              "id": 2,
+              "item": "States that an asynchronous reset takes effect immediately, without a clock",
+              "met": true,
+              "evidence": "\"Immediately, independent of clock\"; \"works with clock stopped\""
+            },
+            {
+              "id": 3,
+              "item": "Explains that releasing an asynchronous reset near a clock edge can cause metastability or recovery/removal violations",
+              "met": true,
+              "evidence": "\"the flop may go metastable: the reset release violates the recovery or removal time\""
+            },
+            {
+              "id": 4,
+              "item": "Describes a reset synchronizer: asynchronous assertion, synchronous deassertion through a flop chain",
+              "met": true,
+              "evidence": "Reset synchronizer with two flops: \"Assertion takes effect immediately... Deassertion propagates through the flops on the clock edge\""
+            },
+            {
+              "id": 5,
+              "item": "Mentions recovery and removal timing checks (or that release must meet timing like a data input)",
+              "met": true,
+              "evidence": "\"Reset is a recovery/removal check\"; \"recovery/removal is closed in STA\""
+            }
+          ],
+          "seconds": 7.2,
+          "input_tokens": 2121,
+          "output_tokens": 1138
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "States that a synchronous reset only takes effect on a clock edge (needs a running clock)",
+              "met": true,
+              "evidence": "Synchronous reset takes effect only on a clock edge; \"needs a running clock to reset anything\""
+            },
+            {
+              "id": 2,
+              "item": "States that an asynchronous reset takes effect immediately, without a clock",
+              "met": true,
+              "evidence": "asynchronous reset takes effect immediately, independent of the clock; \"works without a clock\""
+            },
+            {
+              "id": 3,
+              "item": "Explains that releasing an asynchronous reset near a clock edge can cause metastability or recovery/removal violations",
+              "met": true,
+              "evidence": "deassertion edge can violate recovery/removal timing... metastability on the release"
+            },
+            {
+              "id": 4,
+              "item": "Describes a reset synchronizer: asynchronous assertion, synchronous deassertion through a flop chain",
+              "met": true,
+              "evidence": "reset synchroniser: two (or more) flops... rst_n driving the asynchronous clear and a 1 shifted through"
+            },
+            {
+              "id": 5,
+              "item": "Mentions recovery and removal timing checks (or that release must meet timing like a data input)",
+              "met": true,
+              "evidence": "Check recovery/removal timing (the async-reset analogue of setup/hold) in your STA tool"
+            }
+          ],
+          "seconds": 8.0,
+          "input_tokens": 2264,
+          "output_tokens": 1274
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "States that a synchronous reset only takes effect on a clock edge (needs a running clock)",
+              "met": true,
+              "evidence": "Synchronous reset takes effect only on a clock edge; \"Needs the clock running to reset.\""
+            },
+            {
+              "id": 2,
+              "item": "States that an asynchronous reset takes effect immediately, without a clock",
+              "met": true,
+              "evidence": "asynchronous reset takes effect immediately, independent of the clock; \"works without a clock\""
+            },
+            {
+              "id": 3,
+              "item": "Explains that releasing an asynchronous reset near a clock edge can cause metastability or recovery/removal violations",
+              "met": true,
+              "evidence": "If it lands within the recovery/removal window of the clock edge, the flop can go metastable"
+            },
+            {
+              "id": 4,
+              "item": "Describes a reset synchronizer: asynchronous assertion, synchronous deassertion through a flop chain",
+              "met": true,
+              "evidence": "Reset synchroniser, typically two flops: assertion still asynchronous and immediate; release takes effect after two clock edges, synchronously"
+            },
+            {
+              "id": 5,
+              "item": "Mentions recovery and removal timing checks (or that release must meet timing like a data input)",
+              "met": true,
+              "evidence": "Recovery check: rst_n must be released t_rec before the active clock edge. Removal check: t_rem after that edge."
+            }
+          ],
+          "seconds": 8.3,
+          "input_tokens": 2187,
+          "output_tokens": 1213
+        }
+      ]
+    },
+    {
+      "case": "setup_hold",
+      "category": "timing",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Defines setup time as data stable for some time before the capturing clock edge",
+              "met": true,
+              "evidence": "Setup time is the minimum interval before the active clock edge that the data input must be stable."
+            },
+            {
+              "id": 2,
+              "item": "Defines hold time as data stable for some time after the clock edge",
+              "met": true,
+              "evidence": "Hold time is the minimum interval after the active clock edge that the data must remain stable."
+            },
+            {
+              "id": 3,
+              "item": "States that slowing the clock fixes setup violations but not hold violations",
+              "met": true,
+              "evidence": "Setup violations are fixed by... increasing the period... Hold violations are fixed by inserting delay buffers... adding a period doesn't help."
+            },
+            {
+              "id": 4,
+              "item": "Explains correctly that skew delaying the capture clock helps setup and hurts hold (or the equivalent)",
+              "met": true,
+              "evidence": "Capture clock late (positive skew): Setup slack improves, Hold slack worsens"
+            },
+            {
+              "id": 5,
+              "item": "Gives the setup slack relationship (period vs clock-to-Q + logic delay + setup, adjusted for skew)",
+              "met": true,
+              "evidence": "Setup check: t_clk2q(FF1) + t_logic_max + t_skew_capture_late_penalty <= T - t_setup(FF2)"
+            }
+          ],
+          "seconds": 7.0,
+          "input_tokens": 1904,
+          "output_tokens": 964
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Defines setup time as data stable for some time before the capturing clock edge",
+              "met": true,
+              "evidence": "Setup time is the minimum interval before the active clock edge during which the data input must be stable."
+            },
+            {
+              "id": 2,
+              "item": "Defines hold time as data stable for some time after the clock edge",
+              "met": true,
+              "evidence": "Hold time is the minimum interval after the active clock edge during which the data must remain stable."
+            },
+            {
+              "id": 3,
+              "item": "States that slowing the clock fixes setup violations but not hold violations",
+              "met": true,
+              "evidence": "Hold violations are not fixed by lowering frequency. Lowering frequency only relaxes setup."
+            },
+            {
+              "id": 4,
+              "item": "Explains correctly that skew delaying the capture clock helps setup and hurts hold (or the equivalent)",
+              "met": true,
+              "evidence": "Positive (capture late): setup improves, hold worsens; 'positive skew helps setup and hurts hold'"
+            },
+            {
+              "id": 5,
+              "item": "Gives the setup slack relationship (period vs clock-to-Q + logic delay + setup, adjusted for skew)",
+              "met": true,
+              "evidence": "Setup check: t_clk_launch + t_clk_to_Q + t_logic + t_skew_setup <= T_clk + t_clk_capture - t_setup"
+            }
+          ],
+          "seconds": 6.4,
+          "input_tokens": 1879,
+          "output_tokens": 940
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Defines setup time as data stable for some time before the capturing clock edge",
+              "met": true,
+              "evidence": "Setup time is the minimum interval before the active clock edge during which the data input must be stable."
+            },
+            {
+              "id": 2,
+              "item": "Defines hold time as data stable for some time after the clock edge",
+              "met": true,
+              "evidence": "Hold time is the minimum interval after the active clock edge during which the data must remain stable."
+            },
+            {
+              "id": 3,
+              "item": "States that slowing the clock fixes setup violations but not hold violations",
+              "met": true,
+              "evidence": "Setup violations are fixed by ... relaxing the clock. Hold is checked at the same edge, so it's independent of clock period."
+            },
+            {
+              "id": 4,
+              "item": "Explains correctly that skew delaying the capture clock helps setup and hurts hold (or the equivalent)",
+              "met": true,
+              "evidence": "positive skew on the capture side helps setup and hurts hold; negative skew does the reverse."
+            },
+            {
+              "id": 5,
+              "item": "Gives the setup slack relationship (period vs clock-to-Q + logic delay + setup, adjusted for skew)",
+              "met": true,
+              "evidence": "Setup check: T_launch + T_clk\u2192Q + T_logic + T_setup \u2264 T_capture + T_period, with skew folded into T_launch and T_capture."
+            }
+          ],
+          "seconds": 7.7,
+          "input_tokens": 1939,
+          "output_tokens": 1003
+        }
+      ]
+    },
+    {
+      "case": "timing_closure",
+      "category": "timing",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Suggests adding pipeline registers to split the path, accepting extra latency",
+              "met": true,
+              "evidence": "Pipeline the path. Insert registers to split the logic into two or more stages... Latency goes up by one cycle per stage"
+            },
+            {
+              "id": 2,
+              "item": "Suggests restructuring the logic (for example balancing a chain into a tree or precomputing)",
+              "met": true,
+              "evidence": "Reduce logic depth: replace deep mux trees... Precompute terms that depend only on registered values"
+            },
+            {
+              "id": 3,
+              "item": "Mentions retiming (letting the tool move registers)",
+              "met": true,
+              "evidence": "let the tool retime if it's enabled"
+            },
+            {
+              "id": 4,
+              "item": "Mentions a multicycle-path constraint when the result is only needed every N cycles",
+              "met": true,
+              "evidence": "Multicycle path with constraints. Only valid if... register loaded only every N cycles. Add a set_multicycle_path"
+            },
+            {
+              "id": 5,
+              "item": "Recommends reading the timing report to find the real critical path (including routing or fanout causes)",
+              "met": true,
+              "evidence": "Before choosing, check the report: Logic levels vs. net delay on the critical path... high fanout nets"
+            }
+          ],
+          "seconds": 8.1,
+          "input_tokens": 2072,
+          "output_tokens": 1128
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Suggests adding pipeline registers to split the path, accepting extra latency",
+              "met": true,
+              "evidence": "Pipeline the path. Insert registers to split the logic into two or more stages... Latency goes up by one cycle per stage"
+            },
+            {
+              "id": 2,
+              "item": "Suggests restructuring the logic (for example balancing a chain into a tree or precomputing)",
+              "met": true,
+              "evidence": "Reduce logic depth. Restructure the expression, flatten priority chains... replace wide adders with a tree... precompute terms"
+            },
+            {
+              "id": 3,
+              "item": "Mentions retiming (letting the tool move registers)",
+              "met": true,
+              "evidence": "Retime. If the path sits between two registers, retiming can rebalance it"
+            },
+            {
+              "id": 4,
+              "item": "Mentions a multicycle-path constraint when the result is only needed every N cycles",
+              "met": true,
+              "evidence": "Multicycle path constraint. Only valid if the path really is used every N cycles"
+            },
+            {
+              "id": 5,
+              "item": "Recommends reading the timing report to find the real critical path (including routing or fanout causes)",
+              "met": true,
+              "evidence": "Before choosing, check the report: Logic vs. route delay split... Fanout on the path"
+            }
+          ],
+          "seconds": 7.2,
+          "input_tokens": 1991,
+          "output_tokens": 1037
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Suggests adding pipeline registers to split the path, accepting extra latency",
+              "met": true,
+              "evidence": "Pipeline the path. Insert registers... Latency goes up by one cycle per stage"
+            },
+            {
+              "id": 2,
+              "item": "Suggests restructuring the logic (for example balancing a chain into a tree or precomputing)",
+              "met": true,
+              "evidence": "Restructure the logic: balanced adder tree, precompute terms that don't depend on the critical input"
+            },
+            {
+              "id": 3,
+              "item": "Mentions retiming (letting the tool move registers)",
+              "met": true,
+              "evidence": "Retime. Let synthesis move existing registers across the logic"
+            },
+            {
+              "id": 4,
+              "item": "Mentions a multicycle-path constraint when the result is only needed every N cycles",
+              "met": true,
+              "evidence": "Multicycle path constraint. Only if the path really is exercised over multiple cycles... set_multicycle_path"
+            },
+            {
+              "id": 5,
+              "item": "Recommends reading the timing report to find the real critical path (including routing or fanout causes)",
+              "met": true,
+              "evidence": "Is it the logic or the routing/fanout? ... Look at the net delay vs cell delay split in the timing report."
+            }
+          ],
+          "seconds": 8.9,
+          "input_tokens": 1991,
+          "output_tokens": 1031
+        }
+      ]
+    },
+    {
+      "case": "two_state_x",
+      "category": "verification",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Explains that Verilator is 2-state, so X and Z become 0 or 1",
+              "met": true,
+              "evidence": "Verilator is a 2-state, cycle-oriented simulator. It maps every signal to 0 or 1 and has no X or Z."
+            },
+            {
+              "id": 2,
+              "item": "Says uninitialised registers (missing resets) show up as X only in 4-state simulators",
+              "met": true,
+              "evidence": "a flop without reset looks clean... In a 4-state sim the same flop starts at X"
+            },
+            {
+              "id": 3,
+              "item": "Mentions X-propagation differences (X-optimism or pessimism in if/case statements)",
+              "met": true,
+              "evidence": "An `if (x_sig)` takes the else branch in some simulators and the X handling is pessimistic in others; `case` with X in the selector"
+            },
+            {
+              "id": 4,
+              "item": "Mentions scheduling or race differences (blocking assignments, combinational loops settling)",
+              "met": true,
+              "evidence": "Blocking vs non-blocking races... does not reproduce every zero-delay race... Combinational blocks written with blocking assignments"
+            },
+            {
+              "id": 5,
+              "item": "Recommends running both kinds of simulator or Verilator's X-initialisation randomisation",
+              "met": true,
+              "evidence": "run with `--x-initial unique` plus several seeds, or simulate in a 4-state tool; Lint with both tools"
+            }
+          ],
+          "seconds": 9.3,
+          "input_tokens": 2357,
+          "output_tokens": 1417
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Explains that Verilator is 2-state, so X and Z become 0 or 1",
+              "met": true,
+              "evidence": "Verilator is 2-state and Questa/Icarus are 4-state (0, 1, X, Z); Verilator initialises every variable to 0 (or random)"
+            },
+            {
+              "id": 2,
+              "item": "Says uninitialised registers (missing resets) show up as X only in 4-state simulators",
+              "met": true,
+              "evidence": "A reg that is never reset looks like a valid 0 and the design \"works\"... In a 4-state sim the reg starts as X"
+            },
+            {
+              "id": 3,
+              "item": "Mentions X-propagation differences (X-optimism or pessimism in if/case statements)",
+              "met": true,
+              "evidence": "`if (X)` is treated as false... `case` with X in the selector can match the default"
+            },
+            {
+              "id": 4,
+              "item": "Mentions scheduling or race differences (blocking assignments, combinational loops settling)",
+              "met": true,
+              "evidence": "Race conditions and scheduling: blocking vs non-blocking mixing, always @* sensitivity"
+            },
+            {
+              "id": 5,
+              "item": "Recommends running both kinds of simulator or Verilator's X-initialisation randomisation",
+              "met": true,
+              "evidence": "run with X-initialisation enabled in Verilator (--x-initial unique); Compare the two runs' waveforms"
+            }
+          ],
+          "seconds": 8.5,
+          "input_tokens": 2201,
+          "output_tokens": 1255
+        },
+        {
+          "score": 1.0,
+          "status": "ok",
+          "rubric_met": "5/5",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Explains that Verilator is 2-state, so X and Z become 0 or 1",
+              "met": true,
+              "evidence": "Verilator is a 2-state simulator: every variable is 0 or 1, and X/Z never exist at runtime."
+            },
+            {
+              "id": 2,
+              "item": "Says uninitialised registers (missing resets) show up as X only in 4-state simulators",
+              "met": true,
+              "evidence": "Registers without reset start at X in 4-state, but at 0 (or a randomised value) in Verilator."
+            },
+            {
+              "id": 3,
+              "item": "Mentions X-propagation differences (X-optimism or pessimism in if/case statements)",
+              "met": true,
+              "evidence": "In 4-state, `if (x_cond)` takes the else branch, and `case` with X uses the default... X-pessimism on `?:` and `==`"
+            },
+            {
+              "id": 4,
+              "item": "Mentions scheduling or race differences (blocking assignments, combinational loops settling)",
+              "met": true,
+              "evidence": "Race conditions and scheduling: Blocking/non-blocking misuse, combinational loops, and `always @*` sensitivity gaps can behave differently"
+            },
+            {
+              "id": 5,
+              "item": "Recommends running both kinds of simulator or Verilator's X-initialisation randomisation",
+              "met": true,
+              "evidence": "Run with `--x-initial unique` plus several seeds, and compare against a 4-state run."
+            }
+          ],
+          "seconds": 9.5,
+          "input_tokens": 2303,
+          "output_tokens": 1366
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}

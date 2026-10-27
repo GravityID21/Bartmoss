@@ -1,0 +1,226 @@
+{
+  "format": 2,
+  "date": "2026-10-27",
+  "mode": "formal",
+  "model": "anthropic:claude-haiku-5-5",
+  "simulator": "auto",
+  "repeat": 3,
+  "prompt": "formal",
+  "mean_score": 1.0,
+  "run_means": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "cost_usd": 0.0338,
+  "seconds": 310.1,
+  "usage": "16 calls \u00b7 8,218 in \u00b7 65,500 out \u00b7 18,000 cache-read \u00b7 est. $0.0338",
+  "cases": [
+    {
+      "case": "formal_decade_counter",
+      "category": null,
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 14.8,
+          "input_tokens": 1456,
+          "output_tokens": 2899
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 14.1,
+          "input_tokens": 1456,
+          "output_tokens": 2870
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 17.3,
+          "input_tokens": 1456,
+          "output_tokens": 3562
+        }
+      ]
+    },
+    {
+      "case": "formal_gray_counter",
+      "category": null,
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 14.8,
+          "input_tokens": 1449,
+          "output_tokens": 2887
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 20.6,
+          "input_tokens": 1449,
+          "output_tokens": 4493
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 20.6,
+          "input_tokens": 1449,
+          "output_tokens": 4261
+        }
+      ]
+    },
+    {
+      "case": "formal_rr_arbiter",
+      "category": null,
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 22.6,
+          "input_tokens": 1539,
+          "output_tokens": 4978
+        },
+        {
+          "status": "pass",
+          "attempts": 2,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 30.4,
+          "input_tokens": 4495,
+          "output_tokens": 7130
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 27.3,
+          "input_tokens": 1539,
+          "output_tokens": 5989
+        }
+      ]
+    },
+    {
+      "case": "formal_skid_buffer",
+      "category": null,
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 18.0,
+          "input_tokens": 1598,
+          "output_tokens": 3928
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 17.1,
+          "input_tokens": 1598,
+          "output_tokens": 3678
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 19.4,
+          "input_tokens": 1598,
+          "output_tokens": 4193
+        }
+      ]
+    },
+    {
+      "case": "formal_sync_fifo",
+      "category": null,
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 3,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 21.7,
+          "input_tokens": 1712,
+          "output_tokens": 4288
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 27.5,
+          "input_tokens": 1712,
+          "output_tokens": 5496
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 23.9,
+          "input_tokens": 1712,
+          "output_tokens": 4848
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}

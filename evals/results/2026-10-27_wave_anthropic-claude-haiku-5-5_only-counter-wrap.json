@@ -1,0 +1,58 @@
+{
+  "format": 2,
+  "date": "2026-10-27",
+  "mode": "wave",
+  "model": "anthropic:claude-haiku-5-5",
+  "simulator": "auto",
+  "repeat": 1,
+  "prompt": "wave",
+  "mean_score": 1.0,
+  "run_means": [
+    1.0
+  ],
+  "cost_usd": 0.0043,
+  "seconds": 12.5,
+  "usage": "2 calls \u00b7 2,757 in \u00b7 1,902 out \u00b7 0 cache-read \u00b7 est. $0.0043",
+  "cases": [
+    {
+      "case": "wave_counter_wrap",
+      "category": "off-by-one",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "ok",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "signal": "tb.dut.count",
+          "time": 110.0,
+          "signal_ok": true,
+          "time_ok": true,
+          "rubric_met": "2/2",
+          "rubric": [
+            {
+              "id": 1,
+              "item": "Says count goes to 10 (0xa) after 9 instead of wrapping to 0",
+              "met": true,
+              "evidence": "goes 9 to a (10). It should wrap from 9 directly to 0"
+            },
+            {
+              "id": 2,
+              "item": "Attributes it to the wrap condition comparing against 10 instead of 9 (an off-by-one in the wrap compare)",
+              "met": true,
+              "evidence": "The wrap condition is off by one... `if (count == 4'd10) count <= 0` ... terminal value should be 4'd9"
+            }
+          ],
+          "seconds": 12.5,
+          "input_tokens": 2757,
+          "output_tokens": 1902
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}
