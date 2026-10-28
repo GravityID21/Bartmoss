@@ -54,3 +54,39 @@ jobs:
         run: verilator --version && iverilog -V 2>&1 | head -1 && ghdl --version | head -1 && yosys -V && z3 --version
       - name: Every bug fails, every fix passes, every mutant is caught
         run: python evals/validate.py
+
+  ast-tests:
+    # Ubuntu's Verilator 5.020 has no --json-only, so the AST features (agent hdl_structure tool,
+    # hallucination guards) are tested here against a source build of the version used locally.
+    name: AST tests (Verilator 5.050 from source)
+    runs-on: ubuntu-24.04
+    env:
+      VERILATOR_VERSION: v5.050
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache the Verilator build
+        id: verilator-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/verilator
+          key: verilator-${{ env.VERILATOR_VERSION }}-ubuntu-24.04
+      - name: Build Verilator (first run only, about 10 minutes)
+        if: steps.verilator-cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends git help2man perl python3 make autoconf g++ flex bison libfl2 libfl-dev zlib1g-dev
+          git clone --depth 1 --branch "$VERILATOR_VERSION" https://github.com/verilator/verilator /tmp/verilator
+          cd /tmp/verilator && autoconf && ./configure --prefix="$HOME/verilator" && make -j"$(nproc)" && make install
+      - name: Put Verilator on PATH
+        run: echo "$HOME/verilator/bin" >> "$GITHUB_PATH"
+      - name: Show Verilator version
+        run: verilator --version
+      - name: Install Bartmoss (core only)
+        run: pip install -e .
+      - name: Phase 4 tests, with the AST tests required to run
+        env:
+          BARTMOSS_REQUIRE_AST: "1"
+        run: python -m unittest tests.test_phase4 -v

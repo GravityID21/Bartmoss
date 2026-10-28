@@ -1,0 +1,371 @@
+{
+  "format": 2,
+  "date": "2026-10-28",
+  "mode": "tb",
+  "model": "ollama:qwen2.5-coder:7b",
+  "simulator": "auto",
+  "repeat": 3,
+  "prompt": "tb_random",
+  "mean_score": 0.018,
+  "run_means": [
+    0.033,
+    0.022,
+    0.0
+  ],
+  "cost_usd": 0.0,
+  "seconds": 3672.4,
+  "usage": "81 calls \u00b7 218,204 in \u00b7 79,377 out \u00b7 0 cache-read \u00b7 est. $0.0000",
+  "cases": [
+    {
+      "case": "alu8",
+      "category": null,
+      "score": 0.1,
+      "min": 0.0,
+      "max": 0.3,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "pass",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.3,
+          "coverage": "0/25",
+          "mutants_caught": "0/3",
+          "seconds": 159.0,
+          "input_tokens": 8037,
+          "output_tokens": 3534
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 122.3,
+          "input_tokens": 7647,
+          "output_tokens": 3185
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 179.7,
+          "input_tokens": 7373,
+          "output_tokens": 4459
+        }
+      ]
+    },
+    {
+      "case": "async_fifo_gray",
+      "category": null,
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 402.7,
+          "input_tokens": 9418,
+          "output_tokens": 2267
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 155.9,
+          "input_tokens": 8197,
+          "output_tokens": 3707
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 162.2,
+          "input_tokens": 8869,
+          "output_tokens": 3899
+        }
+      ]
+    },
+    {
+      "case": "axi4_arbiter_rr",
+      "category": null,
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 70.4,
+          "input_tokens": 7813,
+          "output_tokens": 1737
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 94.9,
+          "input_tokens": 8656,
+          "output_tokens": 2264
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 124.1,
+          "input_tokens": 8647,
+          "output_tokens": 3008
+        }
+      ]
+    },
+    {
+      "case": "axis_fifo_udp",
+      "category": null,
+      "score": 0.033,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 138.4,
+          "input_tokens": 9551,
+          "output_tokens": 3089
+        },
+        {
+          "verdict": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 147.5,
+          "input_tokens": 9705,
+          "output_tokens": 3268
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 148.7,
+          "input_tokens": 8908,
+          "output_tokens": 3394
+        }
+      ]
+    },
+    {
+      "case": "cdc_pulse_sync",
+      "category": null,
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 123.1,
+          "input_tokens": 8575,
+          "output_tokens": 2754
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 143.0,
+          "input_tokens": 8227,
+          "output_tokens": 3208
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 97.9,
+          "input_tokens": 8252,
+          "output_tokens": 2185
+        }
+      ]
+    },
+    {
+      "case": "credit_sender",
+      "category": null,
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 168.1,
+          "input_tokens": 8789,
+          "output_tokens": 3900
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 125.4,
+          "input_tokens": 8219,
+          "output_tokens": 2997
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 100.8,
+          "input_tokens": 7749,
+          "output_tokens": 2360
+        }
+      ]
+    },
+    {
+      "case": "debounce_btn",
+      "category": null,
+      "score": 0.033,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 145.0,
+          "input_tokens": 8380,
+          "output_tokens": 3344
+        },
+        {
+          "verdict": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 176.1,
+          "input_tokens": 7849,
+          "output_tokens": 4324
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 125.0,
+          "input_tokens": 8538,
+          "output_tokens": 2971
+        }
+      ]
+    },
+    {
+      "case": "riscv_hazard",
+      "category": null,
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 143.7,
+          "input_tokens": 8176,
+          "output_tokens": 3397
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 4.8,
+          "input_tokens": 4048,
+          "output_tokens": 78
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 43.6,
+          "input_tokens": 4918,
+          "output_tokens": 1112
+        }
+      ]
+    },
+    {
+      "case": "rmii_tx",
+      "category": null,
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "coverage": "2/256",
+          "seconds": 123.4,
+          "input_tokens": 7784,
+          "output_tokens": 2944
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 104.6,
+          "input_tokens": 7880,
+          "output_tokens": 2664
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 142.1,
+          "input_tokens": 7999,
+          "output_tokens": 3328
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "case": "vhdl_pwm",
+      "skipped": "random testbenches are SystemVerilog only"
+    }
+  ]
+}

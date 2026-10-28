@@ -57,6 +57,11 @@ def fake_replies(*texts):
 
 
 class TestHdlAst(unittest.TestCase):
+    def test_ast_available_when_required(self):
+        # CI's AST job builds a newer Verilator and sets this, so the tests below can't silently skip there.
+        if os.environ.get("BARTMOSS_REQUIRE_AST"):
+            self.assertTrue(HAS_AST, "BARTMOSS_REQUIRE_AST is set but Verilator --json-only isn't working")
+
     @unittest.skipUnless(HAS_AST, "Verilator --json-only not available")
     def test_structure_and_interface(self):
         from bartmoss.sim import hdl_ast

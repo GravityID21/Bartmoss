@@ -1,6 +1,6 @@
 # Leaderboard
 
-Generated with `bartmoss leaderboard`; last updated 2026-10-27. Every row is three runs per model over the current case set: 54 debug (50 bugs in 10 categories plus 4 bug-free controls), 10 testbench (9 for random testbenches, which are SystemVerilog only), 3 vplan, 2 uvmplan, 12 `/ask` questions, 11 waveform reviews and 5 formal designs. "Cost per pass" is one run over all of a mode's cases, including the Sonnet 5.5 judge for vplan, uvmplan, ask and wave (so the local model's rows for those aren't free). Rows marked with a prompt name, such as `(debug.v2)`, are prompt variants.
+Generated with `bartmoss leaderboard`; last updated 2026-10-28. Every row is three runs per model over the current case set: 54 debug (50 bugs in 10 categories plus 4 bug-free controls), 10 testbench (9 for random testbenches, which are SystemVerilog only), 3 vplan, 2 uvmplan, 12 `/ask` questions, 11 waveform reviews and 10 formal designs (Haiku's formal row predates the 5 hard ones, so it covers the basic 5). "Cost per pass" is one run over all of a mode's cases, including the Sonnet 5.5 judge for vplan, uvmplan, ask and wave (so the local model's rows for those aren't free). Rows marked with a prompt name, such as `(debug.v2)`, are prompt variants.
 
 | Mode | Model | Cases | Mean score | Range across repeats | Full-score runs | Cost per pass | Time per pass |
 |---|---|---|---|---|---|---|---|
@@ -13,6 +13,7 @@ Generated with `bartmoss leaderboard`; last updated 2026-10-27. Every row is thr
 | tb | anthropic:claude-haiku-5-5 (tb_random) | 9 | **0.83** | 0.79–0.89 | 22/27 | $0.166 | 24.2 min |
 | tb | anthropic:claude-sonnet-5-5 | 10 | **0.79** | 0.73–0.82 | 23/30 | $0.747 | 9.5 min |
 | tb | ollama:qwen2.5-coder:7b | 10 | **0.07** | 0.03–0.09 | 0/30 | $0 (local) | 23.8 min |
+| tb | ollama:qwen2.5-coder:7b (tb_random) | 9 | **0.02** | 0.00–0.03 | 0/27 | $0 (local) | 20.4 min |
 | vplan | anthropic:claude-sonnet-5-5 | 3 | **1.00** | 1.00–1.00 | 9/9 | $0.267 | 2.9 min |
 | vplan | anthropic:claude-haiku-5-5 | 3 | **0.95** | 0.93–0.97 | 5/9 | $0.058 | 2.3 min |
 | vplan | ollama:qwen2.5-coder:7b | 3 | **0.22** | 0.13–0.30 | 0/9 | $0.021 | 2.1 min |
@@ -24,6 +25,7 @@ Generated with `bartmoss leaderboard`; last updated 2026-10-27. Every row is thr
 | ask | ollama:qwen2.5-coder:7b | 12 | **0.18** | 0.14–0.21 | 0/36 | $0.058 | 3.4 min |
 | wave | anthropic:claude-haiku-5-5 | 11 | **0.96** | 0.93–0.98 | 27/33 | $0.053 | 2.4 min |
 | formal | anthropic:claude-haiku-5-5 | 5 | **1.00** | 1.00–1.00 | 15/15 | $0.011 | 1.7 min |
+| formal | ollama:qwen2.5-coder:7b | 10 | **0.00** | 0.00–0.00 | 0/30 | $0 (local) | 8.9 min |
 
 ### Debug score by bug category
 
@@ -56,5 +58,6 @@ The rule is the cheapest model within 0.05 of the best mean, and only if the bes
 - **Random testbenches score lower than directed ones (0.83 vs 0.91).** Most lost points are testbenches failing on a correct design: a sampling race in alu8, a wrong reset expectation in credit_sender, and a wrong FIFO model for one seed in axis_fifo. In 2 of 3 async_fifo_gray runs, Haiku spent the whole 32k-token budget thinking and returned no testbench. Random testbenches now get their own 64k cap (`modes.tb.random_max_tokens`), and a rerun of that case scored 1.00 in all 3 runs, each passing on the first attempt, catching 3/3 mutants and hitting every coverage bin, at 51–60k output tokens and $0.08 in total. With that case's new score, the random set would average 0.90, close to the directed 0.91; the table row above is still the original full run. Coverage was high when a testbench worked (most runs hit every bin). It's also the slowest and most expensive Haiku mode: about 1M output tokens for three passes.
 - **Agent mode on the local 7B model (free run):** 0.38 vs 0.40 without tools. The model called tools in only 1 of 54 cases, so this checks that the loop works end to end rather than whether agents help. That needs the paid Haiku A/B.
 - **Testbenches are still the hardest mode.** Failing runs from both Claude models wrote wrong expected values for correct designs.
-- **The local 7B model isn't usable for these tasks**: debug 0.40, tb 0.07, vplan 0.22, uvmplan 0.41, ask 0.18. Interestingly, it scores 1.00 on the blocking-assignment category, which follows a single recognisable pattern.
+- **The local 7B model isn't usable for these tasks**: debug 0.40, tb 0.07, random tb 0.02, formal 0.00, vplan 0.22, uvmplan 0.41, ask 0.18. Interestingly, it scores 1.00 on the blocking-assignment category, which follows a single recognisable pattern.
+- **Qwen 7B on formal and random testbenches (free run, 2026-10-28):** formal scored 0.00 on all 30 runs. Every set of properties failed to parse, because the model kept writing `|->` and `##` even though the prompt and each retry's Yosys error say the open-source subset doesn't have them. Random testbenches scored 0.02: 24 of 27 runs never compiled (undeclared variables, statements outside procedural blocks, `%b` on strings), 2 failed on the correct design and 1 passed but caught no mutants. Both modes need a model that can follow a restricted syntax.
 - **Spend:** about $11.80 in total across all sweeps. The 2026-10-27 round (Claude `/ask`, the `debug.v2` A/B, Phase 3's wave, formal and random-tb runs, and the async_fifo_gray rerun) cost about $2.13.
