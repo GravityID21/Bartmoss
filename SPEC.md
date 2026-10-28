@@ -28,7 +28,7 @@ A terminal tool where a hardware engineer can ask theory questions, debug a sing
 ### 1.2 Non-goals (for now)
 - Hosting a public web service (legal/compliance, hosting cost; see §9).
 - Multi-file project refactoring or full SoC integration.
-- Fine-tuning models. Your own RTL projects are used as **eval cases and few-shot examples**, not training data.
+- Fine-tuning models. The author's own RTL projects are used as **eval cases and few-shot examples**, not training data.
 - Driving licensed vendor tools (Quartus, Vivado, ModelSim/Questa, Libero, Radiant) before Phase 5.
 
 ---
@@ -201,7 +201,7 @@ Interface
 Evaluation
 - [x] **P1.18** Eval case format (`evals/cases/<mode>/<case>/meta.json` + RTL files), plus `evals/validate.py` to prove each case is valid without model calls
 - [x] **P1.19** `bartmoss eval --mode debug|tb --model provider:model`: simulator-graded scoring, JSON results + Markdown summary
-- [x] **P1.20** Seed eval set: 10–20 cases (hand-written bugs + modules from your own `RTL_projects_public` repos). *16 cases (10 debug, 6 tb, 2 of them VHDL); 9 come from your UDP, axi4_crossbar and riscv repos, and 3 need context files. All pass `python evals/validate.py`; see `evals/README.md`.*
+- [x] **P1.20** Seed eval set: 10–20 cases (hand-written bugs + modules from the author's `RTL_projects_public` repos). *16 cases (10 debug, 6 tb, 2 of them VHDL); 9 come from the UDP, axi4_crossbar and riscv repos, and 3 need context files. All pass `python evals/validate.py`; see `evals/README.md`.*
 - [x] **P1.21** First model comparison run (at least: one Claude model, one open model via Ollama or an API), results committed to `evals/results/`. *2026-10-24, 16 cases: Haiku 5.5 scored debug 0.93 and tb 1.00 (18/18 mutants) for ~$0.10; local Qwen2.5-Coder 7B scored debug 0.45 and tb 0.05. Table in README.* *2026-10-24: Claude Haiku 5.5 scored 1.00 on debug (3/3) and 1.00 on tb (6/6 mutants caught) for about $0.03 in total. The seed set is too easy to tell models apart, so P1.20 needs harder cases. Still to do: an open-model run.* *2026-10-24, 14-case set: Haiku 5.5 scored debug 0.92 (8/9; missed crc32_bitrev on one run but fixed it on a rerun) and tb 1.00 (15/15 mutants) for about $0.06. Model outputs are now saved under `evals/results/<run>/<case>/`.*
 
 Quality
@@ -258,7 +258,7 @@ Quality
   - **Return when:** P4.2 makes projects bigger than a comfortable prompt. **Adoption gate:** a multi-file retrieval eval (questions that need the right module or spec section) shows retrieval beats putting the relevant files straight in the prompt.
 
 ### Phase 5: Vendor tool orchestration
-**Return when:** Phases 1–3 are stable and you have regular access to the vendor tools for testing.
+**Return when:** Phases 1–3 are stable and a maintainer has regular access to the vendor tools for testing.
 - [ ] **P5.1** Tool adapters via batch/TCL modes: Questa/ModelSim (`vsim -c -do`), Quartus (`quartus_sh -t`), Vivado (`vivado -mode batch -source`), Lattice Radiant, Microchip Libero
 - [ ] **P5.2** `/flow` orchestrator: lint → sim → synth → report, with a dry-run plan shown first and a confirmation for every tool invocation
 - [ ] **P5.3** Report parsers: timing summary, utilisation, sim transcript errors → compact summaries for the model
@@ -325,7 +325,7 @@ evals/cases/tb/<case_id>/
 
 Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with tokens and estimated cost, plus a Markdown summary table.
 
-**Sources:** hand-written cases; modules from your own public RTL repos (ALU, FIFOs, CRC, arbiters); open benchmarks such as VerilogEval and RTLLM. Check each benchmark's licence before vendoring; otherwise download at eval time.
+**Sources:** hand-written cases; modules from the author's public RTL repos (ALU, FIFOs, CRC, arbiters); open benchmarks such as VerilogEval and RTLLM. Check each benchmark's licence before vendoring; otherwise download at eval time.
 
 ---
 
@@ -378,7 +378,7 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 ## 11. Open questions
 - [x] Licence: MIT (2026-10-24, matches the RTL repos)
 - [ ] Project name for publishing (Bartmoss works; check PyPI/GitHub name availability).
-- [ ] Which open models to standardise on for the leaderboard (depends on what runs well on your hardware via Ollama vs paid APIs)?
+- [ ] Which open models to standardise on for the leaderboard (depends on what runs well on typical local hardware via Ollama vs paid APIs)?
 - [ ] Eval contamination: once the repo is public, the `fix` fields and mutants could end up in model training data. Add a canary string to each case (as BIG-bench does), or keep a private held-out set?
 - [x] VHDL priority: supported in v0.1 via NVC/GHDL (P1.14), with 2 VHDL eval cases
 
@@ -408,13 +408,13 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 | 2026-10-24 | Evals abort on provider errors | A credit-balance error mid-sweep was scored as 0.0; infrastructure failures must not look like model failures |
 | 2026-10-24 | Rubric judge defaults to Sonnet 5.5, not Haiku | Re-grading the same plan, Haiku flipped a verdict and missed a met item; Sonnet was consistent. About 1.4¢ per judged plan |
 | 2026-10-24 | CI uses GHDL; local macOS uses NVC | NVC isn't packaged in Ubuntu 24.04, and GHDL's macOS cask is disabled. Together they test both VHDL backends |
-| 2026-10-24 | Eval cases can declare `requires` (minimum tool versions) | Your axis_fifo SVA needs Verilator 5.050, and an old simulator shouldn't count as a model failure |
+| 2026-10-24 | Eval cases can declare `requires` (minimum tool versions) | The axis_fifo case's SVA needs Verilator 5.050, and an old simulator shouldn't count as a model failure |
 | 2026-10-24 | MIT licence | Same as the RTL repos the eval cases come from; simplest for an open-source CLI |
 | 2026-10-23 | Features are *modes* sharing one provider layer, not separate models | Removes complexity; model-per-mode becomes a config value set by evals |
 | 2026-10-23 | CLI first, no hosted service | Cost, legal exposure, scope |
 | 2026-10-23 | Zero required deps; provider SDKs as optional extras | Budget and install simplicity |
 | 2026-10-23 | Explicit mode commands instead of LLM routing | Free, predictable, testable; revisit if users ask |
-| 2026-10-23 | Verilator as primary checker | Already installed, best free SystemVerilog support, matches your existing projects |
+| 2026-10-23 | Verilator as primary checker | Best free SystemVerilog support, and it's what the source RTL projects already use |
 | 2026-10-23 | Simulator-graded evals before any LLM-judge evals | Objective, cheap, reproducible |
 | 2026-10-23 | JSON config (not TOML) | `tomllib` needs Python 3.11; JSON keeps 3.9 support with zero deps |
 | 2026-10-23 | Model output parsed from XML-style tags, fenced code as fallback | Tags survive nested Markdown; works across models |

@@ -23,7 +23,7 @@ python evals/validate.py            # all cases; --only <text> to filter
 
 Score: 1.0 if the fix passes the reference testbench, 0.25 if it compiles but fails, 0 otherwise. A failing assertion inside the design counts as a fail.
 
-**Categories (54 cases):** reset 5, cdc 5, fsm 5, arithmetic 6, handshake 5, width 5, combinational 5, blocking 4, off-by-one 5, multi-bug 5, control 4. Missing-reset bugs are invisible to Verilator, which treats every bit as 0 or 1, so those cases are graded on Icarus. CDC cases are bugs that deterministic simulation can show (wrong clock, wrong encoding, lost pulses, early reset release); metastability-level CDC checks wait for formal grading (SPEC P3.6). Most cases inject a new bug into one of your modules that already has a validated reference testbench.
+**Categories (54 cases):** reset 5, cdc 5, fsm 5, arithmetic 6, handshake 5, width 5, combinational 5, blocking 4, off-by-one 5, multi-bug 5, control 4. Missing-reset bugs are invisible to Verilator, which treats every bit as 0 or 1, so those cases are graded on Icarus. CDC cases are bugs that deterministic simulation can show (wrong clock, wrong encoding, lost pulses, early reset release); metastability-level CDC checks wait for formal grading (SPEC P3.6). Most cases inject a new bug into one of the author's modules that already has a validated reference testbench.
 
 ## tb cases: `cases/tb/<case>/`
 
@@ -124,8 +124,8 @@ bartmoss compare evals/results/<baseline>.json evals/results/<variant>.json
 | tb/cdc_pulse_sync | crossbar `cdc_pulse_sync` + 2FF | pulse counting across clocks, spurious pulse after reset |
 | tb/rmii_tx | UDP `rmii_tx` | back-to-back bytes, bit order, going idle between frames |
 | tb/credit_sender | crossbar `credit_sender` | last-credit and simultaneous send/return corner cases |
-| vplan/axi4_arbiter, axis_fifo, async_fifo | your repos | 7–8 design-specific rubric items each |
-| uvmplan/axis_fifo, axi4_arbiter | your repos | agents, scoreboard, coverage, build order |
+| vplan/axi4_arbiter, axis_fifo, async_fifo | author's repos | 7–8 design-specific rubric items each |
+| uvmplan/axis_fifo, axi4_arbiter | author's repos | agents, scoreboard, coverage, build order |
 
 ## Adding a case
 
