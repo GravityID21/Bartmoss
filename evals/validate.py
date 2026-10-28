@@ -165,7 +165,8 @@ def check_formal(case: Path, meta: dict, sim: str, tmp: Path) -> list[str]:
         source = insert_properties((case / name).read_text(), meta["top"], props)
         result = formal_check(stage_files(workdir, context, Path(meta["file"]).name, source), meta["top"], workdir, depth)
         if i == 0 and result.status != "pass":
-            problems.append(f"reference properties should hold on {name}, got {result.status}\n{tail(result.output, 15)}")
+            log_end = "\n".join(result.output.strip().splitlines()[-8:])  # the verdict (or timeout) is at the end
+            problems.append(f"reference properties should hold on {name}, got {result.status}\n{log_end}")
         elif i > 0 and result.status != "fail":
             problems.append(f"{name} is not caught by the reference properties ({result.status})")
     return problems
