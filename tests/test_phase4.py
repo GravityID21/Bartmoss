@@ -363,6 +363,27 @@ class TestProviderMessages(unittest.TestCase):
         self.assertEqual(out[3], {"role": "user", "content": "wrap up"})
 
 
+class TestTextToolCalls(unittest.TestCase):
+    def test_local_model_formats(self):
+        from bartmoss.providers.openai_compat import text_tool_calls
+
+        names = {"read_file", "list_dir"}
+        self.assertEqual(text_tool_calls('{"name": "list_dir", "arguments": {"path": "."}}', names)[0]["input"], {"path": "."})
+        self.assertEqual(text_tool_calls('<tool_call>\n{"name": "read_file", "arguments": {"path": "a"}}\n</tool_call>',
+                                         names)[0]["name"], "read_file")
+        self.assertEqual(len(text_tool_calls('```json\n{"name": "list_dir", "arguments": {}}\n```', names)), 1)
+        self.assertEqual(text_tool_calls('{"name": "read_file", "arguments": "{\\"path\\": \\"a\\"}"}', names)[0]["input"],
+                         {"path": "a"})
+
+    def test_ordinary_text_is_left_alone(self):
+        from bartmoss.providers.openai_compat import text_tool_calls
+
+        names = {"read_file"}
+        self.assertEqual(text_tool_calls('The answer is {"name": "read_file"}', names), [])
+        self.assertEqual(text_tool_calls('{"name": "delete_everything", "arguments": {}}', names), [])
+        self.assertEqual(text_tool_calls('<tool_call>{"name": "read_file", "arguments": {}}</tool_call> and more', names), [])
+
+
 class TestMcpServer(unittest.TestCase):
     def setUp(self):
         self.root = Path(tempfile.mkdtemp())

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from typing import Callable, Optional
 
 from bartmoss.providers.base import ChatResult, Provider, ProviderError
@@ -101,8 +102,14 @@ class OpenAICompatProvider(Provider):
                 arguments = None  # invalid JSON: the agent reports it back as a tool error
             tool_calls.append({"id": call["id"] or f"call_{index}", "name": call["name"],
                                "input": arguments if isinstance(arguments, dict) else {"_invalid_json": call["arguments"]}})
+        text = "".join(parts)
+        if tools and not tool_calls:
+            # Some local models (e.g. qwen2.5-coder on Ollama) write the call as JSON text instead.
+            tool_calls = text_tool_calls(text, {t["name"] for t in tools})
+            if tool_calls:
+                text, finish_reason = "", "tool_calls"
         return ChatResult(
-            text="".join(parts),
+            text=text,
             model=model,
             stop_reason=finish_reason,
             input_tokens=input_tokens,
@@ -128,3 +135,32 @@ def to_openai_messages(messages: list[dict]) -> list[dict]:
         else:
             out.append({"role": m["role"], "content": m["content"]})
     return out
+
+
+def text_tool_calls(text: str, names: set) -> list[dict]:
+    """Tool calls a model wrote as text: a bare JSON object, a ```json block or <tool_call> tags, each
+    {"name": <known tool>, "arguments": {...}}. Only used when the reply is nothing but such calls,
+    so ordinary answers that mention JSON are left alone."""
+    stripped = text.strip()
+    chunks = re.findall(r"<tool(?:_call)?>\s*(.*?)\s*</tool(?:_call)?>", stripped, re.S) or \
+        re.findall(r"```(?:json)?\s*(\{.*?\})\s*```", stripped, re.S) or [stripped]
+    rest = re.sub(r"<tool(?:_call)?>.*?</tool(?:_call)?>|```(?:json)?\s*\{.*?\}\s*```", "", stripped, flags=re.S).strip()
+    if rest and chunks != [stripped]:
+        return []
+    calls = []
+    for i, chunk in enumerate(chunks):
+        try:
+            obj = json.loads(chunk)
+        except ValueError:
+            return []
+        if not isinstance(obj, dict) or obj.get("name") not in names:
+            return []
+        args = obj.get("arguments", obj.get("parameters", {}))
+        if isinstance(args, str):
+            try:
+                args = json.loads(args)
+            except ValueError:
+                args = None
+        calls.append({"id": f"text_call_{i}", "name": obj["name"],
+                      "input": args if isinstance(args, dict) else {"_invalid_json": str(args)}})
+    return calls

@@ -8,6 +8,7 @@ Generated with `bartmoss leaderboard`; last updated 2026-10-27. Every row is thr
 | debug | anthropic:claude-sonnet-5-5 | 54 | **0.98** | 0.96–1.00 | 158/162 | $0.949 | 10.6 min |
 | debug | anthropic:claude-haiku-5-5 (debug.v2) | 54 | **0.98** | 0.97–1.00 | 158/162 | $0.073 | 11.6 min |
 | debug | ollama:qwen2.5-coder:7b | 54 | **0.40** | 0.38–0.42 | 36/162 | $0 (local) | 27.4 min |
+| debug | ollama:qwen2.5-coder:7b (debug_agent) | 54 | **0.38** | single run | 12/54 | $0 (local) | 30.9 min |
 | tb | anthropic:claude-haiku-5-5 | 10 | **0.91** | 0.82–1.00 | 27/30 | $0.107 | 16.0 min |
 | tb | anthropic:claude-haiku-5-5 (tb_random) | 9 | **0.83** | 0.79–0.89 | 22/27 | $0.166 | 24.2 min |
 | tb | anthropic:claude-sonnet-5-5 | 10 | **0.79** | 0.73–0.82 | 23/30 | $0.747 | 9.5 min |
@@ -53,6 +54,7 @@ The rule is the cheapest model within 0.05 of the best mean, and only if the bes
 - **`/wave` meets the Phase 3 target.** Haiku named the right signal and time (within one clock) in all 33 runs, including the bug-free control, and scored 0.96 overall. The points it lost are about the cause: on the lost CDC pulse it named the symptom but not always the toggle-synchroniser fix.
 - **`/formal`: 1.00, so the set is too easy to tell models apart.** Haiku's properties held on every design and caught all 15 mutants, for about a cent per pass. Harder cases (deeper bugs, properties needing assumptions) are the next step.
 - **Random testbenches score lower than directed ones (0.83 vs 0.91).** Most lost points are testbenches failing on a correct design: a sampling race in alu8, a wrong reset expectation in credit_sender, and a wrong FIFO model for one seed in axis_fifo. In 2 of 3 async_fifo_gray runs, Haiku spent the whole 32k-token budget thinking and returned no testbench. Random testbenches now get their own 64k cap (`modes.tb.random_max_tokens`), and a rerun of that case scored 1.00 in all 3 runs, each passing on the first attempt, catching 3/3 mutants and hitting every coverage bin, at 51–60k output tokens and $0.08 in total. With that case's new score, the random set would average 0.90, close to the directed 0.91; the table row above is still the original full run. Coverage was high when a testbench worked (most runs hit every bin). It's also the slowest and most expensive Haiku mode: about 1M output tokens for three passes.
+- **Agent mode on the local 7B model (free run):** 0.38 vs 0.40 without tools. The model called tools in only 1 of 54 cases, so this checks that the loop works end to end rather than whether agents help. That needs the paid Haiku A/B.
 - **Testbenches are still the hardest mode.** Failing runs from both Claude models wrote wrong expected values for correct designs.
 - **The local 7B model isn't usable for these tasks**: debug 0.40, tb 0.07, vplan 0.22, uvmplan 0.41, ask 0.18. Interestingly, it scores 1.00 on the blocking-assignment category, which follows a single recognisable pattern.
 - **Spend:** about $11.80 in total across all sweeps. The 2026-10-27 round (Claude `/ask`, the `debug.v2` A/B, Phase 3's wave, formal and random-tb runs, and the async_fifo_gray rerun) cost about $2.13.
