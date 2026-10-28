@@ -15,8 +15,10 @@ from typing import Optional
 
 from bartmoss.context import Context, context_blocks
 from bartmoss.extract import hdl_block, tag, top_module
+from bartmoss.sim import hdl_ast
 from bartmoss.sim.loop import CheckOutcome, generate_with_checks, hit_token_limit
-from bartmoss.sim.tools import RunResult, coverage, is_vhdl, pick_simulator, rerun, simulate, tail, tb_verdict
+from bartmoss.sim.tools import (RunResult, coverage, is_vhdl, pick_simulator, rerun, simulate, tail, tb_verdict,
+                                unsafe_constructs)
 
 
 @dataclass
@@ -63,7 +65,7 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=(),
            seeds: Optional[int] = None) -> TbResult:
     ui = ctx.ui
     src_path, source = ctx.workspace.read_text(path)
-    context = ctx.read_context_files(context_files)
+    context = ctx.read_context_files(context_files, for_file=src_path)
     context_paths = [p for p, _ in context]
     vhdl = is_vhdl(src_path)
     if random and vhdl:
@@ -82,6 +84,12 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=(),
     if simulator is None:
         ui.warn(f"No simulator found; the testbench won't be checked ({'brew install nvc' if vhdl else 'brew install verilator'}).")
 
+    # Hallucination guard (P4.4): the DUT's real ports and parameters, to check the testbench's instance.
+    dut_iface = None
+    if not vhdl:
+        modules, _ = hdl_ast.parse([*context_paths, src_path], top)
+        dut_iface = hdl_ast.interface(modules, top) if modules else None
+
     scratch = Path(tempfile.mkdtemp(prefix="bartmoss_tb_"))
     tb_name = f"tb_{top}"
     tb_file = f"{tb_name}{'.vhd' if vhdl else '.sv'}"
@@ -98,6 +106,21 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=(),
             return CheckOutcome(False, True, f"The testbench {unit} must be named `{tb_name}`. Reply again in the same format.",
                                 data={"tb": tb, "notes": notes})
         data = {"tb": tb, "notes": notes}
+        unsafe = unsafe_constructs(tb)
+        if unsafe:
+            return CheckOutcome(False, True,
+                                f"The testbench uses constructs Bartmoss won't run: {'; '.join(unsafe)}. A self-checking "
+                                "testbench doesn't need them. Remove them and reply again in the same format.",
+                                data={**data, "verdict": "broken"})
+        unknown = hdl_ast.unknown_connections(tb, top, dut_iface) if dut_iface else []
+        if unknown:
+            ports = ", ".join(f"{d} {n}" for n, (d, _) in dut_iface["ports"].items())
+            params = ", ".join(sorted(dut_iface["params"])) or "none"
+            return CheckOutcome(False, True,
+                                f"The testbench connects things {top} doesn't have: {', '.join(unknown)}.\n"
+                                f"Its ports are: {ports}. Its parameters are: {params}.\n"
+                                "Use only those names. Reply again in the same format.",
+                                data={**data, "verdict": "broken"})
         if simulator is None:
             return CheckOutcome(True, data={**data, "verdict": "unchecked"})
         workdir = scratch / f"attempt{attempt_no[0]}"

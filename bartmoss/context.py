@@ -43,6 +43,7 @@ class Context:
     use_filter: Optional[bool] = None  # /filter on|off; None means use config["filter"]["enabled"]
     prompt_overrides: dict = field(default_factory=dict)  # mode -> prompt variant, e.g. {"debug": "debug.v2"}
     _providers: dict = field(default_factory=dict)
+    _project: Optional[object] = None
 
     def model_spec(self, mode: str) -> str:
         return model_for_mode(self.config, mode, self.model_override)
@@ -53,7 +54,8 @@ class Context:
         return self._providers[name]
 
     def ask_model(self, mode: str, messages: list[dict], on_text: Optional[Callable[[str], None]] = None,
-                  prompt: Optional[str] = None, web_search: int = 0, max_tokens: Optional[int] = None) -> ChatResult:
+                  prompt: Optional[str] = None, web_search: int = 0, max_tokens: Optional[int] = None,
+                  tools: Optional[list] = None, tool_choice: Optional[str] = None) -> ChatResult:
         """`prompt` picks a prompt explicitly (e.g. tb_vhdl); otherwise a variant set with
         `eval --prompt` or `modes.<mode>.prompt` in config, else the mode's own prompt.
         Model and limits come from `mode`, unless `max_tokens` overrides the cap."""
@@ -69,13 +71,40 @@ class Context:
             effort=mode_cfg.get("effort"),
             on_text=on_text,
             web_search=web_search,
+            **({"tools": tools, "tool_choice": tool_choice} if tools else {}),
         )
         self.usage.add(spec, result)
         return result
 
-    def read_context_files(self, paths) -> list[tuple[Path, str]]:
+    def project(self):
+        """The workspace's project index (P4.2), built once per session."""
+        if self._project is None:
+            from bartmoss.project import Project
+
+            cfg = self.config.get("project", {})
+            self._project = Project(self.workspace, cfg.get("filelist"), cfg.get("max_files", 500))
+        return self._project
+
+    def read_context_files(self, paths, for_file: Optional[Path] = None) -> list[tuple[Path, str]]:
         """Supporting files (packages, interfaces, submodules): shown to the model read-only
-        and included in every lint and simulation run."""
+        and included in every lint and simulation run. With no explicit files, `for_file`'s
+        dependencies from the project index are used (config project.auto_context)."""
+        paths = list(paths)
+        cfg = self.config.get("project", {})
+        from bartmoss.project import HDL_SUFFIXES
+
+        if not paths and for_file is not None and cfg.get("auto_context", True) and \
+                for_file.suffix.lower() in HDL_SUFFIXES:
+            deps = self.project().dependencies(for_file)
+            limit = cfg.get("max_context_files", 20)
+            if len(deps) > limit:
+                self.ui.warn(f"{for_file.name} depends on {len(deps)} files; using the first {limit} "
+                             "(raise project.max_context_files or pass --with)")
+                deps = deps[:limit]
+            if deps:
+                self.ui.dim("  auto context: " + ", ".join(self.workspace.relative(p) for p in deps) +
+                            " (project index; --with overrides it, --no-auto-context turns it off)")
+            paths = deps
         return [self.workspace.read_text(p) for p in paths]
 
     def confirm_overwrite(self, path: str, diff: str) -> bool:

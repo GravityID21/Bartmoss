@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Callable, Optional
 
+AGENT_TOOL_FIELDS = ("name", "description", "input_schema")
+
 from bartmoss.providers.base import ChatResult, Provider, ProviderError
 
 # Models that accept server-side refusal fallback in its `"default"` form.
@@ -41,6 +43,8 @@ class AnthropicProvider(Provider):
         effort: Optional[str] = None,
         on_text: Optional[Callable[[str], None]] = None,
         web_search: int = 0,
+        tools: Optional[list] = None,
+        tool_choice: Optional[str] = None,
     ) -> ChatResult:
         sdk = self._sdk
         params: dict = {
@@ -48,17 +52,28 @@ class AnthropicProvider(Provider):
             "max_tokens": max_tokens,
             # The system prompt is identical for every request in a mode, so cache it.
             "system": [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
-            "messages": messages,
+            "messages": to_claude_messages(messages),
         }
+        extra_body: dict = {}
         if effort and model.startswith(EFFORT_PREFIXES):
             params["output_config"] = {"effort": effort}
         if self.refusal_fallback and model in FALLBACK_MODELS:
             # On a safety decline the API re-runs the request on a recommended fallback model.
             params["extra_headers"] = {"anthropic-beta": FALLBACK_BETA}
-            params["extra_body"] = {"fallbacks": "default"}
+            extra_body["fallbacks"] = "default"
         if web_search:
             tool_type = "web_search_20260209" if model in DYNAMIC_SEARCH_MODELS else "web_search_20250305"
             params["tools"] = [{"type": tool_type, "name": "web_search", "max_uses": web_search}]
+        if tools:
+            # Inputs stream as they're generated (no server-side buffering); the agent validates them.
+            params["tools"] = params.get("tools", []) + [
+                {**{k: t[k] for k in AGENT_TOOL_FIELDS}, "eager_input_streaming": True} for t in tools]
+            if tool_choice:
+                params["tool_choice"] = {"type": tool_choice}
+            # Automatic caching moves a breakpoint to the end of the growing conversation each turn.
+            extra_body["cache_control"] = {"type": "ephemeral"}
+        if extra_body:
+            params["extra_body"] = extra_body
 
         try:
             messages_sent = list(messages)
@@ -106,6 +121,8 @@ class AnthropicProvider(Provider):
         def total(attr: str) -> int:
             return sum(getattr(m.usage, attr, 0) or 0 for m in parts)
 
+        calls = [{"id": b.id, "name": b.name, "input": b.input if isinstance(b.input, dict) else {}}
+                 for b in message.content if b.type == "tool_use"]
         searches = sum(getattr(getattr(m.usage, "server_tool_use", None), "web_search_requests", 0) or 0 for m in parts)
         return ChatResult(
             text=text,
@@ -118,4 +135,25 @@ class AnthropicProvider(Provider):
             refused=message.stop_reason == "refusal",
             web_searches=searches,
             citations=citations,
+            tool_calls=calls,
+            raw=message.content if tools else None,
         )
+
+
+def to_claude_messages(messages: list[dict]) -> list[dict]:
+    """Neutral agent messages -> Messages API messages. Assistant turns from an agent loop are replayed
+    from `raw` exactly as received; tool results become tool_result blocks in a user turn, with any
+    budget note as a text block after them (history is never edited)."""
+    out = []
+    for m in messages:
+        if m["role"] == "tool":
+            blocks = [{"type": "tool_result", "tool_use_id": r["id"], "content": r["content"] or "(no output)",
+                       **({"is_error": True} if r.get("is_error") else {})} for r in m["results"]]
+            if m.get("note"):
+                blocks.append({"type": "text", "text": m["note"]})
+            out.append({"role": "user", "content": blocks})
+        elif m["role"] == "assistant" and m.get("raw") is not None:
+            out.append({"role": "assistant", "content": m["raw"]})
+        else:
+            out.append({"role": m["role"], "content": m["content"]})
+    return out

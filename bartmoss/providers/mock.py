@@ -10,6 +10,29 @@ from bartmoss.extract import top_module
 from bartmoss.providers.base import ChatResult, Provider
 
 
+def _agent_reply(system: str, messages: list[dict], model: str, tool_choice: Optional[str]) -> ChatResult:
+    """Scripted agent: list the workspace, read the target file, then answer with it unchanged.
+    With tool_choice "none" (budget reached) it answers straight away."""
+    steps = sum(1 for m in messages if m["role"] == "tool")
+    target = re.search(r"<target>(.*?)</target>", messages[0]["content"])
+    calls = []
+    if tool_choice != "none" and steps == 0:
+        calls = [{"id": "mock_1", "name": "list_dir", "input": {"path": "."}}]
+    elif tool_choice != "none" and steps == 1 and target:
+        calls = [{"id": "mock_2", "name": "read_file", "input": {"path": target.group(1)}}]
+    if calls:
+        text = "Looking around first."
+    else:
+        last = next((m for m in reversed(messages) if m["role"] == "tool"), None)
+        body = last["results"][0]["content"] if last and last["results"] else ""
+        source = "\n".join(re.sub(r"^\s*\d+\s\|\s?", "", l) for l in body.splitlines() if re.match(r"^\s*\d+\s\|", l))
+        text = ("<analysis>\nSummary: mock agent review, no changes made.\nIssues:\n(none, mock provider)\n"
+                f"Notes: none\n</analysis>\n<fixed_file>\n{source}\n</fixed_file>\n")
+    return ChatResult(text=text, model=f"mock:{model}", stop_reason="tool_use" if calls else "end_turn",
+                      input_tokens=len(system + str(messages)) // 4, output_tokens=len(text) // 4,
+                      tool_calls=calls, raw=None)
+
+
 def _last_user(messages: list[dict]) -> str:
     return next(m["content"] for m in reversed(messages) if m["role"] == "user")
 
@@ -32,7 +55,11 @@ class MockProvider(Provider):
         effort: Optional[str] = None,
         on_text: Optional[Callable[[str], None]] = None,
         web_search: int = 0,
+        tools: Optional[list] = None,
+        tool_choice: Optional[str] = None,
     ) -> ChatResult:
+        if tools:
+            return _agent_reply(system, messages, model, tool_choice)
         if "MODE: judge" in system:
             n = _last_user(messages).split("<rubric>")[-1].count("\n") - 1
             items = ", ".join(f'{{"id": {i}, "met": {"true" if i % 2 else "false"}, "evidence": "mock"}}' for i in range(1, n + 1))

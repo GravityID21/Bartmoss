@@ -4,11 +4,11 @@
 
 | | |
 |---|---|
-| **Status** | Phases 1–2 complete · Phase 3 complete apart from UVM (P3.3, P3.4), which is deferred until a free UVM-capable simulator is found · Phase 4 next |
+| **Status** | Phases 1–3 complete (UVM deferred) · Phase 4 built and tested offline: P4.2–P4.5 done, P4.1 waiting on its paid A/B, P4.6 deferred |
 | **Owner** | Elliot Stevenson |
 | **Language** | Python ≥ 3.9 (3.12 recommended) |
 | **Licence** | MIT (see `LICENSE`) |
-| **Last updated** | 2026-10-27 |
+| **Last updated** | 2026-10-28 |
 
 **How to use this document:** every feature has an ID (`P1.4`, `P3.2`, …) and a checkbox. Tick the box when the feature is merged and tested. Long-term or hard items live in their phase with a **"Return when"** note that says what has to be true before they're worth picking up. Decisions are recorded in §12 so they aren't re-argued later.
 
@@ -87,6 +87,10 @@ bartmoss/
     tools.py        detect + run verilator / iverilog (SV), nvc / ghdl (VHDL), yosys, yosys-smtbmc, fst2vcd
     loop.py         generate → check → feed back errors → retry
     vcd.py          stdlib VCD reader + summariser for /wave (cycle table, X/Z, pulses, handshakes)
+    hdl_ast.py      design structure from Verilator's --json-only AST (agent tool + hallucination guards)
+  agent.py          tool-use loop with workspace-confined tools and a context budget (debug --agent)
+  project.py        project index: filelists, rtl/tb layout, dependencies for auto context
+  mcp_server.py     `bartmoss mcp`: the free checkers as MCP tools over stdio
   modes/
     ask.py  debug.py  tb.py  plan.py  wave.py  formal.py   one run_<mode>() each, returning a result object (used by evals too)
   prompts/          one Markdown system prompt per mode (+ shared guard.md rules, tb_vhdl.md variant)
@@ -243,14 +247,36 @@ Quality
 **Exit:** `/wave` correctly diagnoses ≥ 70 % of seeded waveform bugs; `/uvm` output compiles on at least one simulator. *`/wave` met on 2026-10-27: Haiku 5.5 found the right signal and time in 33/33 runs (score 0.96). The `/uvm` half is deferred with P3.3/P3.4. Total for the round, including the P2.13 and P2.14 runs: about $2.05.*
 
 ### Phase 4: Agentic workspace
-- [ ] **P4.1** Tool-use loop: model can request `read_file`, `list_dir`, `run_lint`, `run_sim` inside the workspace (with a per-call confirmation prompt; auto-approve allowlist for read-only tools).
+- [~] **P4.1** Tool-use loop: model can request `read_file`, `list_dir`, `run_lint`, `run_sim` inside the workspace (with a per-call confirmation prompt; auto-approve allowlist for read-only tools).
   - Also an `ast` tool: Verilator's `--json-only` parse tree (modules, ports, always blocks, signal drivers and loads), so the model can query structure instead of reading whole files. No new dependency. Confirmed on Verilator 5.050; pass `-Wno-fatal`, or lint warnings end the run even though the JSON is still written.
   - Let the model write and run its own small testbench while debugging (`run_sim`), and use the VCD summaries from P3.1 once they exist.
   - **Adoption gate:** A/B the agent against today's fixed lint → fix → re-check workflow on the same eval set (score, cost, time per case, ×3). Make it the default only if it scores higher at an acceptable cost; otherwise keep it as an opt-in mode.
-- [ ] **P4.2** Project awareness: read a filelist (`.f`) or `rtl/`+`tb/` layout to build context automatically
-- [ ] **P4.3** Context budget manager: summarise or drop old tool output instead of letting context grow
-- [ ] **P4.4** Hallucination guards: generated code must reference only ports/signals that exist in the parsed DUT; flag mismatches before simulation (can reuse the P4.1 Verilator AST)
-- [ ] **P4.5** MCP server exposing Bartmoss checkers as tools (so Claude Code / other MCP clients can use them). Builds on the course MCP project.
+  - *Built 2026-10-28, tested offline:*
+    - **Command:** `debug --agent`. It runs `agent.py`'s loop with seven tools: `list_dir`, `read_file` (line-numbered, in chunks), `search`, `hdl_structure` (`sim/hdl_ast.py`), `run_lint`, `write_scratch` (a temp dir, never the workspace) and `run_sim` (returns the verdict, and a `/wave` summary if the testbench dumps `wave.vcd`).
+    - **Approval:** read-only and scratch tools run without asking. `run_sim` executes model-written code, so it asks unless `--yes` is given or `agent.auto_approve` lists it. Code using `$system`, file I/O, `$readmem`, DPI or `$c` is refused outright.
+    - **Same checks as before:** the agent's final answer goes through the same lint, Yosys and interface checks and retries as plain `/debug`.
+    - **Providers:** Claude uses native tool use; the full response content, including thinking and `tool_use` blocks, is replayed each turn, with automatic caching and eager input streaming, and inputs are validated before they run. OpenAI-compatible endpoints (including Ollama) use function calling.
+    - **Eval:** `eval --mode debug --agent` hides everything but the case file and its context from the agent.
+    - **Not done:** the adoption A/B (paid; about $0.25–0.50 for Haiku ×3 on 54 cases, since agent runs make several calls each), so `--agent` stays opt-in.
+- [x] **P4.2** Project awareness: read a filelist (`.f`) or `rtl/`+`tb/` layout to build context automatically. *`project.py`:*
+    - **Finding files:** a scan of the workspace (skipping the output dir, `.git`, `obj_dir` and similar), or `--filelist x.f`, which handles nested `-f`, `+incdir+`, `+define+`, `-v`, `-y` and `$VAR`. Every path must stay inside the workspace.
+    - **Index:** each file is classed as `rtl`, `tb` or `header` and mapped to the modules, interfaces and packages it defines and uses. This is regex-based on purpose, so it works on files that don't compile.
+    - **Dependencies:** `dependencies(file)` returns compile order with packages first. When a file has two definers, it prefers the same directory, then rtl.
+    - **Auto context:** `/debug`, `/tb`, `/formal` and `/vplan` on an HDL file add its dependencies as read-only context when no `--with` is given; `--no-auto-context` turns this off. It's off in evals, where mutants define the same module as the DUT.
+    - **`bartmoss project [file]`** shows the index or one file's dependencies.
+    - **Checked on the axi4_crossbar repo:** 99 files indexed in 0.06 s, and linting `axi4_read_slave_port.sv` alone went from missing dependencies to 0 errors.
+- [x] **P4.3** Context budget manager: summarise or drop old tool output instead of letting context grow. *Done without editing history (see §12):*
+    - **Per-result caps:** each tool result is capped when it's produced (12k characters, head and tail kept). `read_file` returns 400-line chunks, and structure, lint and waveform tools return summaries rather than raw output.
+    - **Budget limits:** once the context passes `agent.context_budget` (100k tokens) or the step limit approaches, a note is appended after the tool results and the next call uses `tool_choice: none`, which forces a final answer.
+- [x] **P4.4** Hallucination guards: generated code must reference only ports/signals that exist in the parsed DUT; flag mismatches before simulation (can reuse the P4.1 Verilator AST). *`sim/hdl_ast.py` reads Verilator's JSON AST (ports, parameters, signals, instances, always/assign blocks, driver and load lines). Three guards:*
+    - **`/debug`:** a fix that changes the module's ports or parameters is sent back once; if the model repeats it, which is allowed when the bug really is in a declaration, it's accepted as `interface_changed`. None of the 46 parseable reference fixes changes an interface.
+    - **`/tb`:** pins and parameters the testbench connects that the DUT doesn't have are rejected before simulation, with the real port list in the feedback. Model-written testbenches that use `$system`, file I/O or DPI are refused too.
+    - **`/wave`:** a diagnosis must name a signal that is in the summary.
+    - **When they're skipped:** when Verilator lacks `--json-only` or the original doesn't parse; the two debug cases built on interface ports hit a Verilator `--json-only` limitation and are skipped this way.
+- [x] **P4.5** MCP server exposing Bartmoss checkers as tools (so Claude Code / other MCP clients can use them). Builds on the course MCP project.
+    - **Server:** `bartmoss mcp` is a stdlib JSON-RPC 2.0 MCP server over stdio. It offers seven tools with no model calls and no API key: `lint`, `hdl_structure`, `simulate`, `synth_check`, `wave_summary`, `formal_check` and `project_deps`.
+    - **Safety:** the workspace jail applies, and files using `$system`, file I/O or DPI aren't simulated.
+    - **Register it with Claude Code:** `claude mcp add bartmoss -- bartmoss --root <project> mcp`.
 - [ ] **P4.6** Lightweight retrieval for project-scale context (multi-module codebases, long specs for `/vplan`).
   - Chunk RTL by structure (module, always block, interface, package) using the P4.1 Verilator JSON AST, not by token count. Chunk documents by heading.
   - Keyword search with BM25 in the standard library, which is good at exact signal and register names. Optional semantic search through an embeddings extra (local Ollama embeddings or an API), combined with BM25 (hybrid). Never required.
@@ -357,6 +383,7 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 | Hosted-service liability for uploads | Not hosting (non-goal). BYO-key CLI means users interact with providers under the providers' own terms. |
 | File access | All paths resolved inside the workspace root; symlink escapes rejected; size caps; originals never modified; overwrite needs confirmation. |
 | Running tools | Only known executables (`verilator`, `iverilog`, `vvp`, `nvc`, `ghdl`, `yosys`, `yosys-smtbmc`, `fst2vcd`) with argument lists (no shell), in a temp dir, with timeouts. Waveform dumps are summarised locally and never uploaded. |
+| Running model-written HDL | Testbenches and fixes the model writes are simulated on your machine, so code using `$system`, file I/O, `$readmem`, `$dumpfile` paths, DPI or `$c` is refused before it runs (`/tb`, the agent, debug evals, the MCP `simulate` tool). The agent's `run_sim` also asks before each run unless you pass `--yes` or list it in `agent.auto_approve`. Agent scratch files live in a temp dir, never the workspace. |
 | Git / account access | Not needed. Bartmoss never touches git credentials; users commit themselves. |
 | API keys | Env vars / `.env` only; `.env` is git-ignored; keys never logged or printed. |
 | Different safety features per model | Safety lives in Bartmoss's own code (paths, tools, confirmations), not in model behaviour. |
@@ -387,6 +414,12 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 ## 12. Decision log
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-28 | Agent budget is append-only: cap each tool result when produced, then force a final answer (`tool_choice: none`) at the budget; old tool output is never summarised or dropped | Editing earlier turns breaks prompt caching and, on Claude 5.x models, invalidates every later thinking block. Server-side context editing exists but is Claude-only and beta |
+| 2026-10-28 | Agent mode is opt-in (`debug --agent`) until its A/B runs | The fixed workflow already scores 0.99 with Haiku on debug, so the agent has to prove it adds more than it costs (P4.1 adoption gate) |
+| 2026-10-28 | Model-written HDL using `$system`, file I/O, DPI or `$c` is never simulated | Simulators run with your permissions, and a file read could be sent back to the model. No legitimate testbench or fix in these modes needs them |
+| 2026-10-28 | Project index is regex-based; Verilator's JSON AST is used only where exact structure matters | The index has to work on files that don't compile (that's what /debug is for) and with no tools installed. The AST gives exact ports and drivers for the agent and guards, and degrades to "skip" when unavailable |
+| 2026-10-28 | MCP server written on the stdlib (JSON-RPC over stdio), exposing only the free checkers | The MCP Python SDK would be a new dependency for about 150 lines of protocol. Exposing checkers rather than model modes means MCP clients pay nothing extra and bring their own model |
+| 2026-10-28 | Interface guard in /debug pushes back once, then accepts | Some real bugs are in port declarations; a hard rejection would force the model to revert a correct fix |
 | 2026-10-27 | `tb --random` gets its own 64k token cap; directed `/tb` stays at 32k | Random TBs with scoreboards and coverage need more thinking: async_fifo_gray used 51–60k tokens and truncated at 32k. Raising the cap kept effort (and quality) unchanged and costs at most ~$0.03 per call on Haiku |
 | 2026-10-27 | `debug.v2` not adopted; Haiku stays the default for `/ask`, `/wave` and `/formal` | The A/B scored 0.98 vs 0.99 on Haiku and was mixed on Sonnet. Sonnet's `/ask` lead (0.95 vs 0.92) is within the 0.05 rule at 2.6× the cost. Haiku scored 0.96 on `/wave` and 1.00 on `/formal` |
 | 2026-10-24 | UVM (P3.3, P3.4) deferred; the rest of Phase 3 built ahead of its paid eval runs | Generating UVM with nothing to compile it against breaks the "simulator as judge" principle. The other modes are fully checkable offline, and their evals cost about $1.10 for Haiku ×3 once credit is back |

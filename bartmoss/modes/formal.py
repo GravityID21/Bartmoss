@@ -74,7 +74,7 @@ def run_formal(ctx: Context, path: str | Path, write: bool = True, context_files
     src_path, source = ctx.workspace.read_text(path)
     if is_vhdl(src_path):
         raise ValueError("/formal supports (System)Verilog only; open-source Yosys can't read VHDL")
-    context = ctx.read_context_files(context_files)
+    context = ctx.read_context_files(context_files, for_file=src_path)
     top = top_module(source)
     if not top:
         ui.error(f"No module declaration found in {src_path.name}.")

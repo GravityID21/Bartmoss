@@ -95,11 +95,23 @@ def run_wave(ctx: Context, path: str | Path, signals=(), window: Optional[str] =
             f"{'clock ' + found_clock[0].leaf if found_clock else 'no clock'} · model {ctx.model_spec('wave')}")
     ui.dim(f"  summary is {len(summary)} characters (the dump is never sent)")
 
+    names = {v.name.lower() for v in chosen} | {v.leaf.lower() for v in chosen}
+
+    def known_signal(name: str) -> bool:
+        name = re.sub(r"\[.*\]$", "", name).lower()
+        return name in names or any(n.endswith("." + name) for n in names)
+
     def check(text: str) -> CheckOutcome:
         analysis = tag(text, "analysis")
         if not analysis or tag(text, "diagnosis") is None:
             return CheckOutcome(False, True, "Your reply needs both <analysis> and <diagnosis> sections. "
                                 "Reply again in the required format.", data={"analysis": analysis or text.strip()})
+        # Hallucination guard (P4.4): the diagnosis must name a signal that is in the summary.
+        named, _ = parse_diagnosis(text)
+        if named and named != "none" and not known_signal(named):
+            return CheckOutcome(False, True, f"The diagnosis names {named}, which isn't in the waveform summary. Use a "
+                                "signal name exactly as listed there, or none. Reply again in the required format.",
+                                data={"analysis": analysis})
         return CheckOutcome(True, data={"analysis": analysis})
 
     message = f'<waveform_summary file="{src.name}">\n{summary}</waveform_summary>\n' + context_blocks(context)

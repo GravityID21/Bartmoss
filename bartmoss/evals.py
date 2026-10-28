@@ -27,7 +27,7 @@ from bartmoss.extract import tag
 from bartmoss.files import Workspace
 from bartmoss.providers import ProviderError
 from bartmoss.sim.tools import (formal_check, is_vhdl, pick_simulator, pick_solver, rerun, simulate, tb_verdict,
-                                unmet_requirement)
+                                unmet_requirement, unsafe_constructs)
 from bartmoss.ui import UI
 
 
@@ -35,10 +35,18 @@ def _score_debug(case_ctx: Context, case: Path, meta: dict, simulator: str, scra
     from bartmoss.modes.debug import run_debug
 
     context = meta.get("context", [])
-    result = run_debug(case_ctx, meta["file"], write=False, context_files=context)
+    agent = bool(meta.get("agent"))
+    # The agent may only see the case file and its context, never the reference testbench next to them.
+    result = run_debug(case_ctx, meta["file"], write=False, context_files=context, agent=agent,
+                       visible=[meta["file"], *context] if agent else None)
     detail = {"status": result.status, "attempts": result.attempts, "truncated": result.truncated, "score": 0.0,
+              **({"agent_steps": result.agent_steps, "tool_calls": result.tool_calls,
+                  "agent_stopped": result.agent_stopped} if agent else {}),
               "_artifacts": {"analysis.txt": result.analysis, Path(meta["file"]).name: result.fixed}}
     if not result.fixed:
+        return detail
+    if unsafe_constructs(result.fixed):
+        detail["error"] = "fix uses constructs Bartmoss won't simulate: " + "; ".join(unsafe_constructs(result.fixed))
         return detail
     # A case may name its grading simulator, e.g. Icarus for 4-state X checks on missing resets.
     simulator = pick_simulator(meta.get("simulator", simulator), vhdl=is_vhdl(meta["file"]))
@@ -171,8 +179,11 @@ def _score_wave(case_ctx: Context, case: Path, meta: dict, simulator: str, scrat
 
 def _run_case(ctx: Context, mode: str, case: Path, meta: dict, simulator: str, artifact_dir: Path) -> dict:
     """One scored attempt at one case, with its model outputs saved under artifact_dir."""
-    case_ctx = replace(ctx, workspace=Workspace(case, ctx.config["output_dir"]), ui=UI(quiet=True),
-                       assume_yes=True, ask_history=[], _providers=ctx._providers)
+    # Cases list their context files explicitly; auto context could pick up hidden files (mutants
+    # define the same module as the DUT), so it's off during evals.
+    config = {**ctx.config, "project": {**ctx.config.get("project", {}), "auto_context": False}}
+    case_ctx = replace(ctx, config=config, workspace=Workspace(case, ctx.config["output_dir"]), ui=UI(quiet=True),
+                       assume_yes=True, ask_history=[], _providers=ctx._providers, _project=None)
     calls_before = len(ctx.usage.calls)
     started = time.time()
     scratch = Path(tempfile.mkdtemp(prefix=f"bartmoss_eval_{case.name}_"))
@@ -253,7 +264,7 @@ def _score_ask(case_ctx: Context, case: Path, meta: dict, simulator: str, scratc
 
 
 def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None, repeat: int = 1,
-             random_tb: bool = False) -> dict:
+             random_tb: bool = False, agent: bool = False) -> dict:
     """Score every case `repeat` times. Reports per-case mean, min/max and full passes, plus the
     spread of the overall mean across repeats. Filtered (`only`) and repeated runs are saved under
     their own names so they never overwrite a plain full run."""
@@ -275,7 +286,7 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
     run_name = f"{date.today().isoformat()}_{mode}_{re.sub(r'[^A-Za-z0-9.-]+', '-', spec)}"
     if only:
         run_name += f"_only-{re.sub(r'[^A-Za-z0-9.-]+', '-', only)}"
-    prompt = ctx.prompt_overrides.get(mode) or ("tb_random" if random_tb else None)
+    prompt = ctx.prompt_overrides.get(mode) or ("tb_random" if random_tb else "debug_agent" if agent else None)
     if prompt:
         run_name += f"_p-{re.sub(r'[^A-Za-z0-9.-]+', '-', prompt)}"
     if repeat > 1:
@@ -289,6 +300,8 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
     for case in cases:
         meta = json.loads((case / "meta.json").read_text())
         reason = unmet_requirement(meta.get("requires", {}))
+        if agent:
+            meta["agent"] = True
         if random_tb:
             meta["random"] = True
             reason = reason or ("random testbenches are SystemVerilog only" if is_vhdl(meta["file"]) else None)

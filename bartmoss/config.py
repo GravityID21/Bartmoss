@@ -64,6 +64,13 @@ DEFAULTS: dict = {
     # Judge for vplan/uvmplan evals (rubric grading). Sonnet by default: in a spot check Haiku flipped
     # verdicts between runs on the same plan, which would make prompt A/B comparisons meaningless.
     "eval": {"judge_model": "anthropic:claude-sonnet-5-5", "judge_max_tokens": 8000},
+    # Agent tool loop (P4.1, `debug --agent`) and its context budget (P4.3). Read-only tools and the scratch
+    # writer always run; add "run_sim" to auto_approve to stop being asked before each simulation.
+    "agent": {"max_steps": 20, "context_budget": 100_000, "max_result_chars": 12_000, "max_read_lines": 400,
+              "sim_timeout_s": 120, "auto_approve": []},
+    # Project awareness (P4.2): with no --with files, modes add the packages, interfaces and submodules a
+    # file depends on, found by indexing the workspace (or `filelist`, a .f file) for definitions.
+    "project": {"auto_context": True, "filelist": None, "max_files": 500, "max_context_files": 20},
     "simulator": "auto",  # auto | verilator | iverilog
     "output_dir": "bartmoss_out",
     "sim_timeout_s": 300,

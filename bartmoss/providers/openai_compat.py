@@ -6,6 +6,7 @@ servers such as Ollama, LM Studio and vLLM. Endpoints are configured in config.D
 
 from __future__ import annotations
 
+import json
 import os
 from typing import Callable, Optional
 
@@ -38,18 +39,26 @@ class OpenAICompatProvider(Provider):
         effort: Optional[str] = None,
         on_text: Optional[Callable[[str], None]] = None,
         web_search: int = 0,
+        tools: Optional[list] = None,
+        tool_choice: Optional[str] = None,
     ) -> ChatResult:
         sdk = self._sdk
         params: dict = {
             "model": model,
-            "messages": [{"role": "system", "content": system}] + messages,
+            "messages": [{"role": "system", "content": system}] + to_openai_messages(messages),
             "stream": True,
             self.max_tokens_param: max_tokens,
         }
         if self.stream_usage:
             params["stream_options"] = {"include_usage": True}
+        if tools:
+            params["tools"] = [{"type": "function", "function": {"name": t["name"], "description": t["description"],
+                                                                 "parameters": t["input_schema"]}} for t in tools]
+            if tool_choice:
+                params["tool_choice"] = tool_choice
 
         parts: list[str] = []
+        calls: dict = {}  # stream index -> {"id", "name", "arguments"}
         finish_reason = None
         input_tokens = output_tokens = 0
         try:
@@ -64,6 +73,12 @@ class OpenAICompatProvider(Provider):
                     parts.append(choice.delta.content)
                     if on_text:
                         on_text(choice.delta.content)
+                for delta in (choice.delta.tool_calls or []) if choice.delta else []:
+                    call = calls.setdefault(delta.index, {"id": "", "name": "", "arguments": ""})
+                    call["id"] = delta.id or call["id"]
+                    if delta.function:
+                        call["name"] += delta.function.name or ""
+                        call["arguments"] += delta.function.arguments or ""
                 if choice.finish_reason:
                     finish_reason = choice.finish_reason
         except sdk.AuthenticationError:
@@ -77,6 +92,15 @@ class OpenAICompatProvider(Provider):
         except sdk.APIConnectionError:
             raise ProviderError(f"Could not reach {self.name}; is the server running and the base_url right?")
 
+        tool_calls = []
+        for index in sorted(calls):
+            call = calls[index]
+            try:
+                arguments = json.loads(call["arguments"] or "{}")
+            except ValueError:
+                arguments = None  # invalid JSON: the agent reports it back as a tool error
+            tool_calls.append({"id": call["id"] or f"call_{index}", "name": call["name"],
+                               "input": arguments if isinstance(arguments, dict) else {"_invalid_json": call["arguments"]}})
         return ChatResult(
             text="".join(parts),
             model=model,
@@ -84,4 +108,23 @@ class OpenAICompatProvider(Provider):
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             refused=finish_reason == "content_filter",
+            tool_calls=tool_calls,
         )
+
+
+def to_openai_messages(messages: list[dict]) -> list[dict]:
+    """Neutral agent messages -> Chat Completions messages."""
+    out = []
+    for m in messages:
+        if m["role"] == "tool":
+            out += [{"role": "tool", "tool_call_id": r["id"], "content": r["content"] or "(no output)"} for r in m["results"]]
+            if m.get("note"):
+                out.append({"role": "user", "content": m["note"]})
+        elif m["role"] == "assistant" and m.get("tool_calls"):
+            out.append({"role": "assistant", "content": m.get("content") or None,
+                        "tool_calls": [{"id": c["id"], "type": "function",
+                                        "function": {"name": c["name"], "arguments": json.dumps(c["input"])}}
+                                       for c in m["tool_calls"]]})
+        else:
+            out.append({"role": m["role"], "content": m["content"]})
+    return out

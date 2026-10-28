@@ -62,7 +62,7 @@ def structure_problems(mode: str, plan: str) -> list[str]:
 def run_plan(ctx: Context, mode: str, path: str | Path, write: bool = True, context_files=()) -> PlanResult:
     ui = ctx.ui
     src_path, source = ctx.workspace.read_text(path)
-    context = ctx.read_context_files(context_files)
+    context = ctx.read_context_files(context_files, for_file=src_path)
     ui.info(f"{mode} for {ctx.workspace.relative(src_path)} · model {ctx.model_spec(mode)}")
 
     def check(text: str) -> CheckOutcome:

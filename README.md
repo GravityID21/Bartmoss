@@ -4,7 +4,7 @@
 
 An open-source AI assistant for RTL design and verification that runs in your terminal and works with any model. Generated and fixed RTL is checked with a real simulator before you see it.
 
-> Status: Phases 1–3 complete (UVM generation deferred). Under active development. See [SPEC.md](SPEC.md) for the full roadmap and progress tracker.
+> Status: Phases 1–3 complete (UVM generation deferred); Phase 4 (agent mode, project awareness, MCP server) built and in testing. Under active development. See [SPEC.md](SPEC.md) for the full roadmap and progress tracker.
 
 ![Bartmoss fixing an off-by-one counter and generating a passing testbench](docs/demo.svg)
 
@@ -16,12 +16,15 @@ An open-source AI assistant for RTL design and verification that runs in your te
 |---|---|
 | `bartmoss ask "..."` | Hardware design theory Q&A (multi-turn in the REPL). `@path` attaches a file; `--web` (or `/web on`) lets Claude search the web, with sources listed. |
 | `bartmoss debug file.sv` | Lints with Verilator and checks synthesis with Yosys (if installed), asks the model for an analysis and a fixed file, re-checks the fix, retries if it introduced errors or latches, then writes `bartmoss_out/file.fixed.sv`. Your original is never touched. |
+| `bartmoss debug file.sv --agent` | Agent mode (opt-in, not yet scored): the model can read project files, query the design structure (Verilator's AST), lint, and write and run its own small testbenches before answering. Read-only tools run freely; it asks before each simulation unless you pass `--yes`. |
 | `bartmoss tb file.sv` | Generates a self-checking directed testbench plus Markdown notes, compiles and runs it, and retries on compile errors. Reports PASS/FAIL. |
 | `bartmoss tb file.sv --random` | Constrained-random testbench with a scoreboard and functional coverage, run with several seeds (`--seeds N`). Any failing seed fails the test and is named so you can rerun it; coverage below the target goes back to the model with the bins it missed. |
 | `bartmoss wave dump.vcd [signals] --window 100:500 -q "..."` | Reviews a waveform. The dump is summarised locally (clock-sampled cycle table, X/Z spans, short pulses, valid/ready violations) and only the summary is sent, never the raw VCD. Names the first signal that misbehaves and when. `--list` shows signal names and `--summary` skips the model. FST works if GTKWave's `fst2vcd` is installed. |
 | `bartmoss formal file.sv` | The model writes assertions; Bartmoss puts them in an `` `ifdef FORMAL `` block (your design is never edited) and runs a bounded model check with Yosys + yosys-smtbmc (`--prove` adds k-induction). A failing assertion is reported with a summarised counterexample as a possible design bug or wrong property. |
 | `bartmoss vplan spec.md` | Writes a verification plan (features → checks → coverage → edge cases) to `bartmoss_out/spec.vplan.md`. Takes a spec, README or RTL file. |
 | `bartmoss uvmplan spec.md` | Designs a UVM environment (agents, transactions, sequences, scoreboard, coverage, tests, build order) as `bartmoss_out/spec.uvmplan.md`. |
+| `bartmoss project [file]` | Shows the project index (which file defines which module, package and interface), or the files one file depends on. `--filelist files.f` uses a filelist instead of scanning. |
+| `bartmoss mcp` | Runs an MCP server so Claude Code and other MCP clients can use Bartmoss's free checkers (lint, simulate, synth check, design structure, waveform summary, formal check). Register it with `claude mcp add bartmoss -- bartmoss --root /path/to/project mcp`. |
 | `bartmoss eval --mode debug\|tb\|wave\|formal\|…` | Scores a model on the cases in `evals/cases/`, graded by the simulator, the formal checker or a rubric judge. |
 | `bartmoss` | Interactive REPL (`/help` lists commands). |
 
@@ -40,6 +43,8 @@ bartmoss doctor                  # check what's installed
 ```
 
 To try it with no API key at all, use the offline mock model: `bartmoss --model mock:echo`.
+
+**Multi-file projects:** `debug`, `tb`, `formal` and `vplan` find the packages, interfaces and submodules a file depends on (by indexing the workspace, or a `.f` filelist with `--filelist`) and add them as read-only context automatically. Pass `--with` to choose the files yourself, or `--no-auto-context` to turn this off.
 
 ## Choosing models
 

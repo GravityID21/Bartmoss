@@ -23,6 +23,8 @@ python evals/validate.py            # all cases; --only <text> to filter
 
 Score: 1.0 if the fix passes the reference testbench, 0.25 if it compiles but fails, 0 otherwise. A failing assertion inside the design counts as a fail.
 
+`bartmoss eval --mode debug --agent` scores agent mode (`debug --agent`) on the same cases, for the SPEC P4.1 adoption A/B. The agent's tools can see only `file` and `context`, never the reference testbench next to them; results are saved with `_p-debug-agent` in the name, with each run's model calls and tool calls.
+
 **Categories (54 cases):** reset 5, cdc 5, fsm 5, arithmetic 6, handshake 5, width 5, combinational 5, blocking 4, off-by-one 5, multi-bug 5, control 4. Missing-reset bugs are invisible to Verilator, which treats every bit as 0 or 1, so those cases are graded on Icarus. CDC cases are bugs that deterministic simulation can show (wrong clock, wrong encoding, lost pulses, early reset release); metastability-level CDC checks wait for formal grading (SPEC P3.6). Most cases inject a new bug into one of the author's modules that already has a validated reference testbench.
 
 ## tb cases: `cases/tb/<case>/`

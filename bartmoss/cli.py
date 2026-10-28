@@ -21,8 +21,10 @@ HELP = """\
   <question>          ask a hardware design question (same as /ask)
   /ask <question>     theory Q&A, remembers the conversation until /clear;
                       @path attaches a workspace file (e.g. "why is @rtl/fifo.sv full early?")
-  /debug <file> [ctx...]  review + fix one RTL file (writes <name>.fixed.<ext>);
-                          extra files (packages, interfaces, submodules) are read-only context
+  /debug <file> [ctx...] [--agent]
+                          review + fix one RTL file (writes <name>.fixed.<ext>);
+                          extra files (packages, interfaces, submodules) are read-only context;
+                          --agent lets the model use tools (AST, lint, its own testbenches) first
   /tb <file> [ctx...] [--random] [--seeds N]
                           generate + run a self-checking testbench; --random makes it
                           constrained-random with functional coverage, run with N seeds
@@ -33,6 +35,7 @@ HELP = """\
                           write assertions and check them with Yosys + yosys-smtbmc
   /vplan <spec> [ctx...]  verification plan: features, checks, coverage, edge cases (Markdown)
   /uvmplan <spec> [ctx...] UVM environment architecture: agents, sequences, scoreboard, tests
+  /project [file]     show the project index, or the files a file depends on (auto context)
   /filter [on|off]    pre-check /ask questions with a cheap model (off by default)
   /web [on|off]       allow Claude to search the web in /ask (off by default; billed per search)
   /model [p:model]    show or set the model for this session (e.g. anthropic:claude-haiku-5-5)
@@ -50,6 +53,10 @@ def build_context(args: argparse.Namespace) -> Context:
     config = load_config(root)
     if args.out:
         config["output_dir"] = args.out
+    if args.filelist:
+        config["project"]["filelist"] = args.filelist
+    if args.no_auto_context:
+        config["project"]["auto_context"] = False
     if args.model:
         parse_model_spec(args.model)  # validate early
     ui = UI(color=False if args.no_color else None)
@@ -107,6 +114,17 @@ def repl_args(command: str, rest: str, add) -> argparse.Namespace:
     parser = ReplArgumentParser(prog=command, add_help=False)
     add(parser)
     return parser.parse_args(shlex.split(rest))
+
+
+def cmd_project(ctx: Context, file: str = "") -> None:
+    project = ctx.project()
+    if not file:
+        ctx.ui.print(project.summary())
+        return
+    deps = project.dependencies(file)
+    ctx.ui.print(f"{file} depends on {len(deps)} file{'s' if len(deps) != 1 else ''}" + (":" if deps else "."))
+    for p in deps:
+        ctx.ui.print(f"  {ctx.workspace.relative(p)}")
 
 
 def cmd_doctor(ctx: Context) -> None:
@@ -187,13 +205,15 @@ def dispatch(ctx: Context, line: str) -> bool:
 
         run_tb(ctx, args.file, context_files=args.context, random=args.random, seeds=args.seeds)
     elif command == "/debug":
-        args = shlex.split(rest)
-        if not args:
-            ui.warn(f"usage: {command} <file> [context files...]")
-        else:
-            from bartmoss.modes.debug import run_debug
+        def add(p):
+            p.add_argument("file")
+            p.add_argument("context", nargs="*")
+            p.add_argument("--agent", action="store_true")
 
-            run_debug(ctx, args[0], context_files=args[1:])
+        args = repl_args("/debug", rest, add)
+        from bartmoss.modes.debug import run_debug
+
+        run_debug(ctx, args.file, context_files=args.context, agent=args.agent)
     elif command == "/model":
         if rest:
             parse_model_spec(rest)
@@ -215,6 +235,8 @@ def dispatch(ctx: Context, line: str) -> bool:
         elif rest:
             ui.warn("usage: /web [on|off]")
         ui.print(f"  web search for /ask is {'on' if ctx.web_search else 'off'}")
+    elif command == "/project":
+        cmd_project(ctx, rest)
     elif command == "/models":
         cmd_models(ctx)
     elif command == "/doctor":
@@ -279,6 +301,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", help="output directory inside the workspace (default: bartmoss_out)")
     parser.add_argument("--yes", "-y", action="store_true", help="overwrite existing output files without asking")
     parser.add_argument("--no-color", action="store_true", help="disable colours (NO_COLOR also works)")
+    parser.add_argument("--filelist", metavar="FILE.f", help="project filelist (.f) for the index used by auto context")
+    parser.add_argument("--no-auto-context", action="store_true",
+                        help="don't add a file's packages, interfaces and submodules as context automatically")
     sub = parser.add_subparsers(dest="command")
     p_ask = sub.add_parser("ask", help="ask a hardware design question")
     p_ask.add_argument("question", nargs="+")
@@ -293,6 +318,9 @@ def main(argv: list[str] | None = None) -> int:
                        help="supporting file (package, interface, submodule); repeatable")
         if name == "tb":
             add_tb_args(p)
+        elif name == "debug":
+            p.add_argument("--agent", action="store_true",
+                           help="let the model use tools first: AST queries, lint, its own testbenches (P4.1)")
         elif name == "formal":
             add_formal_args(p)
     add_wave_args(sub.add_parser("wave", help="review a VCD/FST waveform (summarised locally, never sent raw)"))
@@ -304,6 +332,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="run each case N times and report mean, min/max and full passes (default 1)")
     p_eval.add_argument("--prompt", metavar="NAME", help="prompt variant to test, e.g. debug.v2 (prompts/debug.v2.md)")
     p_eval.add_argument("--judge", metavar="PROVIDER:MODEL", help="judge model for vplan/uvmplan/ask/wave rubrics")
+    p_eval.add_argument("--agent", action="store_true",
+                        help="debug mode: score debug --agent (the tool-use loop) instead of the fixed workflow")
     p_eval.add_argument("--random", action="store_true",
                         help="tb mode: score constrained-random testbenches (tb --random) instead of directed ones")
     p_lb = sub.add_parser("leaderboard", help="summarise saved eval results by model")
@@ -313,6 +343,9 @@ def main(argv: list[str] | None = None) -> int:
     p_cmp = sub.add_parser("compare", help="compare two eval result files case by case")
     p_cmp.add_argument("a")
     p_cmp.add_argument("b")
+    sub.add_parser("mcp", help="run an MCP server (stdio) exposing the free checkers to Claude Code and other clients")
+    p_proj = sub.add_parser("project", help="show the project index, or the files one file depends on")
+    p_proj.add_argument("file", nargs="?", default="")
     sub.add_parser("doctor", help="check simulators and provider SDKs")
     sub.add_parser("models", help="show configured providers and models")
     args = parser.parse_args(argv)
@@ -333,7 +366,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "debug":
             from bartmoss.modes.debug import run_debug
 
-            return 0 if run_debug(ctx, args.file, context_files=args.context).status in ("clean", "unchecked") else 1
+            result = run_debug(ctx, args.file, context_files=args.context, agent=args.agent)
+            return 0 if result.status in ("clean", "unchecked") else 1
         if args.command == "tb":
             from bartmoss.modes.tb import run_tb
 
@@ -364,7 +398,10 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 if args.random and args.mode != "tb":
                     parser.error("--random only applies to --mode tb")
-                run_eval(ctx, args.mode, Path(args.cases), args.only, args.repeat, random_tb=args.random)
+                if args.agent and args.mode != "debug":
+                    parser.error("--agent only applies to --mode debug")
+                run_eval(ctx, args.mode, Path(args.cases), args.only, args.repeat, random_tb=args.random,
+                         agent=args.agent)
             except ProviderError as e:
                 ctx.ui.error(f"eval aborted, no results saved: {e}")
                 return 2
@@ -391,7 +428,14 @@ def main(argv: list[str] | None = None) -> int:
 
             compare(ctx.ui, Path(args.a), Path(args.b))
             return 0
-        if args.command == "doctor":
+        if args.command == "mcp":
+            from bartmoss.mcp_server import serve
+
+            ctx.ui = UI(color=False, out=sys.stderr)
+            return serve(ctx)
+        if args.command == "project":
+            cmd_project(ctx, args.file)
+        elif args.command == "doctor":
             cmd_doctor(ctx)
         elif args.command == "models":
             cmd_models(ctx)

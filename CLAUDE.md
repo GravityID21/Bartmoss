@@ -6,6 +6,8 @@
 - Model replies are parsed from XML-style tags (`<fixed_file>`, `<tb_file>`, `<notes>`, `<analysis>`, `<plan>`, `<diagnosis>`, `<properties>`). If you change a prompt's output format, update `extract.py` callers and `providers/mock.py`.
 - `/wave` never sends raw VCD: `sim/vcd.py` summarises it first. `/formal` never edits the design: properties go in an `` `ifdef FORMAL `` block, checked with Yosys + yosys-smtbmc (open-source Yosys has no `|->`/`##`; use immediate assertions with `$past`).
 - Every file access goes through `files.Workspace`; every tool run goes through `sim/tools.py` (argument lists, timeouts, no shell).
+- Model-written HDL is checked with `sim/tools.unsafe_constructs` before any simulation (`$system`, file I/O, DPI, `$c`). Agent history (`agent.py`) is append-only: never edit or drop earlier turns; cap tool output when it's produced instead.
+- Providers take neutral agent messages (assistant turns with `tool_calls` + `raw`, `{"role": "tool", "results": [...]}`) and convert them; replay `raw` unchanged so Claude thinking blocks stay valid.
 - VHDL files (`.vhd/.vhdl`) use NVC or GHDL (`sim/tools.py` picks by extension) and the `tb_vhdl.md` prompt variant.
 - Tests: `.venv/bin/python -m unittest`. They must pass offline with no API keys.
 - Eval cases live in `evals/cases/<mode>/<case>/`. Files other than `meta["file"]` (reference TBs, mutants) are hidden from the model. Prove each new case is valid with Verilator before adding it.

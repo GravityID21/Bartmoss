@@ -145,6 +145,17 @@ def synth_check(path: Path, top: str, context: tuple = (), timeout: int = 120) -
     return _run(["yosys", "-p", script, *map(str, context), str(path)], path.parent, timeout, "synth")
 
 
+def verilator_json(files: list[Path], workdir: Path, top: Optional[str] = None, timeout: int = 60) -> RunResult:
+    """Parse and elaborate with Verilator, writing its JSON AST (tree.json) and file table (meta.json)
+    into `workdir`. -Wno-fatal keeps lint warnings from stopping the run; real errors still do."""
+    workdir.mkdir(parents=True, exist_ok=True)
+    cmd = ["verilator", "--json-only", "-Wno-fatal", "--timing", "--json-only-output", "tree.json",
+           "--json-only-meta-output", "meta.json", "-Mdir", "obj_dir"]
+    if top and re.fullmatch(r"\w+", top):
+        cmd += ["--top-module", top]
+    return _run(cmd + [str(f) for f in files], workdir, timeout, "parse")
+
+
 def synth_findings(output: str) -> Optional[set[str]]:
     """Synthesis problems with locations removed, or None if Yosys couldn't elaborate the design
     (often unsupported SystemVerilog, such as package imports in a module header)."""
@@ -167,8 +178,10 @@ def simulate(files: list[Path], top: str, workdir: Path, simulator: str, timeout
     workdir.mkdir(parents=True, exist_ok=True)
     sources = [str(f) for f in files]
     if simulator == "verilator":
+        # Verilator ignores $dumpvars unless the model is built with tracing.
+        trace = ["--trace"] if any("$dumpvars" in Path(f).read_text(errors="replace") for f in files) else []
         build = _run(
-            ["verilator", "--binary", "--timing", "-j", "0", "-Wno-fatal", "-Wno-lint", "-Wno-style",
+            ["verilator", "--binary", "--timing", "-j", "0", "-Wno-fatal", "-Wno-lint", "-Wno-style", *trace,
              "--top-module", top, "-Mdir", "obj_dir", "-o", "sim", *sources],
             workdir, timeout, "compile",
         )
@@ -278,6 +291,25 @@ def formal_check(files: list[Path], top: str, workdir: Path, depth: int = 20, pr
         if "Status: PASSED" not in run.output:
             return FormalResult("error", stage, output)
     return FormalResult("pass", stages[-1][0], output)
+
+
+# Model-written HDL is run on the user's machine. These system tasks can run commands or read and
+# write arbitrary files (and send their contents back to the model), so model-written code that uses
+# them is never simulated. `$dumpfile` is allowed with a plain file name (the VCD stays in the temp dir).
+UNSAFE = (
+    (r"\$system\b", "$system runs shell commands"),
+    (r"\$(fopen|fdisplay|fwrite|fstrobe|fmonitor|fscanf|fgets|fread)\b", "file I/O tasks"),
+    (r"\$(readmem|writemem)[bh]\b", "$readmem/$writemem file access"),
+    (r"\$dumpfile\s*\(\s*\"[^\"]*[/\\]", "$dumpfile with a path"),
+    (r"import\s+\"DPI", "DPI-C imports run C code"),
+    (r"\$c\s*\(", "Verilator $c() runs C++"),
+    (r"(?i)\bfile_open\b|\bfile\s+\w+\s*:\s*text\b", "VHDL file I/O"),
+)
+
+
+def unsafe_constructs(source: str) -> list[str]:
+    """Reasons model-written HDL must not be simulated; empty if it's safe to run."""
+    return [why for pattern, why in UNSAFE if re.search(pattern, source)]
 
 
 def tb_verdict(output: str) -> str:
