@@ -6,6 +6,8 @@ tb cases:    the correct DUT must PASS reference_tb.sv, and every mutant must be
 wave cases:  the committed wave.vcd must match a fresh simulation of the sources, the expected
              symptom (expect.check) must be in it, and applying meta["fix"] must remove it.
 formal cases: reference properties (props.sv) must hold on the design and fail on every mutant.
+retrieval cases: the project's RTL (meta["files"], top last) must lint with no warnings, every
+             file must carry the canary, and every expected answer must point at exactly one line.
 
 Usage: python evals/validate.py [--sim verilator|iverilog] [--only text] [--write-waves]
 """
@@ -20,8 +22,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from bartmoss.modes.formal import insert_properties, stage_files  # noqa: E402
 from bartmoss.sim import vcd  # noqa: E402
-from bartmoss.sim.tools import (formal_check, is_vhdl, pick_simulator, pick_solver, simulate, tail,  # noqa: E402
-                                tb_verdict, unmet_requirement)
+from bartmoss.sim.tools import (formal_check, is_vhdl, lint, pick_simulator, pick_solver, simulate,  # noqa: E402
+                                tail, tb_verdict, unmet_requirement)
 
 CASES = Path(__file__).resolve().parent / "cases"
 # Bug taxonomy for debug cases (SPEC P2.15).
@@ -172,6 +174,27 @@ def check_formal(case: Path, meta: dict, sim: str, tmp: Path) -> list[str]:
     return problems
 
 
+def check_retrieval(case: Path, meta: dict) -> list[str]:
+    """Retrieval cases have no hidden files (there's no model), but the whole project is eval data,
+    so every file carries the canary."""
+    problems = [] if meta.get("canary") == CANARY else ["meta.json is missing the canary string"]
+    for f in sorted(p for p in case.rglob("*") if p.is_file() and p.name != "meta.json"):
+        if CANARY not in f.read_text(errors="replace").split("\n", 1)[0]:
+            problems.append(f"{f.relative_to(case)} doesn't start with the canary comment")
+    files = [case / f for f in meta["files"]]
+    run = lint(files[-1], tuple(files[:-1]))
+    if run is None:
+        problems.append("no linter installed")
+    elif not run.ok or "%Warning" in run.output:
+        problems.append("RTL doesn't lint cleanly:\n" + tail(run.output, 20))
+    for q in meta["questions"]:
+        for e in q["expect"]:
+            matches = sum(e["contains"] in line for line in (case / e["file"]).read_text().splitlines())
+            if matches != 1:
+                problems.append(f"{q['id']}: {e['file']} has {matches} lines containing {e['contains']!r} (need 1)")
+    return problems
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--sim", default="auto")
@@ -216,6 +239,14 @@ def main() -> int:
             for p in problems:
                 print("     " + p.replace("\n", "\n     "))
             failures += bool(problems)
+    for meta_path in sorted((CASES / "retrieval").glob("*/meta.json")):
+        if args.only and args.only not in meta_path.parent.name:
+            continue
+        problems = check_retrieval(meta_path.parent, json.loads(meta_path.read_text()))
+        print(f"{'ok  ' if not problems else 'FAIL'} retrieval/{meta_path.parent.name}")
+        for p in problems:
+            print("     " + p.replace("\n", "\n     "))
+        failures += bool(problems)
     for mode in ("ask", "vplan", "uvmplan"):
         for meta_path in sorted((CASES / mode).glob("*/meta.json")):
             if args.only and args.only not in meta_path.parent.name:

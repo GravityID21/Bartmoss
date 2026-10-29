@@ -55,6 +55,10 @@ class CheckerTools:
                                       "properties": {"type": "string"}, "context": FILES,
                                       "depth": {"type": "integer"}, "prove": {"type": "boolean"}},
                                      ["file", "top", "properties"]), self.formal),
+            "project_search": ("Ranked keyword search (BM25, plus embeddings if configured) over the project's HDL, "
+                               "split into modules and always/assign blocks, and its documents, split by heading. "
+                               "Returns path:lines, titles and excerpts.",
+                               b["retrieve"].input_schema, self.bench.retrieve),
             "project_deps": ("The project files a file depends on (packages, interfaces, submodules), in compile "
                              "order; with no file, a summary of the project index.",
                              _schema({"file": {"type": "string"}}, []), self.deps),

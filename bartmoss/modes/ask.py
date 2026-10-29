@@ -1,5 +1,6 @@
 """/ask: hardware design theory Q&A, multi-turn within a session. `@path` mentions attach
-workspace files to the question."""
+workspace files to the question; with /rag on (`ask --rag`), excerpts retrieved from the project
+are attached too."""
 
 from __future__ import annotations
 
@@ -29,6 +30,22 @@ def attach_mentions(ctx: Context, question: str) -> str:
     return question + ("\n\n" + "\n".join(blocks) if blocks else "")
 
 
+def retrieved_excerpts(ctx: Context, question: str) -> str:
+    """Project excerpts for /ask with /rag on (P4.6): the best-matching HDL blocks and document
+    sections for the question, as <excerpt> blocks within retrieval.max_context_chars."""
+    from bartmoss.retrieval import excerpt_blocks
+
+    cfg = ctx.config.get("retrieval", {})
+    query = _MENTION.sub(" ", question)
+    hits = ctx.retrieval().search(query, cfg.get("k", 8))
+    text, used = excerpt_blocks(hits, cfg.get("max_context_chars", 24_000))
+    if used:
+        ctx.ui.dim("  retrieved: " + ", ".join(h.chunk.source for h in used))
+    else:
+        ctx.ui.dim("  retrieved: nothing in the project index matches this question")
+    return text
+
+
 def run_ask(ctx: Context, question: str) -> Optional[str]:
     use_filter = ctx.config["filter"]["enabled"] if ctx.use_filter is None else ctx.use_filter
     if use_filter:
@@ -39,7 +56,11 @@ def run_ask(ctx: Context, question: str) -> Optional[str]:
             # Not added to the conversation, so a refused question doesn't colour later answers.
             ctx.ui.warn(REPLIES[label])
             return None
-    ctx.ask_history.append({"role": "user", "content": attach_mentions(ctx, question)})
+    content = attach_mentions(ctx, question)
+    if ctx.rag:
+        excerpts = retrieved_excerpts(ctx, question)
+        content += ("\n\n" + excerpts) if excerpts else ""
+    ctx.ask_history.append({"role": "user", "content": content})
     searches = 0
     if ctx.web_search:
         if parse_model_spec(ctx.model_spec("ask"))[0] == "anthropic":

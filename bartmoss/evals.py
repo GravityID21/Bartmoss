@@ -183,7 +183,8 @@ def _run_case(ctx: Context, mode: str, case: Path, meta: dict, simulator: str, a
     # define the same module as the DUT), so it's off during evals.
     config = {**ctx.config, "project": {**ctx.config.get("project", {}), "auto_context": False}}
     case_ctx = replace(ctx, config=config, workspace=Workspace(case, ctx.config["output_dir"]), ui=UI(quiet=True),
-                       assume_yes=True, ask_history=[], _providers=ctx._providers, _project=None)
+                       assume_yes=True, ask_history=[], _providers=ctx._providers, _project=None,
+                       _index=None, rag=False)
     calls_before = len(ctx.usage.calls)
     started = time.time()
     scratch = Path(tempfile.mkdtemp(prefix=f"bartmoss_eval_{case.name}_"))
@@ -348,4 +349,89 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
     out.write_text(json.dumps(report, indent=2) + "\n")
     spread = f" (per-run means {min(run_means):.2f}–{max(run_means):.2f})" if repeat > 1 else ""
     ui.ok(f"mean score {mean:.2f}{spread} · results saved to {out}")
+    return report
+
+
+def _target_line(case: Path, expect: dict) -> int:
+    """The 1-based line an expected answer points at: `line`, or the first line containing `contains`."""
+    if "line" in expect:
+        return int(expect["line"])
+    for n, line in enumerate((case / expect["file"]).read_text().splitlines(), 1):
+        if expect["contains"] in line:
+            return n
+    raise ValueError(f"{expect['file']} has no line containing {expect['contains']!r}")
+
+
+def run_retrieval_eval(ctx: Context, cases_root: Path, only: str | None = None) -> dict:
+    """Score the retrieval index alone (P4.6), with no model calls. Each case is a small project
+    with questions whose answer sits on known lines. A question scores 1 if a chunk covering one of
+    those lines is found within the case's character budget (the excerpts ranked above it count
+    against the budget), which compares chunkings fairly: bigger chunks rank answers higher but
+    cost more prompt. Also reported: hit@1, hit@k, mean reciprocal rank and characters per top k."""
+    from bartmoss.project import Project
+    from bartmoss.retrieval import build_index, excerpt_blocks
+
+    ui = ctx.ui
+    cfg = ctx.config.get("retrieval", {})
+    cases_dir = (cases_root / "retrieval").resolve()
+    cases = sorted(p for p in cases_dir.iterdir() if (p / "meta.json").is_file()) if cases_dir.is_dir() else []
+    if not cases:
+        raise SystemExit(f"No cases found in {cases_dir}")
+    label = "bm25" + (f"+{cfg['embeddings']}" if cfg.get("embeddings") else "")
+    chunking = cfg.get("chunking", "structure")
+    variant = chunking if chunking == "structure" else f"{chunking}{cfg.get('chunk_lines', 60)}"
+    run_name = f"{date.today().isoformat()}_retrieval_{re.sub(r'[^A-Za-z0-9.-]+', '-', label)}"
+    if only:
+        run_name += f"_only-{re.sub(r'[^A-Za-z0-9.-]+', '-', only)}"
+    if chunking != "structure":
+        run_name += f"_p-{variant}"
+    started = time.time()
+    rows, ks = [], []
+    for case in cases:
+        meta = json.loads((case / "meta.json").read_text())
+        k, budget = meta.get("k", 5), meta.get("budget", 6000)
+        workspace = Workspace(case, ctx.config["output_dir"])
+        index = build_index(workspace, Project(workspace), ctx.config, ui.warn)
+        if cfg.get("embeddings") and not index.embeddings:
+            raise SystemExit(f"embeddings {cfg['embeddings']} unavailable; not scoring BM25 under that name")
+        ui.info(f"{case.name}: {index.stats()['chunks']} chunks from {index.files} files · "
+                f"budget {budget} chars · top {k} · {label} · {variant}")
+        for q in meta["questions"]:
+            name = f"{case.name}/{q['id']}"
+            if only and only not in name:
+                continue
+            targets = [(e["file"], _target_line(case, e)) for e in q["expect"]]
+            hits = index.search(q["q"], 50)
+            rank = next((n for n, h in enumerate(hits, 1)
+                         if any(h.chunk.rel == f and h.chunk.start <= line <= h.chunk.end for f, line in targets)), None)
+            chars_to_hit = len(excerpt_blocks(hits[:rank], 10 ** 9)[0]) if rank else None
+            score = 1.0 if rank and chars_to_hit <= budget else 0.0
+            rows.append({"case": name, "category": q.get("category"), "score": score, "min": score, "max": score,
+                         "full_passes": int(score), "repeat": 1,
+                         "runs": [{"score": score, "rank": rank, "chars_to_hit": chars_to_hit,
+                                   "top_k_chars": len(excerpt_blocks(hits[:k], 10 ** 9)[0]),
+                                   "top": [h.chunk.source for h in hits[:3]]}]})
+            ks.append(k)
+            colour = "green" if rank == 1 else "yellow" if score else "red"
+            ui.print(f"  {ui.style(f'{score:.2f}', colour)}  {name:40} rank {rank or '-'} · "
+                     f"{chars_to_hit if rank else '-'} chars to reach it")
+    if not rows:
+        raise SystemExit("No questions matched.")
+    ranks = [r["runs"][0]["rank"] for r in rows]
+    mean = sum(r["score"] for r in rows) / len(rows)
+    report = {"format": 2, "date": date.today().isoformat(), "mode": "retrieval", "model": label,
+              "simulator": None, "repeat": 1, "prompt": "retrieval" if chunking == "structure" else variant,
+              "mean_score": round(mean, 3), "run_means": [round(mean, 3)], "cost_usd": 0.0,
+              "seconds": round(time.time() - started, 1), "usage": "no model calls",
+              "hit_at_1": round(sum(r == 1 for r in ranks) / len(ranks), 3),
+              "hit_at_k": round(sum(bool(r and r <= k) for r, k in zip(ranks, ks)) / len(ranks), 3),
+              "mrr": round(sum(1 / r for r in ranks if r) / len(ranks), 3),
+              "mean_top_k_chars": round(sum(r["runs"][0]["top_k_chars"] for r in rows) / len(rows)),
+              "cases": rows, "skipped": []}
+    results_dir = cases_root.resolve().parent / "results"
+    results_dir.mkdir(exist_ok=True)
+    out = results_dir / f"{run_name}.json"
+    out.write_text(json.dumps(report, indent=2) + "\n")
+    ui.ok(f"found within budget {mean:.2f} · hit@1 {report['hit_at_1']:.2f} · hit@k {report['hit_at_k']:.2f} · "
+          f"MRR {report['mrr']:.2f} · {report['mean_top_k_chars']} chars per top k · results saved to {out}")
     return report

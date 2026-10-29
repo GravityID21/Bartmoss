@@ -33,9 +33,16 @@ HELP = """\
                           --list shows signal names, --summary skips the model
   /formal <file> [ctx...] [--depth N] [--prove]
                           write assertions and check them with Yosys + yosys-smtbmc
-  /vplan <spec> [ctx...]  verification plan: features, checks, coverage, edge cases (Markdown)
-  /uvmplan <spec> [ctx...] UVM environment architecture: agents, sequences, scoreboard, tests
+  /vplan <spec> [ctx...] [--docs [QUERY]]
+                          verification plan: features, checks, coverage, edge cases (Markdown);
+                          --docs adds the matching sections of the project's documents
+  /uvmplan <spec> [ctx...] [--docs [QUERY]]
+                          UVM environment architecture: agents, sequences, scoreboard, tests
   /project [file]     show the project index, or the files a file depends on (auto context)
+  /search <query> [-k N] [--hdl|--docs] [--show]
+                          ranked search over the project's HDL blocks and document sections
+  /index              what the search index holds (files, chunks, embeddings)
+  /rag [on|off]       add retrieved project excerpts to /ask questions (off by default)
   /filter [on|off]    pre-check /ask questions with a cheap model (off by default)
   /web [on|off]       allow Claude to search the web in /ask (off by default; billed per search)
   /model [p:model]    show or set the model for this session (e.g. anthropic:claude-haiku-5-5)
@@ -127,6 +134,42 @@ def cmd_project(ctx: Context, file: str = "") -> None:
         ctx.ui.print(f"  {ctx.workspace.relative(p)}")
 
 
+def add_search_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("query", nargs="+")
+    p.add_argument("-k", type=int, default=None, help="number of results (default retrieval.k)")
+    kind = p.add_mutually_exclusive_group()
+    kind.add_argument("--hdl", dest="kind", action="store_const", const="hdl", help="only HDL")
+    kind.add_argument("--docs", dest="kind", action="store_const", const="doc", help="only documents")
+    p.add_argument("--show", action="store_true", help="print each excerpt, not just its location")
+
+
+def add_plan_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--docs", nargs="?", const="", default=None, metavar="QUERY",
+                   help="add the project document sections that match this file (its name, units and ports, "
+                        "plus QUERY) as context; for specs too long to send whole")
+
+
+def cmd_search(ctx: Context, args: argparse.Namespace) -> None:
+    from bartmoss.retrieval import format_hits
+
+    k = args.k or ctx.config.get("retrieval", {}).get("k", 8)
+    hits = ctx.retrieval().search(" ".join(args.query), k, kind=args.kind)
+    ctx.ui.print(format_hits(hits, show_text=args.show) if hits else "  no matches")
+
+
+def cmd_index(ctx: Context) -> None:
+    index = ctx.retrieval()
+    stats = index.stats()
+    ctx.ui.print(f"  {stats['files']} files · {stats['chunks']} chunks ({stats.get('hdl', 0)} HDL blocks, "
+                 f"{stats.get('doc', 0)} document sections) · chunking {ctx.config['retrieval'].get('chunking')}")
+    spec = ctx.config["retrieval"].get("embeddings")
+    if index.embeddings:
+        ctx.ui.print(f"  ranking: BM25 + {index.embeddings} embeddings (hybrid)")
+    else:
+        ctx.ui.print("  ranking: BM25" + (f" (embeddings {spec} unavailable)" if spec else
+                                          " (set retrieval.embeddings for hybrid search)"))
+
+
 def cmd_doctor(ctx: Context) -> None:
     ui = ctx.ui
     ui.print(ui.style("Simulators / tools", "bold"))
@@ -177,11 +220,24 @@ def dispatch(ctx: Context, line: str) -> bool:
     elif command in ("/vplan", "/uvmplan"):
         from bartmoss.modes.plan import run_plan
 
-        args = shlex.split(rest)
-        if not args:
-            ui.warn(f"usage: {command} <spec, README or RTL file> [context files...]")
-        else:
-            run_plan(ctx, command[1:], args[0], context_files=args[1:])
+        def add(p):
+            p.add_argument("file")
+            p.add_argument("context", nargs="*")
+            add_plan_args(p)
+
+        args = repl_args(command, rest, add)
+        run_plan(ctx, command[1:], args.file, context_files=args.context, docs=args.docs is not None,
+                 docs_query_text=args.docs or "")
+    elif command == "/search":
+        cmd_search(ctx, repl_args("/search", rest, add_search_args))
+    elif command == "/index":
+        cmd_index(ctx)
+    elif command == "/rag":
+        if rest in ("on", "off"):
+            ctx.rag = rest == "on"
+        elif rest:
+            ui.warn("usage: /rag [on|off]")
+        ui.print(f"  project excerpts for /ask are {'on' if ctx.rag else 'off'}")
     elif command == "/wave":
         wave_from_args(ctx, repl_args("/wave", rest, add_wave_args))
     elif command == "/formal":
@@ -308,6 +364,8 @@ def main(argv: list[str] | None = None) -> int:
     p_ask = sub.add_parser("ask", help="ask a hardware design question")
     p_ask.add_argument("question", nargs="+")
     p_ask.add_argument("--web", action="store_true", help="allow Claude to search the web (billed per search)")
+    p_ask.add_argument("--rag", action="store_true",
+                       help="add the best-matching excerpts from the project's HDL and documents to the question")
     for name, help_text in (("debug", "review and fix one RTL file"), ("tb", "generate and run a testbench for one RTL file"),
                             ("vplan", "write a verification plan from a spec, README or RTL file"),
                             ("uvmplan", "design a UVM environment from a spec, README or RTL file"),
@@ -323,9 +381,12 @@ def main(argv: list[str] | None = None) -> int:
                            help="let the model use tools first: AST queries, lint, its own testbenches (P4.1)")
         elif name == "formal":
             add_formal_args(p)
+        elif name in ("vplan", "uvmplan"):
+            add_plan_args(p)
     add_wave_args(sub.add_parser("wave", help="review a VCD/FST waveform (summarised locally, never sent raw)"))
     p_eval = sub.add_parser("eval", help="score a model on the eval cases")
-    p_eval.add_argument("--mode", choices=["debug", "tb", "vplan", "uvmplan", "ask", "wave", "formal"], required=True)
+    p_eval.add_argument("--mode", choices=["debug", "tb", "vplan", "uvmplan", "ask", "wave", "formal", "retrieval"],
+                        required=True, help="retrieval scores the search index only (no model, free)")
     p_eval.add_argument("--cases", default="evals/cases", help="cases directory (default: evals/cases)")
     p_eval.add_argument("--only", help="run only cases whose name contains this text")
     p_eval.add_argument("--repeat", type=int, default=1, metavar="N",
@@ -344,6 +405,8 @@ def main(argv: list[str] | None = None) -> int:
     p_cmp.add_argument("a")
     p_cmp.add_argument("b")
     sub.add_parser("mcp", help="run an MCP server (stdio) exposing the free checkers to Claude Code and other clients")
+    add_search_args(sub.add_parser("search", help="ranked search over the project's HDL blocks and document sections"))
+    sub.add_parser("index", help="show what the search index holds (files, chunks, embeddings)")
     p_proj = sub.add_parser("project", help="show the project index, or the files one file depends on")
     p_proj.add_argument("file", nargs="?", default="")
     sub.add_parser("doctor", help="check simulators and provider SDKs")
@@ -362,6 +425,7 @@ def main(argv: list[str] | None = None) -> int:
             from bartmoss.modes.ask import run_ask
 
             ctx.web_search = args.web
+            ctx.rag = args.rag
             return 0 if run_ask(ctx, " ".join(args.question)) is not None else 1
         if args.command == "debug":
             from bartmoss.modes.debug import run_debug
@@ -383,7 +447,14 @@ def main(argv: list[str] | None = None) -> int:
         if args.command in ("vplan", "uvmplan"):
             from bartmoss.modes.plan import run_plan
 
-            return 0 if run_plan(ctx, args.command, args.file, context_files=args.context).status == "ok" else 1
+            result = run_plan(ctx, args.command, args.file, context_files=args.context, docs=args.docs is not None,
+                              docs_query_text=args.docs or "")
+            return 0 if result.status == "ok" else 1
+        if args.command == "eval" and args.mode == "retrieval":
+            from bartmoss.evals import run_retrieval_eval
+
+            run_retrieval_eval(ctx, Path(args.cases), args.only)
+            return 0
         if args.command == "eval":
             from bartmoss.evals import run_eval
 
@@ -435,6 +506,10 @@ def main(argv: list[str] | None = None) -> int:
             return serve(ctx)
         if args.command == "project":
             cmd_project(ctx, args.file)
+        elif args.command == "search":
+            cmd_search(ctx, args)
+        elif args.command == "index":
+            cmd_index(ctx)
         elif args.command == "doctor":
             cmd_doctor(ctx)
         elif args.command == "models":

@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-MODES = ("debug", "tb", "vplan", "uvmplan", "ask", "wave", "formal")
+MODES = ("debug", "tb", "vplan", "uvmplan", "ask", "wave", "formal", "retrieval")
 
 
 def load_runs(results_dir: Path) -> list[dict]:

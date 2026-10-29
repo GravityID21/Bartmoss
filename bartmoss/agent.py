@@ -65,6 +65,8 @@ def validate(schema: dict, args: dict) -> Optional[str]:
         if expected and not (isinstance(value, expected) and not (expected is int and isinstance(value, bool))):
             kind = props[name]["type"]
             return f"argument {name!r} must be {'an' if kind[0] in 'aeiou' else 'a'} {kind}"
+        if "enum" in props[name] and value not in props[name]["enum"]:
+            return f"argument {name!r} must be one of {', '.join(map(str, props[name]['enum']))}"
     return None
 
 
@@ -150,6 +152,15 @@ class Workbench:
                         return "\n".join(hits) + "\n(first 60 matches)"
         return "\n".join(hits) or "no matches"
 
+    def retrieve(self, args: dict) -> str:
+        from bartmoss.retrieval import format_hits
+
+        root = self.ctx.workspace.root
+        allow = None if self.visible is None else (lambda rel: (root / rel).resolve() in self.visible)
+        k = min(max(args.get("k", 5), 1), 10)
+        hits = self.ctx.retrieval().search(args["query"], k, kind=args.get("kind"), allow=allow)
+        return format_hits(hits, show_text=True, max_lines=40) if hits else "no matching code or documentation"
+
     def hdl_structure(self, args: dict) -> str:
         modules, run = hdl_ast.parse(self._files(args["files"]), args.get("top"))
         if modules is None:
@@ -203,6 +214,12 @@ class Workbench:
                          ["path"]), self.read_file, True),
             Tool("search", "Regex search over the project's HDL files and scratch files; returns file:line matches.",
                  _schema({"pattern": {"type": "string"}}, ["pattern"]), self.search, True),
+            Tool("retrieve", "Ranked search (BM25) over the project's HDL, split into modules and always/assign "
+                 "blocks, and its documents, split by heading. Use it when you know what you're looking for but not "
+                 "the file or exact name (e.g. 'where is the parity bit computed'); returns the best excerpts with "
+                 "path:lines.",
+                 _schema({"query": {"type": "string"}, "k": {"type": "integer", "description": "results, 1-10 (default 5)"},
+                          "kind": {"type": "string", "enum": ["hdl", "doc"]}}, ["query"]), self.retrieve, True),
             Tool("hdl_structure", "Parse files with Verilator and list modules, parameters, ports, internal signals, "
                  "instances and always/assign blocks with the signals each writes and reads. With `signal`, also the "
                  "lines that drive and read it. Much cheaper than reading whole files.",

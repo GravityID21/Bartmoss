@@ -44,6 +44,8 @@ class Context:
     prompt_overrides: dict = field(default_factory=dict)  # mode -> prompt variant, e.g. {"debug": "debug.v2"}
     _providers: dict = field(default_factory=dict)
     _project: Optional[object] = None
+    _index: Optional[object] = None
+    rag: bool = False  # /rag on|off; adds retrieved project excerpts to /ask questions
 
     def model_spec(self, mode: str) -> str:
         return model_for_mode(self.config, mode, self.model_override)
@@ -84,6 +86,14 @@ class Context:
             cfg = self.config.get("project", {})
             self._project = Project(self.workspace, cfg.get("filelist"), cfg.get("max_files", 500))
         return self._project
+
+    def retrieval(self):
+        """The retrieval index over the project's HDL and documents (P4.6), built once per session."""
+        if self._index is None:
+            from bartmoss.retrieval import build_index
+
+            self._index = build_index(self.workspace, self.project(), self.config, self.ui.warn)
+        return self._index
 
     def read_context_files(self, paths, for_file: Optional[Path] = None) -> list[tuple[Path, str]]:
         """Supporting files (packages, interfaces, submodules): shown to the model read-only

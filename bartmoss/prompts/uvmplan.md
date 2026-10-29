@@ -7,6 +7,7 @@ How to design:
 - Include a register model only if the design has software-visible registers; otherwise say "Not applicable".
 - Tests should build up from a smoke test to stress and error-injection tests, each mapped to sequences.
 - The build order should let the user get a first passing test early and add pieces one at a time.
+- Spec excerpts (in <excerpt> tags) may follow: sections of the project's documents retrieved for this design. Use them for requirements and cite each by its section title as the source. They can be incomplete, so note any assumption you make where they leave something open.
 - If the input leaves something undefined, note the assumption you made.
 - Keep it tight: tables and short bullets, no introductions or closing summaries.
 

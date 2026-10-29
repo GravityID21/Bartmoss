@@ -96,6 +96,20 @@ Score: 0.2 if the plan has every required section and table, + 0.8 × fraction o
 
 12 theory questions (`question`) with 4–5 rubric items each, covering CDC, coding style, timing, protocols, verification and one FIFO-depth calculation. Score: fraction of rubric items the judge finds in the answer. Web search and the pre-filter are off during evals.
 
+## retrieval cases: `cases/retrieval/<project>/`
+
+Scores the search index alone (`retrieval.py`); no model is called, so it's free. Each case is a small project, and `meta.json` lists questions whose answers sit on known lines:
+
+| Field | Purpose |
+|---|---|
+| `questions[].q` | the question, phrased the way a user would ask it |
+| `questions[].expect` | `{file, contains}` pairs: a result counts if its chunk covers the line containing that text (where the RTL and the spec both answer, either counts) |
+| `questions[].category` | `hdl` or `doc`, for reporting only (the whole index is searched) |
+| `k`, `budget` | top-k for hit@k; the character budget for the score |
+| `files` | the RTL in compile order, top last, for `validate.py`'s lint |
+
+Score: 1 if the answer is reached within `budget` characters of excerpts (everything ranked above it counts), else 0. Bigger chunks rank answers higher by carrying more text, so plain hit@k would favour whichever chunking costs the most prompt. hit@1, hit@k and MRR are reported too. `validate.py` checks that the RTL lints with no warnings, that every file carries the canary (there's no model, so nothing is hidden) and that every `contains` matches exactly one line. Compare chunkings with `retrieval.chunking: "lines"` in `bartmoss.json`.
+
 ## Prompt A/B
 
 Put a variant next to the original (`bartmoss/prompts/debug.v2.md`), then:

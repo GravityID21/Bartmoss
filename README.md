@@ -4,7 +4,7 @@
 
 An open-source AI assistant for RTL design and verification that runs in your terminal and works with any model. Generated and fixed RTL is checked with a real simulator before you see it.
 
-> Status: Phases 1–3 complete (UVM generation deferred); Phase 4 (agent mode, project awareness, MCP server) built and in testing. Under active development. See [SPEC.md](SPEC.md) for the full roadmap and progress tracker.
+> Status: Phases 1–3 complete (UVM generation deferred); Phase 4 (agent mode, project awareness, MCP server, retrieval) built and in testing. Under active development. See [SPEC.md](SPEC.md) for the full roadmap and progress tracker.
 
 ![Bartmoss fixing an off-by-one counter and generating a passing testbench](docs/demo.svg)
 
@@ -23,8 +23,9 @@ An open-source AI assistant for RTL design and verification that runs in your te
 | `bartmoss formal file.sv` | The model writes assertions; Bartmoss puts them in an `` `ifdef FORMAL `` block (your design is never edited) and runs a bounded model check with Yosys + yosys-smtbmc (`--prove` adds k-induction). A failing assertion is reported with a summarised counterexample as a possible design bug or wrong property. |
 | `bartmoss vplan spec.md` | Writes a verification plan (features → checks → coverage → edge cases) to `bartmoss_out/spec.vplan.md`. Takes a spec, README or RTL file. |
 | `bartmoss uvmplan spec.md` | Designs a UVM environment (agents, transactions, sequences, scoreboard, coverage, tests, build order) as `bartmoss_out/spec.uvmplan.md`. |
+| `bartmoss search "where is parity computed"` | Ranked search over the project: HDL split into modules and always/assign blocks, documents split by heading. `--show` prints the excerpts. `ask --rag` attaches the best ones to a question, and `vplan file.sv --docs` adds the spec sections that match a design. Keyword ranking (BM25) on the standard library; set `retrieval.embeddings` to a local Ollama embeddings model for hybrid search. |
 | `bartmoss project [file]` | Shows the project index (which file defines which module, package and interface), or the files one file depends on. `--filelist files.f` uses a filelist instead of scanning. |
-| `bartmoss mcp` | Runs an MCP server so Claude Code and other MCP clients can use Bartmoss's free checkers (lint, simulate, synth check, design structure, waveform summary, formal check). Register it with `claude mcp add bartmoss -- bartmoss --root /path/to/project mcp`. |
+| `bartmoss mcp` | Runs an MCP server so Claude Code and other MCP clients can use Bartmoss's free checkers (lint, simulate, synth check, design structure, waveform summary, formal check, project search). Register it with `claude mcp add bartmoss -- bartmoss --root /path/to/project mcp`. |
 | `bartmoss eval --mode debug\|tb\|wave\|formal\|…` | Scores a model on the cases in `evals/cases/`, graded by the simulator, the formal checker or a rubric judge. |
 | `bartmoss` | Interactive REPL (`/help` lists commands). |
 

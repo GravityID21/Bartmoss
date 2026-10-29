@@ -71,6 +71,13 @@ DEFAULTS: dict = {
     # Project awareness (P4.2): with no --with files, modes add the packages, interfaces and submodules a
     # file depends on, found by indexing the workspace (or `filelist`, a .f file) for definitions.
     "project": {"auto_context": True, "filelist": None, "max_files": 500, "max_context_files": 20},
+    # Retrieval (P4.6) for `ask --rag`, `vplan --docs`, `bartmoss search` and the agent's `retrieve` tool: HDL
+    # chunked by module and top-level block, documents by heading, ranked with BM25. `docs` limits which files
+    # or directories are indexed as documents (default: scan the workspace). Set `embeddings` to an
+    # OpenAI-compatible embeddings model (e.g. "ollama:nomic-embed-text") for hybrid ranking; it's never required.
+    "retrieval": {"k": 8, "max_context_chars": 24_000, "plan_k": 6, "chunking": "structure", "chunk_lines": 60,
+                  "doc_chunk_lines": 80, "doc_chunk_chars": 4000, "docs": None, "max_docs": 200,
+                  "max_doc_bytes": 2_000_000, "embeddings": None},
     "simulator": "auto",  # auto | verilator | iverilog
     "output_dir": "bartmoss_out",
     "sim_timeout_s": 300,

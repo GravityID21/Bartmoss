@@ -252,7 +252,7 @@ Quality
   - Let the model write and run its own small testbench while debugging (`run_sim`), and use the VCD summaries from P3.1 once they exist.
   - **Adoption gate:** A/B the agent against today's fixed lint → fix → re-check workflow on the same eval set (score, cost, time per case, ×3). Make it the default only if it scores higher at an acceptable cost; otherwise keep it as an opt-in mode.
   - *Built 2026-10-28, tested offline:*
-    - **Command:** `debug --agent`. It runs `agent.py`'s loop with seven tools: `list_dir`, `read_file` (line-numbered, in chunks), `search`, `hdl_structure` (`sim/hdl_ast.py`), `run_lint`, `write_scratch` (a temp dir, never the workspace) and `run_sim` (returns the verdict, and a `/wave` summary if the testbench dumps `wave.vcd`).
+    - **Command:** `debug --agent`. It runs `agent.py`'s loop with eight tools: `list_dir`, `read_file` (line-numbered, in chunks), `search`, `retrieve` (P4.6, added 2026-10-29), `hdl_structure` (`sim/hdl_ast.py`), `run_lint`, `write_scratch` (a temp dir, never the workspace) and `run_sim` (returns the verdict, and a `/wave` summary if the testbench dumps `wave.vcd`).
     - **Approval:** read-only and scratch tools run without asking. `run_sim` executes model-written code, so it asks unless `--yes` is given or `agent.auto_approve` lists it. Code using `$system`, file I/O, `$readmem`, DPI or `$c` is refused outright.
     - **Same checks as before:** the agent's final answer goes through the same lint, Yosys and interface checks and retries as plain `/debug`.
     - **Providers:** Claude uses native tool use; the full response content, including thinking and `tool_use` blocks, is replayed each turn, with automatic caching and eager input streaming, and inputs are validated before they run. OpenAI-compatible endpoints (including Ollama) use function calling.
@@ -276,14 +276,37 @@ Quality
     - **`/wave`:** a diagnosis must name a signal that is in the summary.
     - **When they're skipped:** when Verilator lacks `--json-only` or the original doesn't parse; the two debug cases built on interface ports hit a Verilator `--json-only` limitation and are skipped this way.
 - [x] **P4.5** MCP server exposing Bartmoss checkers as tools (so Claude Code / other MCP clients can use them). Builds on the course MCP project.
-    - **Server:** `bartmoss mcp` is a stdlib JSON-RPC 2.0 MCP server over stdio. It offers seven tools with no model calls and no API key: `lint`, `hdl_structure`, `simulate`, `synth_check`, `wave_summary`, `formal_check` and `project_deps`.
+    - **Server:** `bartmoss mcp` is a stdlib JSON-RPC 2.0 MCP server over stdio. It offers eight tools with no model calls and no API key: `lint`, `hdl_structure`, `simulate`, `synth_check`, `wave_summary`, `formal_check`, `project_deps` and `project_search` (P4.6).
     - **Safety:** the workspace jail applies, and files using `$system`, file I/O or DPI aren't simulated.
     - **Register it with Claude Code:** `claude mcp add bartmoss -- bartmoss --root <project> mcp`.
-- [ ] **P4.6** Lightweight retrieval for project-scale context (multi-module codebases, long specs for `/vplan`).
+- [~] **P4.6** Lightweight retrieval for project-scale context (multi-module codebases, long specs for `/vplan`).
   - Chunk RTL by structure (module, always block, interface, package) using the P4.1 Verilator JSON AST, not by token count. Chunk documents by heading.
   - Keyword search with BM25 in the standard library, which is good at exact signal and register names. Optional semantic search through an embeddings extra (local Ollama embeddings or an API), combined with BM25 (hybrid). Never required.
   - Users index their own documents. Standards such as IEEE 1800 are copyrighted and can't be shipped.
   - **Return when:** P4.2 makes projects bigger than a comfortable prompt. **Adoption gate:** a multi-file retrieval eval (questions that need the right module or spec section) shows retrieval beats putting the relevant files straight in the prompt.
+  - *Built 2026-10-29, tested offline (`retrieval.py`, stdlib only):*
+    - **Chunking:** a unit is a module, interface, package, program or class (VHDL: entity, architecture, package). Units longer than `retrieval.chunk_lines` (60) are split at top-level items: always blocks, assigns, functions, tasks, generate blocks, instances, processes. Each item keeps the comment lines directly above it, and block nesting is tracked so a `case` or `begin` inside an always block never splits it. Documents (`.md`, `.rst`, `.adoc`, `.txt`) are split by heading, and each chunk carries its heading path ("spec.md § 5. UART registers > 5.1 CTRL"). Long sections are split at paragraph breaks.
+    - **Why not the Verilator AST:** its JSON gives each block's first token but not where it ends, and it needs a design that parses. The structure scan is regex-based like `project.py`, so it also works on broken files.
+    - **Ranking:** BM25. Identifiers also index their parts (`tx_valid` → tx, valid; `rdPtr` → rd, ptr). Numeric literals are normalised, so 8'h5A, 0x5A and 90 match. Chunk titles count twice.
+    - **Embeddings (optional):** set `retrieval.embeddings` to an OpenAI-compatible embeddings model (e.g. `ollama:nomic-embed-text`) and BM25 and cosine rankings are merged by reciprocal rank fusion. The `/embeddings` endpoint is called with urllib, so there's no SDK. Vectors are cached in the output dir by text hash. If the endpoint fails, it falls back to BM25 with a warning.
+    - **Where it's used:**
+      - `bartmoss search <query>` (`--hdl`, `--docs`, `--show`) and `bartmoss index`.
+      - `ask --rag` (`/rag on`): the best excerpts are attached to the question, within `retrieval.max_context_chars`.
+      - `vplan`/`uvmplan --docs [QUERY]`: the document sections matching the file's name, units and ports are added as `<excerpt>` context.
+      - The agent's `retrieve` tool, which respects the eval visibility filter.
+      - The MCP `project_search` tool.
+    - **Free eval:** `eval --mode retrieval` scores the index with no model. Case `periph_soc` is a 12-module APB peripheral subsystem (UART + FIFO, SPI, timer, GPIO, interrupt controller, watchdog; lint-clean) with a 133-line Markdown spec. It has 28 questions whose answers sit on known lines: 18 need the right RTL block and 10 the right spec section. A question scores if its answer is reached within 6,000 characters of excerpts. Chunk size is part of the score because bigger chunks rank answers higher by carrying more text.
+    - **Result (2026-10-29), structural chunks vs fixed line windows:**
+
+      | Chunking | Found within 6k chars | hit@1 | hit@5 | Chars per top 5 |
+      |---|---|---|---|---|
+      | Structure | **1.00** | 0.50 | 0.96 | 4.7k |
+      | 20-line windows | 0.89 | 0.50 | 0.86 | 4.6k |
+      | 40-line windows | 0.93 | 0.57 | 0.96 | 8.3k |
+      | 60-line windows | 0.82 | 0.68 | 1.00 | 11.2k |
+
+      For scale, the whole project is 37k characters. BM25 misses where the question and the source share no words: "received data is waiting" vs "the receive FIFO holds at least one byte". That's the gap embeddings are for. Not measured, since no embeddings model is pulled locally.
+    - **Not done:** the adoption gate's end-to-end comparison (paid): `/ask` answers on the case's questions with `--rag` versus with the relevant files attached whole. Until then retrieval is opt-in, and auto context still adds whole dependency files.
 
 ### Phase 5: Vendor tool orchestration
 **Return when:** Phases 1–3 are stable and a maintainer has regular access to the vendor tools for testing.
@@ -384,6 +407,7 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 | Harmful/illegal inputs | Hosted providers enforce their own policies. Bartmoss adds scope rules in every system prompt and an optional pre-filter (P2.4). Local/open models may have weaker safeguards, so the README says so. |
 | Hosted-service liability for uploads | Not hosting (non-goal). BYO-key CLI means users interact with providers under the providers' own terms. |
 | File access | All paths resolved inside the workspace root; symlink escapes rejected; size caps; originals never modified; overwrite needs confirmation. |
+| Embeddings (optional retrieval) | Off by default. When `retrieval.embeddings` is set, the text of every indexed chunk is sent to that endpoint. A local Ollama model keeps it on the machine. |
 | Running tools | Only known executables (`verilator`, `iverilog`, `vvp`, `nvc`, `ghdl`, `yosys`, `yosys-smtbmc`, `fst2vcd`) with argument lists (no shell), in a temp dir, with timeouts. Waveform dumps are summarised locally and never uploaded. |
 | Running model-written HDL | Testbenches and fixes the model writes are simulated on your machine, so code using `$system`, file I/O, `$readmem`, `$dumpfile` paths, DPI or `$c` is refused before it runs (`/tb`, the agent, debug evals, the MCP `simulate` tool). The agent's `run_sim` also asks before each run unless you pass `--yes` or list it in `agent.auto_approve`. Agent scratch files live in a temp dir, never the workspace. |
 | Git / account access | Not needed. Bartmoss never touches git credentials; users commit themselves. |
@@ -416,6 +440,9 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 ## 12. Decision log
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-29 | Retrieval chunks HDL by unit and top-level item with a regex structure scan, not Verilator's AST | The JSON AST gives where a block starts but not where it ends, and needs a design that parses. At an equal 6k-character budget, structural chunks found 28/28 answers vs 23–26 for fixed line windows |
+| 2026-10-29 | Retrieval is BM25 on the stdlib; embeddings are an optional OpenAI-compatible endpoint called with urllib, merged by reciprocal rank fusion | Exact names (signals, registers, keys) are most of what HDL questions contain, and BM25 handles them with no dependency. Embeddings cover paraphrases, but need a model and send project text to the endpoint, so they're never required |
+| 2026-10-29 | The retrieval eval scores "answer reached within a character budget", not hit@k alone | Bigger chunks rank answers higher by carrying more text; hit@k alone would reward the chunking that costs the most prompt |
 | 2026-10-28 | Eval cases carry a BIG-bench-style canary in meta.json and hidden files, but not in files the model sees | Lets anyone test a model for training-set contamination without changing what the model is shown during evals |
 | 2026-10-28 | OpenAI-compatible provider accepts tool calls written as JSON text when the reply is only calls to offered tools | qwen2.5-coder on Ollama never emits native tool calls; a strict "whole reply" rule keeps ordinary answers from being misread |
 | 2026-10-28 | Agent budget is append-only: cap each tool result when produced, then force a final answer (`tool_choice: none`) at the budget; old tool output is never summarised or dropped | Editing earlier turns breaks prompt caching and, on Claude 5.x models, invalidates every later thinking block. Server-side context editing exists but is Claude-only and beta |

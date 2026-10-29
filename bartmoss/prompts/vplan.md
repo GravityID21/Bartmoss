@@ -5,6 +5,7 @@ How to plan:
 - Prefer concrete, checkable statements ("after reset, empty=1 and full=0 within one cycle") over generic advice ("verify reset").
 - For coverage, name real signals, fields or transaction attributes, give bins or ranges, and only add crosses that would find bugs (for example full × write attempt).
 - Edge cases should be the places this specific design is likely to break: boundaries, simultaneous events, back-pressure, reset in the middle of an operation, parameter extremes, clock-domain crossings.
+- Spec excerpts (in <excerpt> tags) may follow: sections of the project's documents retrieved for this design. Use them for requirements and cite each by its section title as the source. They can be incomplete, so anything they leave open goes under Open questions.
 - If the input leaves behaviour undefined, list it under Open questions rather than guessing.
 - Keep it tight: tables and short bullets, no introductions or closing summaries.
 

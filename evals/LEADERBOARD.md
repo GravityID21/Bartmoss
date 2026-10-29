@@ -1,6 +1,6 @@
 # Leaderboard
 
-Generated with `bartmoss leaderboard`; last updated 2026-10-28. Every row is three runs per model over the current case set: 54 debug (50 bugs in 10 categories plus 4 bug-free controls), 10 testbench (9 for random testbenches, which are SystemVerilog only), 3 vplan, 2 uvmplan, 12 `/ask` questions, 11 waveform reviews and 10 formal designs (Haiku's formal row predates the 5 hard ones, so it covers the basic 5). "Cost per pass" is one run over all of a mode's cases, including the Sonnet 5.5 judge for vplan, uvmplan, ask and wave (so the local model's rows for those aren't free). Rows marked with a prompt name, such as `(debug.v2)`, are prompt variants.
+Generated with `bartmoss leaderboard`; last updated 2026-10-29. Every row is three runs per model over the current case set: 54 debug (50 bugs in 10 categories plus 4 bug-free controls), 10 testbench (9 for random testbenches, which are SystemVerilog only), 3 vplan, 2 uvmplan, 12 `/ask` questions, 11 waveform reviews and 10 formal designs (Haiku's formal row predates the 5 hard ones, so it covers the basic 5). Retrieval rows score the search index alone on 28 questions about one project, with no model; the rows in brackets are fixed line-window chunkings for comparison. "Cost per pass" is one run over all of a mode's cases, including the Sonnet 5.5 judge for vplan, uvmplan, ask and wave (so the local model's rows for those aren't free). Rows marked with a prompt name, such as `(debug.v2)`, are prompt variants.
 
 | Mode | Model | Cases | Mean score | Range across repeats | Full-score runs | Cost per pass | Time per pass |
 |---|---|---|---|---|---|---|---|
@@ -26,6 +26,10 @@ Generated with `bartmoss leaderboard`; last updated 2026-10-28. Every row is thr
 | wave | anthropic:claude-haiku-5-5 | 11 | **0.96** | 0.93–0.98 | 27/33 | $0.053 | 2.4 min |
 | formal | anthropic:claude-haiku-5-5 | 5 | **1.00** | 1.00–1.00 | 15/15 | $0.011 | 1.7 min |
 | formal | ollama:qwen2.5-coder:7b | 10 | **0.00** | 0.00–0.00 | 0/30 | $0 (local) | 8.9 min |
+| retrieval | bm25 | 28 | **1.00** | single run | 28/28 | $0 (local) | 0.0 min |
+| retrieval | bm25 (lines40) | 28 | **0.93** | single run | 26/28 | $0 (local) | 0.0 min |
+| retrieval | bm25 (lines20) | 28 | **0.89** | single run | 25/28 | $0 (local) | 0.0 min |
+| retrieval | bm25 (lines60) | 28 | **0.82** | single run | 23/28 | $0 (local) | 0.0 min |
 
 ### Debug score by bug category
 
@@ -60,4 +64,5 @@ The rule is the cheapest model within 0.05 of the best mean, and only if the bes
 - **Testbenches are still the hardest mode.** Failing runs from both Claude models wrote wrong expected values for correct designs.
 - **The local 7B model isn't usable for these tasks**: debug 0.40, tb 0.07, random tb 0.02, formal 0.00, vplan 0.22, uvmplan 0.41, ask 0.18. Interestingly, it scores 1.00 on the blocking-assignment category, which follows a single recognisable pattern.
 - **Qwen 7B on formal and random testbenches (free run, 2026-10-28):** formal scored 0.00 on all 30 runs. Every set of properties failed to parse, because the model kept writing `|->` and `##` even though the prompt and each retry's Yosys error say the open-source subset doesn't have them. Random testbenches scored 0.02: 24 of 27 runs never compiled (undeclared variables, statements outside procedural blocks, `%b` on strings), 2 failed on the correct design and 1 passed but caught no mutants. Both modes need a model that can follow a restricted syntax.
+- **Retrieval (P4.6, free):** structural chunks (modules and always/assign blocks, spec sections by heading) put the answer within 6,000 characters of excerpts for all 28 questions. Fixed windows of 20, 40 and 60 lines managed 25, 26 and 23. Bigger windows rank the answer first more often (hit@1 0.68 for 60 lines vs 0.50) only because each one holds more text: their top 5 is 11k characters against 4.7k. Whether retrieved excerpts beat attaching whole files is the open, paid half of the adoption gate.
 - **Spend:** about $11.80 in total across all sweeps. The 2026-10-27 round (Claude `/ask`, the `debug.v2` A/B, Phase 3's wave, formal and random-tb runs, and the async_fifo_gray rerun) cost about $2.13.
