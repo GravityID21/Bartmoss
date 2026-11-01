@@ -4,7 +4,7 @@
 
 An open-source AI assistant for RTL design and verification that runs in your terminal and works with any model. Generated and fixed RTL is checked with a real simulator before you see it.
 
-> Status: Phases 1–3 complete (UVM generation deferred); Phase 4 (agent mode, project awareness, MCP server, retrieval) built and in testing. Under active development. See [SPEC.md](SPEC.md) for the full roadmap and progress tracker.
+> Status: Phases 1–3 complete (UVM generation deferred); Phase 4 (agent mode, project awareness, MCP server, retrieval) built and in testing; Phase 5 open-source flow and tool sandbox built (vendor tools not yet). Under active development. See [SPEC.md](SPEC.md) for the full roadmap and progress tracker.
 
 ![Bartmoss fixing an off-by-one counter and generating a passing testbench](docs/demo.svg)
 
@@ -21,6 +21,7 @@ An open-source AI assistant for RTL design and verification that runs in your te
 | `bartmoss tb file.sv --random` | Constrained-random testbench with a scoreboard and functional coverage, run with several seeds (`--seeds N`). Any failing seed fails the test and is named so you can rerun it; coverage below the target goes back to the model with the bins it missed. |
 | `bartmoss wave dump.vcd [signals] --window 100:500 -q "..."` | Reviews a waveform. The dump is summarised locally (clock-sampled cycle table, X/Z spans, short pulses, valid/ready violations) and only the summary is sent, never the raw VCD. Names the first signal that misbehaves and when. `--list` shows signal names and `--summary` skips the model. FST works if GTKWave's `fst2vcd` is installed. |
 | `bartmoss formal file.sv` | The model writes assertions; Bartmoss puts them in an `` `ifdef FORMAL `` block (your design is never edited) and runs a bounded model check with Yosys + yosys-smtbmc (`--prove` adds k-induction). A failing assertion is reported with a summarised counterexample as a possible design bug or wrong property. |
+| `bartmoss flow file.sv` | Lint → simulate → synthesise → formal check → Markdown report, with no model calls. It finds a testbench that instantiates the design (or use `--tb`), reports latches, multiple drivers and logic loops plus a cell count from Yosys, and runs a bounded proof if the file has `` `ifdef FORMAL `` properties. It prints the exact commands first and asks before each one (`--dry-run` to only plan, `--yes` to skip the questions). |
 | `bartmoss vplan spec.md` | Writes a verification plan (features → checks → coverage → edge cases) to `bartmoss_out/spec.vplan.md`. Takes a spec, README or RTL file. |
 | `bartmoss uvmplan spec.md` | Designs a UVM environment (agents, transactions, sequences, scoreboard, coverage, tests, build order) as `bartmoss_out/spec.uvmplan.md`. |
 | `bartmoss search "where is parity computed"` | Ranked search over the project: HDL split into modules and always/assign blocks, documents split by heading. `--show` prints the excerpts. `ask --rag` attaches the best ones to a question, and `vplan file.sv --docs` adds the spec sections that match a design. Keyword ranking (BM25) on the standard library; set `retrieval.embeddings` to a local Ollama embeddings model for hybrid search. |

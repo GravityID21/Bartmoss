@@ -33,6 +33,9 @@ HELP = """\
                           --list shows signal names, --summary skips the model
   /formal <file> [ctx...] [--depth N] [--prove]
                           write assertions and check them with Yosys + yosys-smtbmc
+  /flow <file> [ctx...] [--tb TB] [--top T] [--steps lint,sim,synth,formal] [--dry-run]
+                          lint → sim → synth → formal → report with no model calls; shows the
+                          commands first and asks before each one (y/n/a)
   /vplan <spec> [ctx...] [--docs [QUERY]]
                           verification plan: features, checks, coverage, edge cases (Markdown);
                           --docs adds the matching sections of the project's documents
@@ -143,6 +146,25 @@ def add_search_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--show", action="store_true", help="print each excerpt, not just its location")
 
 
+def add_flow_args(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--tb", help="testbench to simulate (default: a project tb file that instantiates the top)")
+    p.add_argument("--top", help="top module (default: the first module in the file)")
+    p.add_argument("--steps", default="lint,sim,synth,formal",
+                   help="comma-separated subset of lint,sim,synth,formal (default: all)")
+    p.add_argument("--dry-run", action="store_true", help="show the commands that would run, then stop")
+
+
+def flow_from_args(ctx: Context, args: argparse.Namespace):
+    from bartmoss.modes.flow import STEPS, run_flow
+
+    steps = [s.strip() for s in args.steps.split(",") if s.strip()]
+    unknown = [s for s in steps if s not in STEPS]
+    if unknown:
+        raise ValueError(f"unknown step(s) {', '.join(unknown)}; choose from {', '.join(STEPS)}")
+    return run_flow(ctx, args.file, context_files=args.context, tb=args.tb, top=args.top, steps=steps,
+                    dry_run=args.dry_run)
+
+
 def add_plan_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--docs", nargs="?", const="", default=None, metavar="QUERY",
                    help="add the project document sections that match this file (its name, units and ports, "
@@ -228,6 +250,13 @@ def dispatch(ctx: Context, line: str) -> bool:
         args = repl_args(command, rest, add)
         run_plan(ctx, command[1:], args.file, context_files=args.context, docs=args.docs is not None,
                  docs_query_text=args.docs or "")
+    elif command == "/flow":
+        def add(p):
+            p.add_argument("file")
+            p.add_argument("context", nargs="*")
+            add_flow_args(p)
+
+        flow_from_args(ctx, repl_args("/flow", rest, add))
     elif command == "/search":
         cmd_search(ctx, repl_args("/search", rest, add_search_args))
     elif command == "/index":
@@ -369,7 +398,8 @@ def main(argv: list[str] | None = None) -> int:
     for name, help_text in (("debug", "review and fix one RTL file"), ("tb", "generate and run a testbench for one RTL file"),
                             ("vplan", "write a verification plan from a spec, README or RTL file"),
                             ("uvmplan", "design a UVM environment from a spec, README or RTL file"),
-                            ("formal", "write assertions for one module and check them with Yosys + yosys-smtbmc")):
+                            ("formal", "write assertions for one module and check them with Yosys + yosys-smtbmc"),
+                            ("flow", "lint, simulate, synthesise and formally check one design (no model calls)")):
         p = sub.add_parser(name, help=help_text)
         p.add_argument("file")
         p.add_argument("--with", dest="context", action="append", default=[], metavar="FILE",
@@ -383,6 +413,8 @@ def main(argv: list[str] | None = None) -> int:
             add_formal_args(p)
         elif name in ("vplan", "uvmplan"):
             add_plan_args(p)
+        elif name == "flow":
+            add_flow_args(p)
     add_wave_args(sub.add_parser("wave", help="review a VCD/FST waveform (summarised locally, never sent raw)"))
     p_eval = sub.add_parser("eval", help="score a model on the eval cases")
     p_eval.add_argument("--mode", choices=["debug", "tb", "vplan", "uvmplan", "ask", "wave", "formal", "retrieval"],
@@ -444,6 +476,8 @@ def main(argv: list[str] | None = None) -> int:
             return 0 if result.status in ("pass", "unchecked") else 1
         if args.command == "wave":
             return 0 if wave_from_args(ctx, args).status in ("ok", "summary", "listed") else 1
+        if args.command == "flow":
+            return 0 if flow_from_args(ctx, args).status in ("pass", "planned") else 1
         if args.command in ("vplan", "uvmplan"):
             from bartmoss.modes.plan import run_plan
 

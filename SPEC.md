@@ -309,11 +309,29 @@ Quality
     - **Not done:** the adoption gate's end-to-end comparison (paid): `/ask` answers on the case's questions with `--rag` versus with the relevant files attached whole. Until then retrieval is opt-in, and auto context still adds whole dependency files.
 
 ### Phase 5: Vendor tool orchestration
-**Return when:** Phases 1–3 are stable and a maintainer has regular access to the vendor tools for testing.
+**Return when:** Phases 1–3 are stable and a maintainer has regular access to the vendor tools for testing. *P5.2 and P5.4 were built first with the open-source tools (2026-11-01), so vendor adapters can plug into the same flow and sandbox.*
 - [ ] **P5.1** Tool adapters via batch/TCL modes: Questa/ModelSim (`vsim -c -do`), Quartus (`quartus_sh -t`), Vivado (`vivado -mode batch -source`), Lattice Radiant, Microchip Libero
-- [ ] **P5.2** `/flow` orchestrator: lint → sim → synth → report, with a dry-run plan shown first and a confirmation for every tool invocation
-- [ ] **P5.3** Report parsers: timing summary, utilisation, sim transcript errors → compact summaries for the model
-- [ ] **P5.4** Sandboxing: allowlist of executables and arguments; no shell strings; working-directory jail
+- [x] **P5.2** `/flow` orchestrator: lint → sim → synth → report, with a dry-run plan shown first and a confirmation for every tool invocation. *Built 2026-11-01 with the open-source tools (`modes/flow.py`); no model calls, so it's free:*
+    - **Steps:**
+      - lint: Verilator, or NVC/GHDL for VHDL.
+      - sim: runs with `--tb`, or with a project testbench that instantiates the top, preferring `tb_<top>`.
+      - synth: Yosys `check` for latches, multiple drivers and logic loops, then a generic `synth` and `stat` for cell and flip-flop counts.
+      - formal: a bounded check when the design has an `` `ifdef FORMAL `` block, such as a `.formal.sv` that `/formal` wrote.
+      - report: `<stem>.flow.md`.
+      - A lint error stops the later steps. `--steps` picks a subset.
+    - **The plan is the real commands:** each step runs once with every tool call recorded instead of executed (`tools.intercept`), and the plan prints those commands. `--dry-run` stops there.
+    - **Confirmation:** every command then asks y / n / a (yes to the rest) before it runs, unless `--yes` is given. Without a terminal and without `--yes` it refuses to start rather than declining silently. A "no" stops the flow and marks the remaining steps declined.
+    - **Checked on:** an eval ALU (lint, sim and synth pass, 215 cells), and a decade counter with its reference properties (formal passes; on a mutant, an assertion fails).
+- [~] **P5.3** Report parsers: timing summary, utilisation, sim transcript errors → compact summaries for the model. *Open-source half started for `/flow`: Yosys `stat` (both the 0.33 and 0.6x layouts) → cell, flip-flop and per-type counts. Lint and simulation output already go through `lint_errors`, `tb_verdict` and the VCD summariser. Vendor timing and utilisation reports wait for P5.1.*
+- [x] **P5.4** Sandboxing: allowlist of executables and arguments; no shell strings; working-directory jail. *Built 2026-11-01 (`sim/sandbox.py`). `sim/tools._run`, the only place a subprocess starts, checks every command first:*
+    - **Command form:** an argument list, never a shell string, with no NUL or newline in any argument.
+    - **Executables:** on the allowlist and run by absolute path, or the simulation binary Verilator built in that working directory.
+    - **Options:** every option is on that tool's list, and option values have the expected shape: a module name, a plain file name, a number, an absolute include directory.
+    - **Other arguments:** an existing HDL file by absolute path, or a build output (`sim.vvp`, `design.smt2`) in the working directory.
+    - **Yosys scripts:** only the passes Bartmoss uses. No `shell`, `!`, `tee`, `script`, and no paths.
+    - **Working directory:** inside the system temp dir. Lint and synth used to run in the source file's directory; they now run in temp dirs too. Sources' directories are passed with `-I`, which also fixes `` `include `` lookups in simulation, which already ran in a temp dir.
+    - **Environment:** tools get one without anything named like a key, token, secret, password, credential or session.
+    - A refused command raises `SandboxError` (a `ValueError`), so the CLI, agent and MCP server report it as an error.
 
 ### Phase 6: Long-term ideas
 Kept so they aren't lost. Each needs its own spec before work starts.
@@ -408,7 +426,7 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 | Hosted-service liability for uploads | Not hosting (non-goal). BYO-key CLI means users interact with providers under the providers' own terms. |
 | File access | All paths resolved inside the workspace root; symlink escapes rejected; size caps; originals never modified; overwrite needs confirmation. |
 | Embeddings (optional retrieval) | Off by default. When `retrieval.embeddings` is set, the text of every indexed chunk is sent to that endpoint. A local Ollama model keeps it on the machine. |
-| Running tools | Only known executables (`verilator`, `iverilog`, `vvp`, `nvc`, `ghdl`, `yosys`, `yosys-smtbmc`, `fst2vcd`) with argument lists (no shell), in a temp dir, with timeouts. Waveform dumps are summarised locally and never uploaded. |
+| Running tools | Only known executables (`verilator`, `iverilog`, `vvp`, `nvc`, `ghdl`, `yosys`, `yosys-smtbmc`, `fst2vcd`) with argument lists (no shell), in a temp dir, with timeouts. Every command is checked against a per-tool option allowlist first (P5.4), and tools get an environment with credentials removed. `/flow` shows its commands and asks before each one. Waveform dumps are summarised locally and never uploaded. |
 | Running model-written HDL | Testbenches and fixes the model writes are simulated on your machine, so code using `$system`, file I/O, `$readmem`, `$dumpfile` paths, DPI or `$c` is refused before it runs (`/tb`, the agent, debug evals, the MCP `simulate` tool). The agent's `run_sim` also asks before each run unless you pass `--yes` or list it in `agent.auto_approve`. Agent scratch files live in a temp dir, never the workspace. |
 | Git / account access | Not needed. Bartmoss never touches git credentials; users commit themselves. |
 | API keys | Env vars / `.env` only; `.env` is git-ignored; keys never logged or printed. |
@@ -440,6 +458,9 @@ Results are saved as JSON (`evals/results/<date>_<model>_<mode>.json`) with toke
 ## 12. Decision log
 | Date | Decision | Why |
 |---|---|---|
+| 2026-11-01 | `/flow`'s dry-run plan comes from running the steps with tool calls recorded, not from a separate description of the commands | The plan can't drift from what actually runs, and each step's code is written once. A recorded run "succeeds", so the plan shows the full happy-path command list |
+| 2026-11-01 | The sandbox checks options per tool against an allowlist, not a blocklist, and lives at the single subprocess call | A blocklist misses options such as Verilator's `-CFLAGS`/`--exe` or Yosys's `shell`/`tee`. With one call site, nothing can skip the check |
+| 2026-11-01 | All tools run in temp dirs and get `-I<source dir>` instead of running in the workspace | Tools never write into the workspace, and includes resolve the same way for lint, simulation and parsing |
 | 2026-10-29 | Retrieval chunks HDL by unit and top-level item with a regex structure scan, not Verilator's AST | The JSON AST gives where a block starts but not where it ends, and needs a design that parses. At an equal 6k-character budget, structural chunks found 28/28 answers vs 23–26 for fixed line windows |
 | 2026-10-29 | Retrieval is BM25 on the stdlib; embeddings are an optional OpenAI-compatible endpoint called with urllib, merged by reciprocal rank fusion | Exact names (signals, registers, keys) are most of what HDL questions contain, and BM25 handles them with no dependency. Embeddings cover paraphrases, but need a model and send project text to the endpoint, so they're never required |
 | 2026-10-29 | The retrieval eval scores "answer reached within a character budget", not hit@k alone | Bigger chunks rank answers higher by carrying more text; hit@k alone would reward the chunking that costs the most prompt |

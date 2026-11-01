@@ -1,5 +1,7 @@
 """Wrappers around free HDL tools. Only known executables are run, with argument lists
-(never a shell string), in a scratch directory, with a timeout."""
+(never a shell string), in a scratch directory, with a timeout. Every command passes through
+`_run`, which checks it against the sandbox allowlist (sim/sandbox.py, SPEC P5.4) and lets
+`/flow` record or confirm each one (`intercept`)."""
 
 from __future__ import annotations
 
@@ -7,9 +9,12 @@ import re
 import shutil
 import subprocess
 import tempfile
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Iterator, Optional
+
+from bartmoss.sim import sandbox
 
 INSTALL_HINTS = {
     "verilator": "brew install verilator  (or apt install verilator)",
@@ -32,6 +37,7 @@ class RunResult:
     tool: str
     output: str
     timed_out: bool = False
+    declined: bool = False  # the user said no when asked before it ran (/flow)
 
 
 def available() -> dict[str, Optional[str]]:
@@ -65,8 +71,8 @@ def tool_version(name: str) -> Optional[tuple]:
         return None
     flag = "-V" if name == "iverilog" else "--version"
     try:
-        out = subprocess.run([name, flag], capture_output=True, text=True, timeout=10).stdout
-    except (OSError, subprocess.TimeoutExpired):
+        out = _run([name, flag], Path(tempfile.mkdtemp(prefix="bartmoss_version_")), 10, "version").output
+    except sandbox.SandboxError:
         return None
     match = re.search(r"(\d+)\.(\d+)", out)
     return (int(match.group(1)), int(match.group(2))) if match else None
@@ -84,9 +90,36 @@ def unmet_requirement(requires: dict) -> Optional[str]:
     return None
 
 
-def _run(cmd: list[str], cwd: Path, timeout: int, stage: str) -> RunResult:
+# Set by `intercept`: called with (cmd, cwd, stage) before each run. It returns None to let the
+# command run, or a RunResult to use instead (a dry-run record, or a declined command).
+_interceptor: Optional[Callable[[list, Path, str], Optional[RunResult]]] = None
+
+
+@contextmanager
+def intercept(hook: Callable[[list, Path, str], Optional[RunResult]]) -> Iterator[None]:
+    global _interceptor
+    previous, _interceptor = _interceptor, hook
     try:
-        proc = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+        yield
+    finally:
+        _interceptor = previous
+
+
+def include_flags(files) -> list[str]:
+    """-I<dir> for each source's directory: Verilator and Icarus look for `include files relative to
+    the working directory, which is always a temp dir here."""
+    return [f"-I{d}" for d in dict.fromkeys(str(Path(f).resolve().parent) for f in files)]
+
+
+def _run(cmd: list[str], cwd: Path, timeout: int, stage: str) -> RunResult:
+    tool, exe = sandbox.check(cmd, cwd)  # raises SandboxError for anything not on the allowlist
+    if _interceptor is not None:
+        replaced = _interceptor(list(cmd), Path(cwd), stage)
+        if replaced is not None:
+            return replaced
+    try:
+        proc = subprocess.run([exe, *cmd[1:]], cwd=cwd, capture_output=True, text=True, timeout=timeout,
+                              env=sandbox.clean_env())
     except subprocess.TimeoutExpired as e:
         # TimeoutExpired carries bytes even when text=True.
         output = "".join(
@@ -111,8 +144,8 @@ def lint(path: Path, context: tuple = (), timeout: int = 60) -> Optional[RunResu
         return _run(["ghdl", "-a", "--std=08", *sources], scratch, timeout, "lint")
     if not shutil.which("verilator"):
         return None
-    cmd = ["verilator", "--lint-only", "-Wall", "-Wno-fatal", "--timing", *sources]
-    return _run(cmd, path.parent, timeout, "lint")
+    cmd = ["verilator", "--lint-only", "-Wall", "-Wno-fatal", "--timing", *include_flags([*context, path]), *sources]
+    return _run(cmd, Path(tempfile.mkdtemp(prefix="bartmoss_lint_")), timeout, "lint")
 
 
 def lint_errors(output: str) -> set[str]:
@@ -142,7 +175,37 @@ def synth_check(path: Path, top: str, context: tuple = (), timeout: int = 120) -
         return None
     script = f"hierarchy -check -top {top}; proc; opt_clean; check"
     # Files go on the command line (not inside the script) so paths with spaces are safe.
-    return _run(["yosys", "-p", script, *map(str, context), str(path)], path.parent, timeout, "synth")
+    return _run(["yosys", "-p", script, *map(str, context), str(path)], Path(tempfile.mkdtemp(prefix="bartmoss_synth_")),
+                timeout, "synth")
+
+
+def synth_stats(path: Path, top: str, context: tuple = (), timeout: int = 300) -> Optional[RunResult]:
+    """Like synth_check, then a generic `synth` and `stat` for a size report (P5.2 /flow)."""
+    if is_vhdl(path) or not shutil.which("yosys") or not re.fullmatch(r"\w+", top):
+        return None
+    script = f"hierarchy -check -top {top}; proc; opt_clean; check; synth -top {top}; stat"
+    return _run(["yosys", "-p", script, *map(str, context), str(path)], Path(tempfile.mkdtemp(prefix="bartmoss_synth_")),
+                timeout, "synth")
+
+
+def parse_stat(output: str) -> Optional[dict]:
+    """Cell counts from the last Yosys `stat` block (the design hierarchy total when there are
+    submodules): {"cells": n, "flops": n, "types": {cell type: n}}. Handles both the older
+    "Number of cells: N" layout (Yosys 0.33) and the newer "N cells" one (0.6x)."""
+    blocks = re.split(r"^=== .* ===$", output, flags=re.M)
+    if len(blocks) < 2:
+        return None
+    block = blocks[-1]
+    total = re.search(r"Number of cells:\s+(\d+)", block) or re.search(r"^\s*(\d+)\s+cells\s*$", block, re.M)
+    if not total:
+        return None
+    types = {}
+    for count, name in re.findall(r"^\s*(\d+)\s+(\$\S+)\s*$", block, re.M):  # newer: "  32   $_DFF_P_"
+        types[name] = types.get(name, 0) + int(count)
+    for name, count in re.findall(r"^\s+(\$\S+)\s+(\d+)\s*$", block, re.M):  # older: "  $_DFF_P_   32"
+        types[name] = types.get(name, 0) + int(count)
+    flops = sum(n for t, n in types.items() if re.search(r"DFF|dff|LATCH|latch", t))
+    return {"cells": int(total.group(1)), "flops": flops, "types": types}
 
 
 def verilator_json(files: list[Path], workdir: Path, top: Optional[str] = None, timeout: int = 60) -> RunResult:
@@ -153,7 +216,7 @@ def verilator_json(files: list[Path], workdir: Path, top: Optional[str] = None, 
            "--json-only-meta-output", "meta.json", "-Mdir", "obj_dir"]
     if top and re.fullmatch(r"\w+", top):
         cmd += ["--top-module", top]
-    return _run(cmd + [str(f) for f in files], workdir, timeout, "parse")
+    return _run(cmd + include_flags(files) + [str(f) for f in files], workdir, timeout, "parse")
 
 
 def synth_findings(output: str) -> Optional[set[str]]:
@@ -182,14 +245,15 @@ def simulate(files: list[Path], top: str, workdir: Path, simulator: str, timeout
         trace = ["--trace"] if any("$dumpvars" in Path(f).read_text(errors="replace") for f in files) else []
         build = _run(
             ["verilator", "--binary", "--timing", "-j", "0", "-Wno-fatal", "-Wno-lint", "-Wno-style", *trace,
-             "--top-module", top, "-Mdir", "obj_dir", "-o", "sim", *sources],
+             "--top-module", top, "-Mdir", "obj_dir", "-o", "sim", *include_flags(files), *sources],
             workdir, timeout, "compile",
         )
         if not build.ok:
             return build
         return rerun(workdir, top, simulator, plusargs, timeout)
     if simulator == "iverilog":
-        build = _run(["iverilog", "-g2012", "-s", top, "-o", "sim.vvp", *sources], workdir, timeout, "compile")
+        build = _run(["iverilog", "-g2012", "-s", top, "-o", "sim.vvp", *include_flags(files), *sources], workdir,
+                     timeout, "compile")
         if not build.ok:
             return build
         return rerun(workdir, top, simulator, plusargs, timeout)
