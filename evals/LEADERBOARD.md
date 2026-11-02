@@ -1,17 +1,19 @@
 # Leaderboard
 
-Generated with `bartmoss leaderboard`; last updated 2026-10-29. Every row is three runs per model over the current case set: 54 debug (50 bugs in 10 categories plus 4 bug-free controls), 10 testbench (9 for random testbenches, which are SystemVerilog only), 3 vplan, 2 uvmplan, 12 `/ask` questions, 11 waveform reviews and 10 formal designs (Haiku's formal row predates the 5 hard ones, so it covers the basic 5). Retrieval rows score the search index alone on 28 questions about one project, with no model; the rows in brackets are fixed line-window chunkings for comparison. "Cost per pass" is one run over all of a mode's cases, including the Sonnet 5.5 judge for vplan, uvmplan, ask and wave (so the local model's rows for those aren't free). Rows marked with a prompt name, such as `(debug.v2)`, are prompt variants.
+Generated with `bartmoss leaderboard`; last updated 2026-11-01. Every row is three runs per model unless marked "single run" over the current case set: 54 debug (50 bugs in 10 categories plus 4 bug-free controls), 10 testbench (9 for random testbenches, which are SystemVerilog only), 3 vplan, 2 uvmplan, 12 `/ask` questions, 11 waveform reviews and 10 formal designs (Haiku's formal row predates the 5 hard ones, so it covers the basic 5). Retrieval rows score the search index alone on 28 questions about one project, with no model; the rows in brackets are fixed line-window chunkings for comparison. "Cost per pass" is one run over all of a mode's cases, including the Sonnet 5.5 judge for vplan, uvmplan, ask and wave (so the local model's rows for those aren't free). Rows marked with a prompt name, such as `(debug.v2)`, are prompt variants.
 
 | Mode | Model | Cases | Mean score | Range across repeats | Full-score runs | Cost per pass | Time per pass |
 |---|---|---|---|---|---|---|---|
 | debug | anthropic:claude-haiku-5-5 | 54 | **0.99** | 0.99–1.00 | 160/162 | $0.078 | 11.2 min |
 | debug | anthropic:claude-sonnet-5-5 | 54 | **0.98** | 0.96–1.00 | 158/162 | $0.949 | 10.6 min |
 | debug | anthropic:claude-haiku-5-5 (debug.v2) | 54 | **0.98** | 0.97–1.00 | 158/162 | $0.073 | 11.6 min |
+| debug | ollama:qwen2.5-coder:14b | 54 | **0.55** | single run | 22/54 | $0 (local) | 44.8 min |
 | debug | ollama:qwen2.5-coder:7b | 54 | **0.40** | 0.38–0.42 | 36/162 | $0 (local) | 27.4 min |
 | debug | ollama:qwen2.5-coder:7b (debug_agent) | 54 | **0.38** | single run | 12/54 | $0 (local) | 30.9 min |
 | tb | anthropic:claude-haiku-5-5 | 10 | **0.91** | 0.82–1.00 | 27/30 | $0.107 | 16.0 min |
 | tb | anthropic:claude-haiku-5-5 (tb_random) | 9 | **0.83** | 0.79–0.89 | 22/27 | $0.166 | 24.2 min |
 | tb | anthropic:claude-sonnet-5-5 | 10 | **0.79** | 0.73–0.82 | 23/30 | $0.747 | 9.5 min |
+| tb | ollama:qwen2.5-coder:14b | 10 | **0.13** | single run | 0/10 | $0 (local) | 38.3 min |
 | tb | ollama:qwen2.5-coder:7b | 10 | **0.07** | 0.03–0.09 | 0/30 | $0 (local) | 23.8 min |
 | tb | ollama:qwen2.5-coder:7b (tb_random) | 9 | **0.02** | 0.00–0.03 | 0/27 | $0 (local) | 20.4 min |
 | vplan | anthropic:claude-sonnet-5-5 | 3 | **1.00** | 1.00–1.00 | 9/9 | $0.267 | 2.9 min |
@@ -25,6 +27,7 @@ Generated with `bartmoss leaderboard`; last updated 2026-10-29. Every row is thr
 | ask | ollama:qwen2.5-coder:7b | 12 | **0.18** | 0.14–0.21 | 0/36 | $0.058 | 3.4 min |
 | wave | anthropic:claude-haiku-5-5 | 11 | **0.96** | 0.93–0.98 | 27/33 | $0.053 | 2.4 min |
 | formal | anthropic:claude-haiku-5-5 | 5 | **1.00** | 1.00–1.00 | 15/15 | $0.011 | 1.7 min |
+| formal | ollama:qwen2.5-coder:14b | 10 | **0.05** | 0.03–0.08 | 0/30 | $0 (local) | 27.0 min |
 | formal | ollama:qwen2.5-coder:7b | 10 | **0.00** | 0.00–0.00 | 0/30 | $0 (local) | 8.9 min |
 | retrieval | bm25 | 28 | **1.00** | single run | 28/28 | $0 (local) | 0.0 min |
 | retrieval | bm25 (lines40) | 28 | **0.93** | single run | 26/28 | $0 (local) | 0.0 min |
@@ -33,19 +36,19 @@ Generated with `bartmoss leaderboard`; last updated 2026-10-29. Every row is thr
 
 ### Debug score by bug category
 
-| Category | Cases | anthropic:claude-haiku-5-5 | anthropic:claude-sonnet-5-5 | ollama:qwen2.5-coder:7b |
-|---|---|---|---|---|
-| arithmetic | 6 | 1.00 | 0.92 | 0.29 |
-| blocking | 4 | 1.00 | 1.00 | 1.00 |
-| cdc | 5 | 1.00 | 1.00 | 0.25 |
-| combinational | 5 | 1.00 | 1.00 | 0.32 |
-| control | 4 | 1.00 | 1.00 | 0.71 |
-| fsm | 5 | 1.00 | 1.00 | 0.23 |
-| handshake | 5 | 1.00 | 1.00 | 0.35 |
-| multi-bug | 5 | 0.95 | 1.00 | 0.22 |
-| off-by-one | 5 | 1.00 | 1.00 | 0.43 |
-| reset | 5 | 1.00 | 0.95 | 0.42 |
-| width | 5 | 0.95 | 0.95 | 0.33 |
+| Category | Cases | anthropic:claude-haiku-5-5 | anthropic:claude-sonnet-5-5 | ollama:qwen2.5-coder:14b | ollama:qwen2.5-coder:7b |
+|---|---|---|---|---|---|
+| arithmetic | 6 | 1.00 | 0.92 | 0.38 | 0.29 |
+| blocking | 4 | 1.00 | 1.00 | 1.00 | 1.00 |
+| cdc | 5 | 1.00 | 1.00 | 0.55 | 0.25 |
+| combinational | 5 | 1.00 | 1.00 | 0.70 | 0.32 |
+| control | 4 | 1.00 | 1.00 | 1.00 | 0.71 |
+| fsm | 5 | 1.00 | 1.00 | 0.25 | 0.23 |
+| handshake | 5 | 1.00 | 1.00 | 0.50 | 0.35 |
+| multi-bug | 5 | 0.95 | 1.00 | 0.20 | 0.22 |
+| off-by-one | 5 | 1.00 | 1.00 | 0.55 | 0.43 |
+| reset | 5 | 1.00 | 0.95 | 0.55 | 0.42 |
+| width | 5 | 0.95 | 0.95 | 0.55 | 0.33 |
 
 ## Defaults chosen from this (P2.7)
 
@@ -63,6 +66,8 @@ The rule is the cheapest model within 0.05 of the best mean, and only if the bes
 - **Agent mode on the local 7B model (free run):** 0.38 vs 0.40 without tools. The model called tools in only 1 of 54 cases, so this checks that the loop works end to end rather than whether agents help. That needs the paid Haiku A/B.
 - **Testbenches are still the hardest mode.** Failing runs from both Claude models wrote wrong expected values for correct designs.
 - **The local 7B model isn't usable for these tasks**: debug 0.40, tb 0.07, random tb 0.02, formal 0.00, vplan 0.22, uvmplan 0.41, ask 0.18. Interestingly, it scores 1.00 on the blocking-assignment category, which follows a single recognisable pattern.
+- **Qwen2.5-Coder 14B, the largest model that fits a 16 GB Mac (free run, 2026-11-01):** debug 0.55 (vs 0.40 for the 7B), tb 0.13 (vs 0.07), formal 0.05 (vs 0.00). Debug and tb are single runs, formal is ×3. It left all 4 bug-free controls intact, where the 7B broke 3, and gained most on combinational (0.70 vs 0.32) and CDC (0.55 vs 0.25), but not on FSM or multi-bug cases. Formal: 21 of 30 property sets still failed to parse (`|->`, `##` and named `property` blocks again), 7 elaborated but failed on the correct design, 1 was vacuous and 1 passed, catching most rr_arbiter mutants (0.77). Testbenches: 1 of 10 never compiled, 7 compiled but failed on the correct design, and 2 passed it but caught no mutants. Bigger helps, but a local model is still far from usable for tb and formal. Ollama ran with a 16k context and an 8-bit KV cache, fully on the GPU at about 10 GB, and no prompt was truncated (the longest was about 8.9k tokens).
+- **The 7B runs were partly truncated.** They used Ollama's default 4,096-token context, and at least one prompt was cut to about half, so some 7B scores may be lower than the model deserves, mainly on retries that carry long tool output. Local runs now need `OLLAMA_CONTEXT_LENGTH` of 16384 or more.
 - **Qwen 7B on formal and random testbenches (free run, 2026-10-28):** formal scored 0.00 on all 30 runs. Every set of properties failed to parse, because the model kept writing `|->` and `##` even though the prompt and each retry's Yosys error say the open-source subset doesn't have them. Random testbenches scored 0.02: 24 of 27 runs never compiled (undeclared variables, statements outside procedural blocks, `%b` on strings), 2 failed on the correct design and 1 passed but caught no mutants. Both modes need a model that can follow a restricted syntax.
 - **Retrieval (P4.6, free):** structural chunks (modules and always/assign blocks, spec sections by heading) put the answer within 6,000 characters of excerpts for all 28 questions. Fixed windows of 20, 40 and 60 lines managed 25, 26 and 23. Bigger windows rank the answer first more often (hit@1 0.68 for 60 lines vs 0.50) only because each one holds more text: their top 5 is 11k characters against 4.7k. Whether retrieved excerpts beat attaching whole files is the open, paid half of the adoption gate.
 - **Spend:** about $11.80 in total across all sweeps. The 2026-10-27 round (Claude `/ask`, the `debug.v2` A/B, Phase 3's wave, formal and random-tb runs, and the async_fifo_gray rerun) cost about $2.13.

@@ -1,0 +1,1153 @@
+{
+  "format": 2,
+  "date": "2026-11-01",
+  "mode": "debug",
+  "model": "ollama:qwen2.5-coder:14b",
+  "simulator": "auto",
+  "repeat": 1,
+  "prompt": "debug",
+  "mean_score": 0.546,
+  "run_means": [
+    0.546
+  ],
+  "cost_usd": 0.0,
+  "seconds": 2685.7,
+  "usage": "56 calls \u00b7 90,358 in \u00b7 31,943 out \u00b7 0 cache-read \u00b7 est. $0.0000",
+  "cases": [
+    {
+      "case": "arith_alu_carry",
+      "category": "arithmetic",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 34.8,
+          "input_tokens": 1097,
+          "output_tokens": 389
+        }
+      ]
+    },
+    {
+      "case": "arith_checksum_invert",
+      "category": "arithmetic",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 46.4,
+          "input_tokens": 1214,
+          "output_tokens": 570
+        }
+      ]
+    },
+    {
+      "case": "axis_skid_stale",
+      "category": "handshake",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 2,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 152.8,
+          "input_tokens": 5511,
+          "output_tokens": 1904
+        }
+      ]
+    },
+    {
+      "case": "blocking_edge_detect",
+      "category": "blocking",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 22.5,
+          "input_tokens": 1267,
+          "output_tokens": 241
+        }
+      ]
+    },
+    {
+      "case": "blocking_moving_average",
+      "category": "blocking",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 25.9,
+          "input_tokens": 1318,
+          "output_tokens": 282
+        }
+      ]
+    },
+    {
+      "case": "blocking_rotate",
+      "category": "blocking",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 39.6,
+          "input_tokens": 1515,
+          "output_tokens": 461
+        }
+      ]
+    },
+    {
+      "case": "cdc_fifo_bin_ptr",
+      "category": "cdc",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 111.3,
+          "input_tokens": 2582,
+          "output_tokens": 1328
+        }
+      ]
+    },
+    {
+      "case": "cdc_fifo_gray_func",
+      "category": "cdc",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 108.1,
+          "input_tokens": 2582,
+          "output_tokens": 1310
+        }
+      ]
+    },
+    {
+      "case": "cdc_pulse_rising",
+      "category": "cdc",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 50.8,
+          "input_tokens": 1831,
+          "output_tokens": 590
+        }
+      ]
+    },
+    {
+      "case": "cdc_pulse_wrong_clock",
+      "category": "cdc",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 36.6,
+          "input_tokens": 1970,
+          "output_tokens": 402
+        }
+      ]
+    },
+    {
+      "case": "cdc_reset_sync_release",
+      "category": "cdc",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 24.0,
+          "input_tokens": 1037,
+          "output_tokens": 274
+        }
+      ]
+    },
+    {
+      "case": "comb_alu_carry_latch",
+      "category": "combinational",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 43.8,
+          "input_tokens": 1244,
+          "output_tokens": 532
+        }
+      ]
+    },
+    {
+      "case": "comb_hazard_stall_src",
+      "category": "combinational",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 66.9,
+          "input_tokens": 4048,
+          "output_tokens": 660
+        }
+      ]
+    },
+    {
+      "case": "comb_priority_encoder",
+      "category": "combinational",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 21.8,
+          "input_tokens": 879,
+          "output_tokens": 253
+        }
+      ]
+    },
+    {
+      "case": "control_counter",
+      "category": "control",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 29.3,
+          "input_tokens": 1177,
+          "output_tokens": 340
+        }
+      ]
+    },
+    {
+      "case": "control_credit_sender",
+      "category": "control",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 46.4,
+          "input_tokens": 1344,
+          "output_tokens": 559
+        }
+      ]
+    },
+    {
+      "case": "control_pulse_sync",
+      "category": "control",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 49.1,
+          "input_tokens": 1830,
+          "output_tokens": 577
+        }
+      ]
+    },
+    {
+      "case": "control_sync_fifo",
+      "category": "control",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 43.7,
+          "input_tokens": 1277,
+          "output_tokens": 534
+        }
+      ]
+    },
+    {
+      "case": "counter_wrap",
+      "category": "off-by-one",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 26.1,
+          "input_tokens": 1173,
+          "output_tokens": 304
+        }
+      ]
+    },
+    {
+      "case": "crc32_bitrev",
+      "category": "width",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 55.3,
+          "input_tokens": 1558,
+          "output_tokens": 670
+        }
+      ]
+    },
+    {
+      "case": "credit_simul",
+      "category": "handshake",
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.0,
+          "ref_tb": "compile_error",
+          "seconds": 44.4,
+          "input_tokens": 1350,
+          "output_tokens": 559
+        }
+      ]
+    },
+    {
+      "case": "div4_rounding",
+      "category": "arithmetic",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 15.9,
+          "input_tokens": 815,
+          "output_tokens": 174
+        }
+      ]
+    },
+    {
+      "case": "fifo_full_offbyone",
+      "category": "off-by-one",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 41.9,
+          "input_tokens": 1286,
+          "output_tokens": 511
+        }
+      ]
+    },
+    {
+      "case": "fsm_arbiter_release",
+      "category": "fsm",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 72.8,
+          "input_tokens": 1789,
+          "output_tokens": 891
+        }
+      ]
+    },
+    {
+      "case": "fsm_debounce_level",
+      "category": "fsm",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 52.1,
+          "input_tokens": 1247,
+          "output_tokens": 647
+        }
+      ]
+    },
+    {
+      "case": "fsm_rmii_first_byte",
+      "category": "fsm",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 61.1,
+          "input_tokens": 1341,
+          "output_tokens": 762
+        }
+      ]
+    },
+    {
+      "case": "fsm_seq_after_match",
+      "category": "fsm",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 30.3,
+          "input_tokens": 1044,
+          "output_tokens": 360
+        }
+      ]
+    },
+    {
+      "case": "handshake_credit_ready",
+      "category": "handshake",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 42.4,
+          "input_tokens": 1342,
+          "output_tokens": 532
+        }
+      ]
+    },
+    {
+      "case": "handshake_skid_flag",
+      "category": "handshake",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 66.1,
+          "input_tokens": 2085,
+          "output_tokens": 774
+        }
+      ]
+    },
+    {
+      "case": "ipv4_checksum_carry",
+      "category": "arithmetic",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 44.7,
+          "input_tokens": 1351,
+          "output_tokens": 535
+        }
+      ]
+    },
+    {
+      "case": "mac_signedness",
+      "category": "arithmetic",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 25.8,
+          "input_tokens": 1067,
+          "output_tokens": 294
+        }
+      ]
+    },
+    {
+      "case": "multi_crc_init_poly",
+      "category": "multi-bug",
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.0,
+          "ref_tb": "compile_error",
+          "seconds": 52.4,
+          "input_tokens": 1418,
+          "output_tokens": 657
+        }
+      ]
+    },
+    {
+      "case": "multi_fifo_flags",
+      "category": "multi-bug",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 45.4,
+          "input_tokens": 1284,
+          "output_tokens": 567
+        }
+      ]
+    },
+    {
+      "case": "multi_mac_sign_priority",
+      "category": "multi-bug",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 25.6,
+          "input_tokens": 1069,
+          "output_tokens": 305
+        }
+      ]
+    },
+    {
+      "case": "multi_seq_transitions",
+      "category": "multi-bug",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 35.1,
+          "input_tokens": 1045,
+          "output_tokens": 434
+        }
+      ]
+    },
+    {
+      "case": "obo_arbiter_first_grant",
+      "category": "off-by-one",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 69.9,
+          "input_tokens": 1801,
+          "output_tokens": 868
+        }
+      ]
+    },
+    {
+      "case": "obo_fifo_empty",
+      "category": "off-by-one",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 42.3,
+          "input_tokens": 1278,
+          "output_tokens": 526
+        }
+      ]
+    },
+    {
+      "case": "obo_pwm_period_start",
+      "category": "off-by-one",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 29.0,
+          "input_tokens": 945,
+          "output_tokens": 373
+        }
+      ]
+    },
+    {
+      "case": "reset_crc_init",
+      "category": "reset",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 62.7,
+          "input_tokens": 1418,
+          "output_tokens": 803
+        }
+      ]
+    },
+    {
+      "case": "reset_credit_init",
+      "category": "reset",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 2,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 114.4,
+          "input_tokens": 3787,
+          "output_tokens": 1468
+        }
+      ]
+    },
+    {
+      "case": "reset_debounce_stable",
+      "category": "reset",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 43.7,
+          "input_tokens": 1245,
+          "output_tokens": 571
+        }
+      ]
+    },
+    {
+      "case": "reset_fifo_wrptr",
+      "category": "reset",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 43.5,
+          "input_tokens": 1271,
+          "output_tokens": 562
+        }
+      ]
+    },
+    {
+      "case": "reset_seq_state",
+      "category": "reset",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 35.4,
+          "input_tokens": 1046,
+          "output_tokens": 433
+        }
+      ]
+    },
+    {
+      "case": "riscv_alu_signed",
+      "category": "multi-bug",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 58.2,
+          "input_tokens": 3699,
+          "output_tokens": 574
+        }
+      ]
+    },
+    {
+      "case": "riscv_hazard_fwd",
+      "category": "combinational",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 75.4,
+          "input_tokens": 3889,
+          "output_tokens": 776
+        }
+      ]
+    },
+    {
+      "case": "rmii_tx_ready",
+      "category": "handshake",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 59.1,
+          "input_tokens": 1348,
+          "output_tokens": 739
+        }
+      ]
+    },
+    {
+      "case": "sat_add_overflow",
+      "category": "arithmetic",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 22.4,
+          "input_tokens": 881,
+          "output_tokens": 261
+        }
+      ]
+    },
+    {
+      "case": "seq_detect_overlap",
+      "category": "fsm",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 40.9,
+          "input_tokens": 1043,
+          "output_tokens": 516
+        }
+      ]
+    },
+    {
+      "case": "shift_blocking",
+      "category": "blocking",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 30.6,
+          "input_tokens": 1381,
+          "output_tokens": 334
+        }
+      ]
+    },
+    {
+      "case": "vhdl_mux_sensitivity",
+      "category": "combinational",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 25.2,
+          "input_tokens": 772,
+          "output_tokens": 320
+        }
+      ]
+    },
+    {
+      "case": "width_alu_shamt",
+      "category": "width",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 57.1,
+          "input_tokens": 3698,
+          "output_tokens": 530
+        }
+      ]
+    },
+    {
+      "case": "width_avg_overflow",
+      "category": "width",
+      "score": 0.25,
+      "min": 0.25,
+      "max": 0.25,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.25,
+          "ref_tb": "fail",
+          "seconds": 18.0,
+          "input_tokens": 828,
+          "output_tokens": 189
+        }
+      ]
+    },
+    {
+      "case": "width_crc_reverse",
+      "category": "width",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 56.1,
+          "input_tokens": 1483,
+          "output_tokens": 652
+        }
+      ]
+    },
+    {
+      "case": "width_fifo_count",
+      "category": "width",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "status": "clean",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "ref_tb": "pass",
+          "seconds": 110.2,
+          "input_tokens": 2558,
+          "output_tokens": 1266
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}
