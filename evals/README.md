@@ -54,7 +54,9 @@ Random testbenches (`bartmoss eval --mode tb --random`) use the same cases and s
 
 Score: 0.1 the properties elaborate, +0.2 they hold on the correct design, +0.7 × fraction of mutants where an assertion fails. A property set that never fails (`assert (1)`) scores 0.3, as in tb. Needs Yosys, yosys-smtbmc and an SMT solver (z3 or yices).
 
-**10 cases, 3 mutants each.**
+**20 cases, 3 mutants each.** The first 5 need only one-cycle properties; the other 15 were added for spread (5 on 2026-10-28, 10 on 2026-11-02), and those marked `"difficulty": "hard"` in `meta.json` need multi-cycle history (`$past(x, 3)`), helper counters, input assumptions or conservation properties. New designs: one-hot controller, saturating up/down counter, four-phase req/ack responder, watchdog, two-client lock, three-stage pipeline, LIFO stack, TDM arbiter, token bucket and a 1011 sequence detector.
+
+**tb: 25 cases** (3 VHDL, so 22 for random testbenches). 15 were added on 2026-11-02 so that a single run is less noisy: the same model and prompt scored 0.13 and 0.07 on two runs of the old 10.
 
 - **Basic (5):** decade counter, 4-entry FIFO, 2-way round-robin arbiter, valid/ready pipeline register and Gray counter. One-cycle checks catch their mutants, and Haiku 5.5 scored 1.00 on them.
 - **Hard (5, `"difficulty": "hard"`):** each mutant is invisible to simple one-cycle or flag checks.
@@ -150,6 +152,21 @@ bartmoss compare evals/results/<baseline>.json evals/results/<variant>.json
 | tb/cdc_pulse_sync | crossbar `cdc_pulse_sync` + 2FF | pulse counting across clocks, spurious pulse after reset |
 | tb/rmii_tx | UDP `rmii_tx` | back-to-back bytes, bit order, going idle between frames |
 | tb/credit_sender | crossbar `credit_sender` | last-credit and simultaneous send/return corner cases |
+| tb/prio_enc16 | hand-written | highest-index priority, the no-request default, bit 15 |
+| tb/bin2bcd | hand-written | double dabble: add-3 threshold and number of shifts; exhaustive check is easy, hand-computed expectations aren't |
+| tb/hamming74 | hand-written | every single-bit error must be corrected; parity bit positions |
+| tb/lfsr16 | hand-written | tap positions, zero-seed lock-up guard, load over enable |
+| tb/crc8_bytes | hand-written | polynomial and bit count; known check value 0xF4; clear |
+| tb/uart_rx | hand-written | start-bit glitch rejection, stop-bit framing error, LSB-first order |
+| tb/fifo_fwft | hand-written | first-word fall-through; write accepted when full if a read frees a slot; read when empty |
+| tb/width_down | hand-written | byte order, holding under backpressure, no gap between back-to-back words |
+| tb/oneshot | hand-written | exact pulse length, retrigger, reset value |
+| tb/traffic_fsm | hand-written | minimum green time, every yellow phase, phase lengths |
+| tb/divider8 | hand-written | exact divisions, divide by zero, start while busy ignored, 8-cycle latency |
+| tb/mac_sat | hand-written | signed multiply, exact saturation bounds, clear priority |
+| tb/axil_regs | hand-written | AW/W in either order, write strobes, SLVERR on the read-only register, holding R and B under backpressure |
+| tb/vhdl_seq_detect | hand-written (VHDL) | overlapping matches; needs patterns like 11011 and 101011 |
+| tb/vhdl_hex7seg | hand-written (VHDL) | segment encoding for every digit, blank polarity |
 | vplan/axi4_arbiter, axis_fifo, async_fifo | author's repos | 7–8 design-specific rubric items each |
 | uvmplan/axis_fifo, axi4_arbiter | author's repos | agents, scoreboard, coverage, build order |
 
