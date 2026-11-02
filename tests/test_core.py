@@ -1,6 +1,7 @@
 """Offline tests: no network, no API keys. Simulator tests skip when Verilator isn't installed."""
 
 import io
+import json
 import os
 import shutil
 import tempfile
@@ -192,6 +193,20 @@ class TestPromptsAndEvalTools(unittest.TestCase):
         with self.assertRaises(ProviderError):
             run_eval(ctx, "debug", REPO / "evals" / "cases", only="counter_wrap")
         self.assertEqual(set(results.glob("*.json")), before)
+
+    def test_same_day_rerun_keeps_earlier_results(self):
+        from bartmoss.evals import _unused_run_name
+        from bartmoss.leaderboard import best_runs, load_runs
+
+        results = Path(tempfile.mkdtemp())
+        name = "2026-11-02_formal_mock-echo_x3"
+        self.assertEqual(_unused_run_name(results, name), name)
+        for score in (0.1, 0.2):
+            run = {"mode": "formal", "model": "mock:echo", "date": "2026-11-02", "repeat": 3, "mean_score": score,
+                   "cases": []}
+            (results / f"{_unused_run_name(results, name)}.json").write_text(json.dumps(run))
+        self.assertEqual(sorted(p.name for p in results.iterdir()), [f"{name}.json", f"{name}_2.json"])
+        self.assertEqual(best_runs(load_runs(results))[("formal", "mock:echo", "formal")]["mean_score"], 0.2)
 
     def test_ask_eval_scores_rubric(self):
         from bartmoss.evals import run_eval

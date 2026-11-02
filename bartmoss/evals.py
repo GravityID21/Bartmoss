@@ -264,6 +264,15 @@ def _score_ask(case_ctx: Context, case: Path, meta: dict, simulator: str, scratc
     return detail
 
 
+def _unused_run_name(results_dir: Path, run_name: str) -> str:
+    """A same-day rerun gets _2, _3, ... so it never overwrites an earlier run's results."""
+    name, n = run_name, 1
+    while (results_dir / f"{name}.json").exists() or (results_dir / name).exists():
+        n += 1
+        name = f"{run_name}_{n}"
+    return name
+
+
 def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None, repeat: int = 1,
              random_tb: bool = False, agent: bool = False) -> dict:
     """Score every case `repeat` times. Reports per-case mean, min/max and full passes, plus the
@@ -293,6 +302,7 @@ def run_eval(ctx: Context, mode: str, cases_root: Path, only: str | None = None,
     if repeat > 1:
         run_name += f"_x{repeat}"
     results_dir = cases_root.resolve().parent / "results"
+    run_name = _unused_run_name(results_dir, run_name)
     ui.info(f"eval {mode} · {len(cases)} cases × {repeat} · model {spec} · simulator {simulator}")
     calls_at_start = len(ctx.usage.calls)
     started = time.time()
@@ -430,7 +440,7 @@ def run_retrieval_eval(ctx: Context, cases_root: Path, only: str | None = None) 
               "cases": rows, "skipped": []}
     results_dir = cases_root.resolve().parent / "results"
     results_dir.mkdir(exist_ok=True)
-    out = results_dir / f"{run_name}.json"
+    out = results_dir / f"{_unused_run_name(results_dir, run_name)}.json"
     out.write_text(json.dumps(report, indent=2) + "\n")
     ui.ok(f"found within budget {mean:.2f} · hit@1 {report['hit_at_1']:.2f} · hit@k {report['hit_at_k']:.2f} · "
           f"MRR {report['mrr']:.2f} · {report['mean_top_k_chars']} chars per top k · results saved to {out}")

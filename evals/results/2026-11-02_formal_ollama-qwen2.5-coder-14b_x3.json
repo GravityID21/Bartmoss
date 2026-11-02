@@ -6,56 +6,18 @@
   "simulator": "auto",
   "repeat": 3,
   "prompt": "formal",
-  "mean_score": 0.073,
+  "mean_score": 0.067,
   "run_means": [
     0.07,
-    0.07,
-    0.08
+    0.065,
+    0.065
   ],
   "cost_usd": 0.0,
-  "seconds": 3622.8,
-  "usage": "71 calls \u00b7 124,797 in \u00b7 48,467 out \u00b7 0 cache-read \u00b7 est. $0.0000",
+  "seconds": 8444.9,
+  "usage": "147 calls \u00b7 277,338 in \u00b7 109,217 out \u00b7 0 cache-read \u00b7 est. $0.0000",
   "cases": [
     {
       "case": "formal_debounce",
-      "category": null,
-      "score": 0.033,
-      "min": 0.0,
-      "max": 0.1,
-      "full_passes": 0,
-      "repeat": 3,
-      "runs": [
-        {
-          "status": "fail",
-          "attempts": 2,
-          "truncated": false,
-          "score": 0.1,
-          "seconds": 98.5,
-          "input_tokens": 2709,
-          "output_tokens": 1247
-        },
-        {
-          "status": "broken",
-          "attempts": 3,
-          "truncated": false,
-          "score": 0.0,
-          "seconds": 99.7,
-          "input_tokens": 4872,
-          "output_tokens": 1344
-        },
-        {
-          "status": "broken",
-          "attempts": 3,
-          "truncated": false,
-          "score": 0.0,
-          "seconds": 154.5,
-          "input_tokens": 5286,
-          "output_tokens": 2048
-        }
-      ]
-    },
-    {
-      "case": "formal_decade_counter",
       "category": null,
       "score": 0.067,
       "min": 0.0,
@@ -64,69 +26,107 @@
       "repeat": 3,
       "runs": [
         {
-          "status": "vacuous",
+          "status": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 303.9,
+          "input_tokens": 5702,
+          "output_tokens": 2416
+        },
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 62.2,
+          "input_tokens": 2449,
+          "output_tokens": 677
+        },
+        {
+          "status": "broken",
           "attempts": 3,
           "truncated": false,
           "score": 0.0,
-          "seconds": 124.2,
-          "input_tokens": 4839,
-          "output_tokens": 1652
+          "seconds": 187.3,
+          "input_tokens": 5462,
+          "output_tokens": 2363
+        }
+      ]
+    },
+    {
+      "case": "formal_decade_counter",
+      "category": null,
+      "score": 0.033,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 162.1,
+          "input_tokens": 5163,
+          "output_tokens": 2027
+        },
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 138.8,
+          "input_tokens": 4866,
+          "output_tokens": 1745
         },
         {
           "status": "fail",
-          "attempts": 2,
+          "attempts": 3,
           "truncated": false,
           "score": 0.1,
-          "seconds": 88.5,
-          "input_tokens": 2664,
-          "output_tokens": 1205
-        },
-        {
-          "status": "fail",
-          "attempts": 2,
-          "truncated": false,
-          "score": 0.1,
-          "seconds": 183.6,
-          "input_tokens": 3292,
-          "output_tokens": 2476
+          "seconds": 118.0,
+          "input_tokens": 5376,
+          "output_tokens": 1458
         }
       ]
     },
     {
       "case": "formal_fifo_integrity",
       "category": null,
-      "score": 0.1,
-      "min": 0.1,
-      "max": 0.1,
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
       "full_passes": 0,
       "repeat": 3,
       "runs": [
         {
-          "status": "fail",
-          "attempts": 2,
-          "truncated": false,
-          "score": 0.1,
-          "seconds": 92.1,
-          "input_tokens": 3021,
-          "output_tokens": 1234
-        },
-        {
-          "status": "fail",
-          "attempts": 2,
-          "truncated": false,
-          "score": 0.1,
-          "seconds": 122.3,
-          "input_tokens": 3608,
-          "output_tokens": 1623
-        },
-        {
-          "status": "fail",
+          "status": "broken",
           "attempts": 3,
           "truncated": false,
-          "score": 0.1,
-          "seconds": 104.4,
-          "input_tokens": 5815,
-          "output_tokens": 1384
+          "score": 0.0,
+          "seconds": 171.5,
+          "input_tokens": 6632,
+          "output_tokens": 2105
+        },
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 257.8,
+          "input_tokens": 7608,
+          "output_tokens": 3173
+        },
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 64.7,
+          "input_tokens": 5370,
+          "output_tokens": 795
         }
       ]
     },
@@ -140,115 +140,38 @@
       "repeat": 3,
       "runs": [
         {
-          "status": "fail",
-          "attempts": 2,
-          "truncated": false,
-          "score": 0.1,
-          "seconds": 72.6,
-          "input_tokens": 2497,
-          "output_tokens": 981
-        },
-        {
-          "status": "fail",
-          "attempts": 2,
-          "truncated": false,
-          "score": 0.1,
-          "seconds": 85.7,
-          "input_tokens": 2602,
-          "output_tokens": 1172
-        },
-        {
           "status": "broken",
           "attempts": 3,
           "truncated": false,
           "score": 0.0,
-          "seconds": 101.7,
-          "input_tokens": 4981,
-          "output_tokens": 1361
-        }
-      ]
-    },
-    {
-      "case": "formal_rr3_fairness",
-      "category": null,
-      "score": 0.167,
-      "min": 0.1,
-      "max": 0.3,
-      "full_passes": 0,
-      "repeat": 3,
-      "runs": [
-        {
-          "status": "fail",
-          "attempts": 2,
-          "truncated": false,
-          "score": 0.1,
-          "seconds": 116.1,
-          "input_tokens": 3339,
-          "output_tokens": 1531
-        },
-        {
-          "status": "fail",
-          "attempts": 3,
-          "truncated": false,
-          "score": 0.1,
-          "seconds": 72.1,
-          "input_tokens": 5360,
-          "output_tokens": 957
-        },
-        {
-          "status": "pass",
-          "attempts": 3,
-          "truncated": false,
-          "score": 0.3,
-          "mutants_caught": "0/3",
-          "seconds": 149.5,
-          "input_tokens": 5744,
-          "output_tokens": 2005
-        }
-      ]
-    },
-    {
-      "case": "formal_rr_arbiter",
-      "category": null,
-      "score": 0.033,
-      "min": 0.0,
-      "max": 0.1,
-      "full_passes": 0,
-      "repeat": 3,
-      "runs": [
-        {
-          "status": "broken",
-          "attempts": 3,
-          "truncated": false,
-          "score": 0.0,
-          "seconds": 120.8,
-          "input_tokens": 5240,
-          "output_tokens": 1614
-        },
-        {
-          "status": "broken",
-          "attempts": 3,
-          "truncated": false,
-          "score": 0.0,
-          "seconds": 224.3,
-          "input_tokens": 6825,
-          "output_tokens": 2997
+          "seconds": 97.5,
+          "input_tokens": 5042,
+          "output_tokens": 1283
         },
         {
           "status": "fail",
           "attempts": 2,
           "truncated": false,
           "score": 0.1,
-          "seconds": 88.5,
-          "input_tokens": 2741,
-          "output_tokens": 1209
+          "seconds": 98.0,
+          "input_tokens": 2684,
+          "output_tokens": 1336
+        },
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 99.6,
+          "input_tokens": 2778,
+          "output_tokens": 1339
         }
       ]
     },
     {
-      "case": "formal_seq_multiplier",
+      "case": "formal_mutex2",
       "category": null,
-      "score": 0.033,
+      "score": 0.067,
       "min": 0.0,
       "max": 0.1,
       "full_passes": 0,
@@ -259,32 +182,108 @@
           "attempts": 2,
           "truncated": false,
           "score": 0.1,
-          "seconds": 136.2,
-          "input_tokens": 3427,
-          "output_tokens": 1818
+          "seconds": 86.0,
+          "input_tokens": 2884,
+          "output_tokens": 1147
         },
         {
           "status": "broken",
           "attempts": 3,
           "truncated": false,
           "score": 0.0,
-          "seconds": 204.6,
-          "input_tokens": 7884,
-          "output_tokens": 2673
+          "seconds": 136.4,
+          "input_tokens": 5290,
+          "output_tokens": 1830
         },
         {
-          "status": "broken",
-          "attempts": 3,
+          "status": "fail",
+          "attempts": 2,
           "truncated": false,
-          "score": 0.0,
-          "seconds": 174.8,
-          "input_tokens": 6662,
-          "output_tokens": 2341
+          "score": 0.1,
+          "seconds": 183.3,
+          "input_tokens": 3315,
+          "output_tokens": 2458
         }
       ]
     },
     {
-      "case": "formal_skid_buffer",
+      "case": "formal_onehot_ctl",
+      "category": null,
+      "score": 0.067,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 157.0,
+          "input_tokens": 6298,
+          "output_tokens": 2059
+        },
+        {
+          "status": "vacuous",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 301.0,
+          "input_tokens": 7537,
+          "output_tokens": 3967
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 56.5,
+          "input_tokens": 1093,
+          "output_tokens": 773
+        }
+      ]
+    },
+    {
+      "case": "formal_pipe3",
+      "category": null,
+      "score": 0.067,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 250.1,
+          "input_tokens": 7832,
+          "output_tokens": 3257
+        },
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 136.6,
+          "input_tokens": 3649,
+          "output_tokens": 1806
+        },
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 113.3,
+          "input_tokens": 3333,
+          "output_tokens": 1509
+        }
+      ]
+    },
+    {
+      "case": "formal_req_ack",
       "category": null,
       "score": 0.1,
       "min": 0.1,
@@ -294,30 +293,221 @@
       "runs": [
         {
           "status": "fail",
-          "attempts": 1,
+          "attempts": 2,
           "truncated": false,
           "score": 0.1,
-          "seconds": 43.9,
-          "input_tokens": 1037,
-          "output_tokens": 592
+          "seconds": 138.1,
+          "input_tokens": 3466,
+          "output_tokens": 1828
         },
         {
           "status": "fail",
           "attempts": 1,
           "truncated": false,
           "score": 0.1,
-          "seconds": 60.4,
-          "input_tokens": 1037,
-          "output_tokens": 832
+          "seconds": 48.2,
+          "input_tokens": 1015,
+          "output_tokens": 658
+        },
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 74.4,
+          "input_tokens": 2836,
+          "output_tokens": 1002
+        }
+      ]
+    },
+    {
+      "case": "formal_rr3_fairness",
+      "category": null,
+      "score": 0.067,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 142.7,
+          "input_tokens": 6374,
+          "output_tokens": 1859
+        },
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 161.6,
+          "input_tokens": 6314,
+          "output_tokens": 2119
+        },
+        {
+          "status": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 311.0,
+          "input_tokens": 8646,
+          "output_tokens": 4049
+        }
+      ]
+    },
+    {
+      "case": "formal_rr_arbiter",
+      "category": null,
+      "score": 0.167,
+      "min": 0.1,
+      "max": 0.3,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.3,
+          "mutants_caught": "0/3",
+          "seconds": 55.0,
+          "input_tokens": 1032,
+          "output_tokens": 738
+        },
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 89.0,
+          "input_tokens": 2784,
+          "output_tokens": 1216
+        },
+        {
+          "status": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 119.2,
+          "input_tokens": 6151,
+          "output_tokens": 1564
+        }
+      ]
+    },
+    {
+      "case": "formal_seq1011",
+      "category": null,
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 224.9,
+          "input_tokens": 6778,
+          "output_tokens": 2986
+        },
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 200.3,
+          "input_tokens": 7345,
+          "output_tokens": 2647
+        },
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 119.3,
+          "input_tokens": 5159,
+          "output_tokens": 1613
+        }
+      ]
+    },
+    {
+      "case": "formal_seq_multiplier",
+      "category": null,
+      "score": 0.067,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 139.2,
+          "input_tokens": 5730,
+          "output_tokens": 1840
         },
         {
           "status": "fail",
           "attempts": 1,
           "truncated": false,
           "score": 0.1,
-          "seconds": 48.0,
+          "seconds": 84.1,
+          "input_tokens": 1219,
+          "output_tokens": 1147
+        },
+        {
+          "status": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 212.6,
+          "input_tokens": 6853,
+          "output_tokens": 2804
+        }
+      ]
+    },
+    {
+      "case": "formal_skid_buffer",
+      "category": null,
+      "score": 0.067,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 146.0,
+          "input_tokens": 5429,
+          "output_tokens": 1946
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 45.2,
           "input_tokens": 1037,
-          "output_tokens": 663
+          "output_tokens": 619
+        },
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 249.0,
+          "input_tokens": 6712,
+          "output_tokens": 3260
         }
       ]
     },
@@ -331,36 +521,113 @@
       "repeat": 3,
       "runs": [
         {
-          "status": "broken",
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 101.8,
+          "input_tokens": 3114,
+          "output_tokens": 1362
+        },
+        {
+          "status": "vacuous",
           "attempts": 3,
           "truncated": false,
           "score": 0.0,
-          "seconds": 169.8,
-          "input_tokens": 5974,
-          "output_tokens": 2269
-        },
-        {
-          "status": "fail",
-          "attempts": 3,
-          "truncated": false,
-          "score": 0.1,
-          "seconds": 189.1,
-          "input_tokens": 6343,
-          "output_tokens": 2536
+          "seconds": 141.1,
+          "input_tokens": 5590,
+          "output_tokens": 1904
         },
         {
           "status": "fail",
           "attempts": 2,
           "truncated": false,
           "score": 0.1,
-          "seconds": 127.4,
-          "input_tokens": 3224,
-          "output_tokens": 1732
+          "seconds": 134.5,
+          "input_tokens": 3461,
+          "output_tokens": 1806
+        }
+      ]
+    },
+    {
+      "case": "formal_stack4",
+      "category": null,
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 360.5,
+          "input_tokens": 9580,
+          "output_tokens": 4622
+        },
+        {
+          "status": "vacuous",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 182.6,
+          "input_tokens": 6292,
+          "output_tokens": 2431
+        },
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 161.7,
+          "input_tokens": 6035,
+          "output_tokens": 2174
         }
       ]
     },
     {
       "case": "formal_sync_fifo",
+      "category": null,
+      "score": 0.167,
+      "min": 0.1,
+      "max": 0.3,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 119.3,
+          "input_tokens": 3525,
+          "output_tokens": 1563
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.3,
+          "mutants_caught": "0/3",
+          "seconds": 99.7,
+          "input_tokens": 1141,
+          "output_tokens": 1357
+        },
+        {
+          "status": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 193.0,
+          "input_tokens": 7586,
+          "output_tokens": 2497
+        }
+      ]
+    },
+    {
+      "case": "formal_tdm3",
       "category": null,
       "score": 0.067,
       "min": 0.0,
@@ -373,27 +640,141 @@
           "attempts": 2,
           "truncated": false,
           "score": 0.1,
-          "seconds": 114.8,
-          "input_tokens": 3212,
-          "output_tokens": 1531
+          "seconds": 74.0,
+          "input_tokens": 2609,
+          "output_tokens": 992
         },
         {
           "status": "fail",
           "attempts": 2,
           "truncated": false,
           "score": 0.1,
-          "seconds": 88.4,
-          "input_tokens": 2998,
-          "output_tokens": 1208
+          "seconds": 79.1,
+          "input_tokens": 2828,
+          "output_tokens": 1059
         },
         {
           "status": "broken",
           "attempts": 3,
           "truncated": false,
           "score": 0.0,
-          "seconds": 166.3,
-          "input_tokens": 6527,
-          "output_tokens": 2232
+          "seconds": 90.9,
+          "input_tokens": 5076,
+          "output_tokens": 1196
+        }
+      ]
+    },
+    {
+      "case": "formal_token_bucket",
+      "category": null,
+      "score": 0.067,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 110.6,
+          "input_tokens": 3010,
+          "output_tokens": 1444
+        },
+        {
+          "status": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 150.8,
+          "input_tokens": 6634,
+          "output_tokens": 1991
+        },
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 104.4,
+          "input_tokens": 4895,
+          "output_tokens": 1377
+        }
+      ]
+    },
+    {
+      "case": "formal_updown_sat",
+      "category": null,
+      "score": 0.1,
+      "min": 0.1,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 126.5,
+          "input_tokens": 3061,
+          "output_tokens": 1689
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 45.5,
+          "input_tokens": 972,
+          "output_tokens": 615
+        },
+        {
+          "status": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 106.2,
+          "input_tokens": 4681,
+          "output_tokens": 1439
+        }
+      ]
+    },
+    {
+      "case": "formal_watchdog",
+      "category": null,
+      "score": 0.033,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 161.5,
+          "input_tokens": 6003,
+          "output_tokens": 2128
+        },
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 95.8,
+          "input_tokens": 4999,
+          "output_tokens": 1287
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 63.8,
+          "input_tokens": 1003,
+          "output_tokens": 866
         }
       ]
     }
