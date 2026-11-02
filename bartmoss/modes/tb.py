@@ -174,7 +174,8 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=(),
 
     message = (f"Top module: {top}\nTestbench module name: {tb_name}\n\n"
                f'<file name="{src_path.name}">\n{source}</file>\n' + context_blocks(context))
-    prompt = "tb_vhdl" if vhdl else "tb_random" if random else "tb"
+    # None lets a variant from `eval --prompt` or `modes.tb.prompt` (e.g. tb.v2) apply to directed SV testbenches.
+    prompt = "tb_vhdl" if vhdl else "tb_random" if random else None
     cap = cfg.get("random_max_tokens") if random else None
     loop = generate_with_checks(lambda messages: ctx.ask_model("tb", messages, prompt=prompt, max_tokens=cap), message, check,
                                 ctx.config["modes"]["tb"].get("max_retries", 2), on_attempt)

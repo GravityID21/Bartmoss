@@ -5,6 +5,7 @@ import os
 import shutil
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from bartmoss.config import DEFAULTS, deep_merge, parse_model_spec
@@ -333,6 +334,16 @@ class TestModesWithMock(unittest.TestCase):
         self.assertEqual(result.verdict, "pass")
         self.assertTrue((self.root / "out" / "tb_inv.sv").is_file())
         self.assertTrue((self.root / "out" / "tb_inv.md").is_file())
+
+    def test_tb_prompt_variant_applies_to_directed_testbenches(self):
+        from bartmoss import context
+        from bartmoss.modes.tb import run_tb
+
+        (self.root / "inv.sv").write_text("module inv(input logic a, output logic y);\n  assign y = ~a;\nendmodule\n")
+        self.ctx.prompt_overrides = {"tb": "tb.v2"}
+        with mock.patch("bartmoss.context.system_prompt", wraps=context.system_prompt) as prompt:
+            run_tb(self.ctx, "inv.sv", write=False)
+        self.assertEqual(prompt.call_args_list[0][0][0], "tb.v2")
 
     @unittest.skipUnless(HAS_VHDL_SIM, "nvc/ghdl not installed")
     def test_vhdl_tb_runs_in_simulator(self):

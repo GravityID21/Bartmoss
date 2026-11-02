@@ -318,6 +318,59 @@ endmodule
         with self.assertRaises(ValueError):
             run_formal(make_ctx(root), "x.vhd")
 
+    def test_subset_check_flags_what_yosys_rejects(self):
+        from bartmoss.modes.formal import subset_problems
+
+        props = "\n".join([
+            "reg f_past_valid = 1'b0;",                                      # 1
+            "always @(posedge clk) f_past_valid <= 1'b1;",                   # 2
+            "assert property (@(posedge clk) a |=> b);",                     # 3
+            "cover (q == 4'd9);",                                            # 4
+            "always @(posedge clk) if (a) assert (b) else $error(\"x\");",   # 5
+            "always @* assert (q == $past(q));",                             # 6
+            "property p; a ##1 b; endproperty",                              # 7
+            "always @(posedge clk) begin",                                   # 8
+            "  initial assume (rst);",                                       # 9
+            "end",                                                           # 10
+            "always @(posedge clk) begin if (f_past_valid) assert (q != 4'd10); end",  # 11
+        ])
+        problems = subset_problems(props)
+        self.assertEqual([p.split(":")[0] for p in problems], [f"line {n}" for n in (3, 4, 5, 6, 7, 9)])
+        self.assertIn("|=>", problems[0])
+        self.assertIn("outside an always block", problems[1])
+        self.assertIn("action blocks", problems[2])
+        self.assertIn("clocked block", problems[3])
+
+    def test_subset_check_accepts_supported_forms(self):
+        from bartmoss.modes.formal import subset_problems
+
+        ok = ("// a |-> b would not parse\ninitial assume (rst);\nalways @* assert (1'b1);\n"
+              "always @(posedge clk) if (f_past_valid && $past(a)) assert (b); else assert (!b);\n"
+              "always_ff @(posedge clk) begin case (s) 0: assert (x); default: cover (y); endcase end\n"
+              "always @(posedge clk) cover ($rose(done));\n")
+        self.assertEqual(subset_problems(ok), [])
+        for props in sorted((REPO / "evals" / "cases" / "formal").glob("*/props.sv")):
+            self.assertEqual(subset_problems(props.read_text()), [], props.parent.name)
+        example = (REPO / "bartmoss" / "prompts" / "formal.v2.md").read_text()
+        self.assertEqual(subset_problems(example.split("never high together):\n\n", 1)[1].split("\n\nNotes:")[0]), [])
+
+    def test_unsupported_properties_go_back_before_yosys_runs(self):
+        from bartmoss.modes.formal import run_formal
+
+        root = Path(tempfile.mkdtemp())
+        (root / "cnt.sv").write_text(self.COUNTER)
+        ctx = make_ctx(root)
+        reply = mock.Mock(refused=False, stop_reason="end_turn",
+                          text="<properties>\nassert property (@(posedge clk) q |-> ##1 q);\n</properties>\n<notes>\nx\n</notes>")
+        with mock.patch.object(ctx, "ask_model", return_value=reply) as ask, \
+                mock.patch("bartmoss.modes.formal.formal_check", side_effect=AssertionError("ran Yosys")):
+            result = run_formal(ctx, "cnt.sv", write=False)
+        self.assertEqual(result.status, "broken")
+        self.assertEqual(ask.call_count, 3)
+        feedback = ask.call_args[0][1][-1]["content"]
+        self.assertIn("line 1:", feedback)
+        self.assertIn("`|->`/`|=>` implication", feedback)
+
 
 class TestPhase3Evals(unittest.TestCase):
     def cases_copy(self, mode: str, name: str) -> Path:

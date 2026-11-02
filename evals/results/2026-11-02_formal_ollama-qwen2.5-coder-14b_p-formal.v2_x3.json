@@ -1,0 +1,407 @@
+{
+  "format": 2,
+  "date": "2026-11-02",
+  "mode": "formal",
+  "model": "ollama:qwen2.5-coder:14b",
+  "simulator": "auto",
+  "repeat": 3,
+  "prompt": "formal.v2",
+  "mean_score": 0.253,
+  "run_means": [
+    0.233,
+    0.257,
+    0.27
+  ],
+  "cost_usd": 0.0,
+  "seconds": 2502.7,
+  "usage": "47 calls \u00b7 93,244 in \u00b7 33,532 out \u00b7 0 cache-read \u00b7 est. $0.0000",
+  "cases": [
+    {
+      "case": "formal_debounce",
+      "category": null,
+      "score": 0.322,
+      "min": 0.1,
+      "max": 0.767,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.767,
+          "mutants_caught": "2/3",
+          "seconds": 63.8,
+          "input_tokens": 1530,
+          "output_tokens": 819
+        },
+        {
+          "status": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 83.1,
+          "input_tokens": 6637,
+          "output_tokens": 1097
+        },
+        {
+          "status": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 161.8,
+          "input_tokens": 7330,
+          "output_tokens": 2163
+        }
+      ]
+    },
+    {
+      "case": "formal_decade_counter",
+      "category": null,
+      "score": 0.7,
+      "min": 0.1,
+      "max": 1.0,
+      "full_passes": 2,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 87.9,
+          "input_tokens": 3669,
+          "output_tokens": 1183
+        },
+        {
+          "status": "pass",
+          "attempts": 3,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 107.5,
+          "input_tokens": 6129,
+          "output_tokens": 1422
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 47.1,
+          "input_tokens": 1498,
+          "output_tokens": 635
+        }
+      ]
+    },
+    {
+      "case": "formal_fifo_integrity",
+      "category": null,
+      "score": 0.1,
+      "min": 0.1,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 68.0,
+          "input_tokens": 1667,
+          "output_tokens": 908
+        },
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 104.9,
+          "input_tokens": 4459,
+          "output_tokens": 1394
+        },
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 203.3,
+          "input_tokens": 4755,
+          "output_tokens": 2716
+        }
+      ]
+    },
+    {
+      "case": "formal_gray_counter",
+      "category": null,
+      "score": 0.4,
+      "min": 0.1,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 88.4,
+          "input_tokens": 3622,
+          "output_tokens": 1192
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 49.3,
+          "input_tokens": 1476,
+          "output_tokens": 677
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 1.0,
+          "mutants_caught": "3/3",
+          "seconds": 32.2,
+          "input_tokens": 1476,
+          "output_tokens": 436
+        }
+      ]
+    },
+    {
+      "case": "formal_rr3_fairness",
+      "category": null,
+      "score": 0.1,
+      "min": 0.1,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 88.8,
+          "input_tokens": 4142,
+          "output_tokens": 1173
+        },
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 85.3,
+          "input_tokens": 4024,
+          "output_tokens": 1154
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 45.5,
+          "input_tokens": 1698,
+          "output_tokens": 620
+        }
+      ]
+    },
+    {
+      "case": "formal_rr_arbiter",
+      "category": null,
+      "score": 0.322,
+      "min": 0.1,
+      "max": 0.767,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "pass",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.767,
+          "mutants_caught": "2/3",
+          "seconds": 104.6,
+          "input_tokens": 3925,
+          "output_tokens": 1402
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 54.1,
+          "input_tokens": 1558,
+          "output_tokens": 741
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 37.4,
+          "input_tokens": 1558,
+          "output_tokens": 513
+        }
+      ]
+    },
+    {
+      "case": "formal_seq_multiplier",
+      "category": null,
+      "score": 0.067,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 83.1,
+          "input_tokens": 1745,
+          "output_tokens": 1105
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 61.0,
+          "input_tokens": 1745,
+          "output_tokens": 832
+        },
+        {
+          "status": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 261.2,
+          "input_tokens": 8964,
+          "output_tokens": 3454
+        }
+      ]
+    },
+    {
+      "case": "formal_skid_buffer",
+      "category": null,
+      "score": 0.322,
+      "min": 0.1,
+      "max": 0.767,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 35.2,
+          "input_tokens": 1563,
+          "output_tokens": 468
+        },
+        {
+          "status": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.767,
+          "mutants_caught": "2/3",
+          "seconds": 51.3,
+          "input_tokens": 1563,
+          "output_tokens": 698
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 37.6,
+          "input_tokens": 1563,
+          "output_tokens": 517
+        }
+      ]
+    },
+    {
+      "case": "formal_skid_buffer2",
+      "category": null,
+      "score": 0.1,
+      "min": 0.1,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 46.9,
+          "input_tokens": 1642,
+          "output_tokens": 627
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 58.3,
+          "input_tokens": 1642,
+          "output_tokens": 797
+        },
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 118.9,
+          "input_tokens": 4197,
+          "output_tokens": 1604
+        }
+      ]
+    },
+    {
+      "case": "formal_sync_fifo",
+      "category": null,
+      "score": 0.1,
+      "min": 0.1,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "status": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 116.8,
+          "input_tokens": 4133,
+          "output_tokens": 1556
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 51.3,
+          "input_tokens": 1667,
+          "output_tokens": 699
+        },
+        {
+          "status": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 68.2,
+          "input_tokens": 1667,
+          "output_tokens": 930
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}

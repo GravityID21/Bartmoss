@@ -44,6 +44,98 @@ def insert_properties(source: str, top: str, properties: str) -> str:
     return source[:end.start()] + ("" if source[:end.start()].endswith("\n") else "\n") + block + source[end.start():]
 
 
+UNSUPPORTED = [
+    (re.compile(r"\|->|\|=>"), "`|->`/`|=>` implication",
+     "write `if (f_past_valid && $past(a)) assert (b);` inside `always @(posedge clk)` instead of `a |=> b`"),
+    (re.compile(r"##\s*[\d\[]"), "`##` delay",
+     "use `$past(x, N)` or an `f_` shift register to look N cycles back"),
+    (re.compile(r"\b(?:end)?(?:property|sequence)\b(?!\s*\()"), "a `property`/`sequence` declaration",
+     "write each check as an immediate assertion inside a clocked always block"),
+    (re.compile(r"\b(?:assert|assume|cover)\s+property\b"), "a concurrent `assert/assume/cover property`",
+     "use an immediate `assert (...);` inside `always @(posedge clk)`"),
+    (re.compile(r"\bdisable\s+iff\b"), "`disable iff`", "guard the assertion with an `if` instead"),
+    (re.compile(r"\b(?:bind|class|covergroup)\b"), "`bind`, `class` or `covergroup`", "leave it out"),
+]
+HISTORY = re.compile(r"\$(?:past|stable|rose|fell|changed)\b")
+TOKEN = re.compile(r"\b(?:always_ff|always_comb|always_latch|always|initial|final|begin|end|fork|join\w*|case[xz]?|"
+                   r"endcase|function|endfunction|task|endtask|else|assert|assume|cover)\b|[;()]|\$\w+|@\s*\*|"
+                   r"@\s*\(\s*\*\s*\)|@\s*\(\s*(?:posedge|negedge)\b")
+
+
+def _close_paren(text: str, pos: int) -> int:
+    """Index just past the parenthesised group starting at or after `pos` (len(text) if unbalanced)."""
+    start = text.find("(", pos)
+    if start < 0:
+        return len(text)
+    depth = 0
+    for i in range(start, len(text)):
+        depth += {"(": 1, ")": -1}.get(text[i], 0)
+        if depth == 0:
+            return i + 1
+    return len(text)
+
+
+def subset_problems(properties: str) -> list[str]:
+    """Constructs open-source Yosys rejects, found before running it so the model gets an exact
+    line and fix instead of a parser error. One message per line, in order."""
+    text = re.sub(r"/\*.*?\*/", lambda m: re.sub(r"[^\n]", " ", m.group()), properties, flags=re.S)
+    text = re.sub(r"//[^\n]*|\"(?:\\.|[^\"\\])*\"", lambda m: " " * len(m.group()), text)
+    problems: dict[int, str] = {}
+
+    def line(pos: int) -> int:
+        return text.count("\n", 0, pos) + 1
+
+    def add(pos: int, message: str) -> None:
+        problems.setdefault(line(pos), message)
+
+    for pattern, what, fix in UNSUPPORTED:
+        for m in pattern.finditer(text):
+            add(m.start(), f"{what} isn't supported: {fix}.")
+    # Immediate assertions must sit inside an always/initial block, and $past & co. need a clock.
+    region = None  # None at module scope, else "clocked" or "unclocked"
+    depth = parens = 0
+    ending = False  # a statement just ended at depth 0; an `else` would continue it
+    for m in TOKEN.finditer(text):
+        tok = m.group()
+        if tok in ("assert", "assume", "cover") and re.match(r"\s*else\b", text[_close_paren(text, m.end()):]):
+            add(m.start(), f"`{tok} (...) else ...` action blocks aren't supported: end the assertion with `;` "
+                           "and drop the `else $error(...)`.")
+        if ending and tok != "else":
+            region, ending = None, False
+        ending = False
+        if tok == "(":
+            parens += 1
+        elif tok == ")":
+            parens = max(0, parens - 1)
+        elif region is None:
+            if tok in ("always", "always_ff", "always_comb", "always_latch", "initial", "final", "function", "task"):
+                region = "clocked" if tok == "always_ff" else "unclocked"
+                depth = parens = 0
+            elif tok in ("assert", "assume", "cover"):
+                add(m.start(), f"`{tok} (...)` outside an always block isn't supported: put it inside "
+                               "`always @(posedge clk)` (or `initial` for the start state).")
+            elif HISTORY.fullmatch(tok):
+                add(m.start(), f"`{tok}` outside an always block isn't supported: use it inside `always @(posedge clk)`.")
+        else:
+            if tok in ("always", "always_ff", "always_comb", "always_latch", "initial", "final"):
+                add(m.start(), f"`{tok}` can't go inside another always or initial block: close that block first.")
+            elif tok.startswith("@") and "edge" in tok:
+                region = "clocked"
+            elif tok in ("begin", "fork", "case", "casex", "casez", "function", "task"):
+                depth += 1
+            elif tok in ("end", "endcase", "endfunction", "endtask") or tok.startswith("join"):
+                depth -= 1
+                ending = depth <= 0 and tok in ("end", "endcase")
+                if depth <= 0 and tok in ("endfunction", "endtask"):
+                    region = None
+            elif tok == ";" and depth == 0 and parens == 0:
+                ending = True
+            elif HISTORY.fullmatch(tok) and region == "unclocked":
+                add(m.start(), f"`{tok}` is only allowed in a clocked block: use `always @(posedge clk)`, "
+                               "not `always @*` or `initial`.")
+    return [f"line {n}: {problems[n]}" for n in sorted(problems)]
+
+
 def failed_lines(result: FormalResult, formal_source: str) -> list[str]:
     """Each failed assertion as 'line N: <source text>'."""
     lines = formal_source.splitlines()
@@ -98,6 +190,12 @@ def run_formal(ctx: Context, path: str | Path, write: bool = True, context_files
             return CheckOutcome(False, True, "Your reply had no <properties> section. Reply again in the required format.")
         formal_source = insert_properties(source, top, props)
         data = {"properties": props, "notes": notes, "formal": formal_source}
+        problems = subset_problems(props)
+        if problems:
+            return CheckOutcome(False, True,
+                                "Your properties use SystemVerilog that open-source Yosys can't parse (line numbers "
+                                "count from the start of your <properties> block):\n" + "\n".join(problems[:12]) +
+                                "\nFix every listed line and reply again in the same format.", data=data)
         workdir = scratch / f"attempt{attempt_no[0]}"
         workdir.mkdir()
         files = stage_files(workdir, context, formal_name, formal_source)

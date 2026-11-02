@@ -1,0 +1,406 @@
+{
+  "format": 2,
+  "date": "2026-11-02",
+  "mode": "tb",
+  "model": "ollama:qwen2.5-coder:14b",
+  "simulator": "auto",
+  "repeat": 3,
+  "prompt": "tb.v2",
+  "mean_score": 0.12,
+  "run_means": [
+    0.14,
+    0.11,
+    0.11
+  ],
+  "cost_usd": 0.0,
+  "seconds": 5646.0,
+  "usage": "50 calls \u00b7 171,129 in \u00b7 71,361 out \u00b7 0 cache-read \u00b7 est. $0.0000",
+  "cases": [
+    {
+      "case": "alu8",
+      "category": null,
+      "score": 0.1,
+      "min": 0.1,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 247.6,
+          "input_tokens": 5622,
+          "output_tokens": 3128
+        },
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 139.0,
+          "input_tokens": 1709,
+          "output_tokens": 1841
+        },
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 181.6,
+          "input_tokens": 1709,
+          "output_tokens": 2396
+        }
+      ]
+    },
+    {
+      "case": "async_fifo_gray",
+      "category": null,
+      "score": 0.1,
+      "min": 0.1,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 214.8,
+          "input_tokens": 8011,
+          "output_tokens": 2644
+        },
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 89.1,
+          "input_tokens": 3207,
+          "output_tokens": 1142
+        },
+        {
+          "verdict": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 328.4,
+          "input_tokens": 15558,
+          "output_tokens": 4055
+        }
+      ]
+    },
+    {
+      "case": "axi4_arbiter_rr",
+      "category": null,
+      "score": 0.133,
+      "min": 0.0,
+      "max": 0.3,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.3,
+          "mutants_caught": "0/3",
+          "seconds": 133.5,
+          "input_tokens": 2091,
+          "output_tokens": 1653
+        },
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 137.0,
+          "input_tokens": 2091,
+          "output_tokens": 1803
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 240.5,
+          "input_tokens": 9739,
+          "output_tokens": 3146
+        }
+      ]
+    },
+    {
+      "case": "axis_fifo_udp",
+      "category": null,
+      "score": 0.067,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "fail",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 395.3,
+          "input_tokens": 13582,
+          "output_tokens": 4895
+        },
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 76.2,
+          "input_tokens": 2450,
+          "output_tokens": 995
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 407.6,
+          "input_tokens": 18048,
+          "output_tokens": 4868
+        }
+      ]
+    },
+    {
+      "case": "cdc_pulse_sync",
+      "category": null,
+      "score": 0.1,
+      "min": 0.1,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 75.9,
+          "input_tokens": 2444,
+          "output_tokens": 930
+        },
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 79.5,
+          "input_tokens": 2444,
+          "output_tokens": 1039
+        },
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 66.6,
+          "input_tokens": 2444,
+          "output_tokens": 872
+        }
+      ]
+    },
+    {
+      "case": "credit_sender",
+      "category": null,
+      "score": 0.1,
+      "min": 0.1,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 144.0,
+          "input_tokens": 1954,
+          "output_tokens": 1870
+        },
+        {
+          "verdict": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 230.5,
+          "input_tokens": 5599,
+          "output_tokens": 2991
+        },
+        {
+          "verdict": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 172.0,
+          "input_tokens": 5403,
+          "output_tokens": 2218
+        }
+      ]
+    },
+    {
+      "case": "debounce_btn",
+      "category": null,
+      "score": 0.167,
+      "min": 0.1,
+      "max": 0.3,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 78.0,
+          "input_tokens": 1863,
+          "output_tokens": 1001
+        },
+        {
+          "verdict": "pass",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.3,
+          "mutants_caught": "0/3",
+          "seconds": 156.2,
+          "input_tokens": 5039,
+          "output_tokens": 1995
+        },
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 77.5,
+          "input_tokens": 1863,
+          "output_tokens": 1022
+        }
+      ]
+    },
+    {
+      "case": "riscv_hazard",
+      "category": null,
+      "score": 0.233,
+      "min": 0.1,
+      "max": 0.3,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "pass",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.3,
+          "mutants_caught": "0/3",
+          "seconds": 337.5,
+          "input_tokens": 12528,
+          "output_tokens": 3887
+        },
+        {
+          "verdict": "fail",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 320.7,
+          "input_tokens": 11631,
+          "output_tokens": 3923
+        },
+        {
+          "verdict": "pass",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.3,
+          "mutants_caught": "0/3",
+          "seconds": 140.6,
+          "input_tokens": 4522,
+          "output_tokens": 1702
+        }
+      ]
+    },
+    {
+      "case": "rmii_tx",
+      "category": null,
+      "score": 0.067,
+      "min": 0.0,
+      "max": 0.1,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 106.7,
+          "input_tokens": 1960,
+          "output_tokens": 1381
+        },
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 98.6,
+          "input_tokens": 1960,
+          "output_tokens": 1309
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 306.7,
+          "input_tokens": 10808,
+          "output_tokens": 3980
+        }
+      ]
+    },
+    {
+      "case": "vhdl_pwm",
+      "category": null,
+      "score": 0.133,
+      "min": 0.0,
+      "max": 0.3,
+      "full_passes": 0,
+      "repeat": 3,
+      "runs": [
+        {
+          "verdict": "fail",
+          "attempts": 1,
+          "truncated": false,
+          "score": 0.1,
+          "seconds": 105.8,
+          "input_tokens": 1236,
+          "output_tokens": 1369
+        },
+        {
+          "verdict": "broken",
+          "attempts": 3,
+          "truncated": false,
+          "score": 0.0,
+          "seconds": 361.8,
+          "input_tokens": 9487,
+          "output_tokens": 4696
+        },
+        {
+          "verdict": "pass",
+          "attempts": 2,
+          "truncated": false,
+          "score": 0.3,
+          "mutants_caught": "0/3",
+          "seconds": 197.0,
+          "input_tokens": 4127,
+          "output_tokens": 2610
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}
