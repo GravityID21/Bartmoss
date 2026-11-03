@@ -9,14 +9,16 @@ formal cases: reference properties (props.sv) must hold on the design and fail o
 retrieval cases: the project's RTL (meta["files"], top last) must lint with no warnings, every
              file must carry the canary, and every expected answer must point at exactly one line.
 
-Usage: python evals/validate.py [--sim verilator|iverilog] [--only text] [--write-waves]
+Usage: python evals/validate.py [--sim verilator|iverilog] [--only text] [--jobs N] [--write-waves]
 """
 
 import argparse
 import json
+import os
 import shutil
 import sys
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -195,10 +197,31 @@ def check_retrieval(case: Path, meta: dict) -> list[str]:
     return problems
 
 
+def validate_case(mode: str, checker, case: Path, sim_choice: str) -> tuple[list[str], bool]:
+    """Check one case; returns its report lines and whether it's invalid."""
+    meta = json.loads((case / "meta.json").read_text())
+    canary = canary_problems(case, meta)
+    if canary:
+        return [f"FAIL {mode}/{case.name}: " + "; ".join(canary)], True
+    reason = unmet_requirement(meta.get("requires", {}))
+    if reason:
+        return [f"skip {mode}/{case.name} ({reason})"], False
+    if mode in ("debug", "wave") and meta.get("category") not in CATEGORIES:
+        return [f"FAIL {mode}/{case.name}: category must be one of {', '.join(CATEGORIES)}"], True
+    sim = pick_simulator(meta.get("simulator", sim_choice), vhdl=is_vhdl(meta["file"]))
+    if sim is None:
+        return [f"skip {mode}/{case.name} (no {'VHDL' if is_vhdl(meta['file']) else 'Verilog'} simulator)"], False
+    problems = checker(case, meta, sim, Path(tempfile.mkdtemp(prefix=f"validate_{case.name}_")))
+    lines = [f"{'ok  ' if not problems else 'FAIL'} {mode}/{case.name} ({sim})"]
+    lines += ["     " + p.replace("\n", "\n     ") for p in problems]
+    return lines, bool(problems)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--sim", default="auto")
     parser.add_argument("--only")
+    parser.add_argument("--jobs", type=int, default=os.cpu_count() or 1, help="cases checked at once (default: CPU count)")
     parser.add_argument("--write-waves", action="store_true", help="regenerate wave cases' wave.vcd from their sources")
     args = parser.parse_args()
     global WRITE_WAVES
@@ -207,6 +230,7 @@ def main() -> int:
         print("No simulator found (brew install verilator)")
         return 2
     failures = 0
+    jobs = []
     for mode, checker in (("debug", check_debug), ("tb", check_tb), ("wave", check_wave), ("formal", check_formal)):
         if mode == "formal" and pick_solver() is None:
             print("skip formal cases (needs yosys, yosys-smtbmc and an SMT solver such as z3)")
@@ -214,31 +238,14 @@ def main() -> int:
         if not (CASES / mode).is_dir():
             continue
         for case in sorted((CASES / mode).iterdir()):
-            if not (case / "meta.json").is_file() or (args.only and args.only not in case.name):
-                continue
-            meta = json.loads((case / "meta.json").read_text())
-            canary = canary_problems(case, meta)
-            if canary:
-                print(f"FAIL {mode}/{case.name}: " + "; ".join(canary))
-                failures += 1
-                continue
-            reason = unmet_requirement(meta.get("requires", {}))
-            if reason:
-                print(f"skip {mode}/{case.name} ({reason})")
-                continue
-            if mode in ("debug", "wave") and meta.get("category") not in CATEGORIES:
-                print(f"FAIL {mode}/{case.name}: category must be one of {', '.join(CATEGORIES)}")
-                failures += 1
-                continue
-            sim = pick_simulator(meta.get("simulator", args.sim), vhdl=is_vhdl(meta["file"]))
-            if sim is None:
-                print(f"skip {mode}/{case.name} (no {'VHDL' if is_vhdl(meta['file']) else 'Verilog'} simulator)")
-                continue
-            problems = checker(case, meta, sim, Path(tempfile.mkdtemp(prefix=f"validate_{case.name}_")))
-            print(f"{'ok  ' if not problems else 'FAIL'} {mode}/{case.name} ({sim})")
-            for p in problems:
-                print("     " + p.replace("\n", "\n     "))
-            failures += bool(problems)
+            if (case / "meta.json").is_file() and not (args.only and args.only not in case.name):
+                jobs.append((mode, checker, case, args.sim))
+    # Each case runs in its own temp dirs and the time is spent in simulator subprocesses, so threads
+    # are enough; results print in case order.
+    with ThreadPoolExecutor(max_workers=max(1, args.jobs)) as pool:
+        for lines, failed in pool.map(lambda job: validate_case(*job), jobs):
+            print("\n".join(lines), flush=True)
+            failures += failed
     for meta_path in sorted((CASES / "retrieval").glob("*/meta.json")):
         if args.only and args.only not in meta_path.parent.name:
             continue

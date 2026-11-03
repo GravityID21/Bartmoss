@@ -7,7 +7,7 @@ Every `meta.json` carries a canary string, and every hidden HDL file starts with
 Before trusting any scores, check that every case is valid. This makes no model calls:
 
 ```bash
-python evals/validate.py            # all cases; --only <text> to filter
+python evals/validate.py            # all cases, in parallel; --only <text> to filter, --jobs N to limit
 ```
 
 ## debug cases: `cases/debug/<case>/`
