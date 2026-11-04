@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
+from bartmoss import training
 from bartmoss.context import Context, context_blocks
 from bartmoss.extract import tag, top_module
 from bartmoss.sim import vcd
@@ -220,6 +221,7 @@ def run_formal(ctx: Context, path: str | Path, write: bool = True, context_files
     message = f"Top module: {top}\n\n" + f'<file name="{src_path.name}">\n{source}</file>\n' + context_blocks(context)
     loop = generate_with_checks(lambda messages: ctx.ask_model("formal", messages), message, check,
                                 cfg.get("max_retries", 2), on_attempt)
+    training.record(ctx, "formal", message, loop)
     if loop.refused:
         ui.warn("The model declined this request. Try another model with --model.")
         return FormalModeResult("refused", top, attempts=loop.attempts)

@@ -60,7 +60,10 @@ class MockProvider(Provider):
     ) -> ChatResult:
         if tools:
             return _agent_reply(system, messages, model, tool_choice)
-        if "MODE: judge" in system:
+        plugin_tag = re.search(r"Reply with the result inside <([\w-]+)> tags\.\n?$", system)
+        if plugin_tag:  # a plugin mode (P6.5) that asks for tagged output: echo the input file back
+            text = f"<{plugin_tag.group(1)}>\n{_first_file(messages) or _last_user(messages)}\n</{plugin_tag.group(1)}>\n"
+        elif "MODE: judge" in system:
             n = _last_user(messages).split("<rubric>")[-1].count("\n") - 1
             items = ", ".join(f'{{"id": {i}, "met": {"true" if i % 2 else "false"}, "evidence": "mock"}}' for i in range(1, n + 1))
             text = f'<result>{{"items": [{items}]}}</result>'

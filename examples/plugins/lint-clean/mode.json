@@ -1,0 +1,10 @@
+{
+  "description": "rewrite one RTL file so it lints cleanly, keeping its behaviour",
+  "input": "file",
+  "output_tag": "clean_file",
+  "output_suffix": ".clean{ext}",
+  "lint": true,
+  "max_retries": 2,
+  "max_tokens": 16000,
+  "effort": "medium"
+}

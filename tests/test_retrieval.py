@@ -323,6 +323,21 @@ class TestRetrievalEval(unittest.TestCase):
         self.assertEqual(len(report["cases"]), 28)
         self.assertTrue((tmp / "results").is_dir())
 
+    def test_hybrid_eval_keeps_the_embeddings_cache_out_of_the_case(self):
+        from bartmoss.evals import run_retrieval_eval
+
+        tmp = Path(tempfile.mkdtemp())
+        shutil.copytree(REPO / "evals" / "cases" / "retrieval", tmp / "cases" / "retrieval")
+        ctx = make_ctx(tmp)
+        ctx.config["retrieval"]["embeddings"] = "ollama:fake-embed"
+        with mock.patch("bartmoss.retrieval.embedder", return_value=lambda texts: [[1.0, 0.0] for _ in texts]):
+            report = run_retrieval_eval(ctx, tmp / "cases")
+        self.assertEqual(report["model"], "bm25+ollama:fake-embed")
+        original, scored = REPO / "evals" / "cases" / "retrieval", tmp / "cases" / "retrieval"
+        before = {p.relative_to(original) for p in original.rglob("*")}
+        after = {p.relative_to(scored) for p in scored.rglob("*")}
+        self.assertEqual(after, before)  # validate.py requires the canary on every file in the case
+
 
 if __name__ == "__main__":
     unittest.main()

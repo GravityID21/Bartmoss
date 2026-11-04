@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
+from bartmoss import training
 from bartmoss.context import Context, context_blocks
 from bartmoss.extract import hdl_block, tag, top_module
 from bartmoss.sim.loop import CheckOutcome, generate_with_checks, hit_token_limit
@@ -158,6 +159,8 @@ def run_debug(ctx: Context, path: str | Path, write: bool = True, context_files=
         ctx.config["modes"]["debug"].get("max_retries", 2),
         on_attempt,
     )
+    if not session:  # agent runs reach their answer through tool calls, so they aren't one-step examples
+        training.record(ctx, "debug", message, loop)
     if loop.refused:
         ui.warn("The model declined this request. Try another model with --model.")
         return DebugResult("refused", attempts=loop.attempts, lint_before=before)

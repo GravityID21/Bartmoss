@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import tempfile
 import time
 from dataclasses import replace
@@ -181,7 +182,9 @@ def _run_case(ctx: Context, mode: str, case: Path, meta: dict, simulator: str, a
     """One scored attempt at one case, with its model outputs saved under artifact_dir."""
     # Cases list their context files explicitly; auto context could pick up hidden files (mutants
     # define the same module as the DUT), so it's off during evals.
-    config = {**ctx.config, "project": {**ctx.config.get("project", {}), "auto_context": False}}
+    # Eval runs never go into the training log (bartmoss/training.py): they'd leak the benchmark.
+    config = {**ctx.config, "project": {**ctx.config.get("project", {}), "auto_context": False},
+              "training": {"log": False}}
     case_ctx = replace(ctx, config=config, workspace=Workspace(case, ctx.config["output_dir"]), ui=UI(quiet=True),
                        assume_yes=True, ask_history=[], _providers=ctx._providers, _project=None,
                        _index=None, rag=False)
@@ -400,7 +403,11 @@ def run_retrieval_eval(ctx: Context, cases_root: Path, only: str | None = None) 
     for case in cases:
         meta = json.loads((case / "meta.json").read_text())
         k, budget = meta.get("k", 5), meta.get("budget", 6000)
-        workspace = Workspace(case, ctx.config["output_dir"])
+        # Index a copy, so the embeddings cache (written to the output dir) never lands in the case,
+        # where validate.py would flag it for missing the canary.
+        copy = Path(tempfile.mkdtemp(prefix="bartmoss_retrieval_")) / case.name
+        shutil.copytree(case, copy)
+        workspace = Workspace(copy, ctx.config["output_dir"])
         index = build_index(workspace, Project(workspace), ctx.config, ui.warn)
         if cfg.get("embeddings") and not index.embeddings:
             raise SystemExit(f"embeddings {cfg['embeddings']} unavailable; not scoring BM25 under that name")

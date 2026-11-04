@@ -1,0 +1,9 @@
+{
+  "description": "code review of one RTL file (Markdown, every issue cites a line)",
+  "input": "file",
+  "output_tag": "review",
+  "output_suffix": ".review.md",
+  "sections": ["Summary", "Issues", "Suggestions"],
+  "max_retries": 1,
+  "effort": "low"
+}

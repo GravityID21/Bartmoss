@@ -64,6 +64,9 @@ DEFAULTS: dict = {
     # Judge for vplan/uvmplan evals (rubric grading). Sonnet by default: in a spot check Haiku flipped
     # verdicts between runs on the same plan, which would make prompt A/B comparisons meaningless.
     "eval": {"judge_model": "anthropic:claude-sonnet-5-5", "judge_max_tokens": 8000},
+    # Fine-tuning data (bartmoss/training.py): with log on, runs whose replies passed their checks are
+    # appended to <output_dir>/training/log.jsonl for `bartmoss export-training`. Off by default.
+    "training": {"log": False},
     # Agent tool loop (P4.1, `debug --agent`) and its context budget (P4.3). Read-only tools and the scratch
     # writer always run; add "run_sim" to auto_approve to stop being asked before each simulation.
     "agent": {"max_steps": 20, "context_budget": 100_000, "max_result_chars": 12_000, "max_read_lines": 400,

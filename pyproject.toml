@@ -4,12 +4,25 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bartmoss"
-version = "0.1.0.dev0"
+dynamic = ["version"]  # bartmoss/__init__.py is the only place the version is written
 description = "Open-source, model-agnostic AI assistant for RTL design and verification"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.9"
+keywords = ["rtl", "verilog", "systemverilog", "vhdl", "verification", "fpga", "asic", "llm", "eda"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Topic :: Software Development :: Code Generators",
+]
 # The core has no runtime dependencies. Install only the provider extras you use.
 dependencies = []
 
@@ -18,8 +31,16 @@ claude = ["anthropic>=0.125,<1"]
 openai = ["openai>=1.40"]
 all = ["anthropic>=0.125,<1", "openai>=1.40"]
 
+[project.urls]
+Homepage = "https://github.com/GravityID21/Bartmoss"
+Issues = "https://github.com/GravityID21/Bartmoss/issues"
+Changelog = "https://github.com/GravityID21/Bartmoss/blob/main/CHANGELOG.md"
+
 [project.scripts]
 bartmoss = "bartmoss.cli:entry"
+
+[tool.setuptools.dynamic]
+version = {attr = "bartmoss.__version__"}
 
 [tool.setuptools.packages.find]
 include = ["bartmoss*"]

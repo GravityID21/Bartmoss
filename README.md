@@ -4,11 +4,8 @@
 
 An open-source AI assistant for RTL design and verification that runs in your terminal and works with any model. Generated and fixed RTL is checked with a real simulator before you see it.
 
-> Status: Phases 1–3 complete (UVM generation deferred); Phase 4 (agent mode, project awareness, MCP server, retrieval) built and in testing; Phase 5 open-source flow and tool sandbox built (vendor tools not yet). Under active development. See [SPEC.md](SPEC.md) for the full roadmap and progress tracker.
 
-![Bartmoss fixing an off-by-one counter and generating a passing testbench](docs/demo.svg)
-
-*A real session: Claude Haiku 5.5 finds the bug, the fix is re-linted by Verilator, and the generated testbench is compiled and run before it's written out.*
+![Bartmoss fixing an off-by-one counter and generating a passing testbench](https://raw.githubusercontent.com/GravityID21/Bartmoss/main/docs/demo.svg)
 
 ## What it does
 
@@ -27,6 +24,8 @@ An open-source AI assistant for RTL design and verification that runs in your te
 | `bartmoss search "where is parity computed"` | Ranked search over the project: HDL split into modules and always/assign blocks, documents split by heading. `--show` prints the excerpts. `ask --rag` attaches the best ones to a question, and `vplan file.sv --docs` adds the spec sections that match a design. Keyword ranking (BM25) on the standard library; set `retrieval.embeddings` to a local Ollama embeddings model for hybrid search. |
 | `bartmoss project [file]` | Shows the project index (which file defines which module, package and interface), or the files one file depends on. `--filelist files.f` uses a filelist instead of scanning. |
 | `bartmoss mcp` | Runs an MCP server so Claude Code and other MCP clients can use Bartmoss's free checkers (lint, simulate, synth check, design structure, waveform summary, formal check, project search). Register it with `claude mcp add bartmoss -- bartmoss --root /path/to/project mcp`. |
+| `bartmoss <plugin> file.sv` | Your own modes: drop a prompt, plus optional lint, section and Python checks, into `~/.config/bartmoss/modes/<name>/` and it becomes a command, with the same check-and-retry loop as the built-in modes. `bartmoss plugins` lists them. See [docs/plugins.md](https://github.com/GravityID21/Bartmoss/blob/main/docs/plugins.md) and the examples in `examples/plugins/`. |
+| `bartmoss export-training` | With `"training": {"log": true}` in `bartmoss.json`, runs whose output passed its checks are logged; this writes them as chat-format `train.jsonl` and `valid.jsonl` for fine-tuning an open model (by default only simulator- or solver-confirmed examples). See [docs/fine-tuning.md](https://github.com/GravityID21/Bartmoss/blob/main/docs/fine-tuning.md). |
 | `bartmoss eval --mode debug\|tb\|wave\|formal\|…` | Scores a model on the cases in `evals/cases/`, graded by the simulator, the formal checker or a rubric judge. |
 | `bartmoss` | Interactive REPL (`/help` lists commands). |
 
@@ -72,7 +71,7 @@ Built-in providers: `anthropic`, `openai`, `ollama`, `deepseek`, `openrouter`, `
 
 ## Results
 
-Every case run three times per model (2026-10-24 to 2026-10-27). Full table, per-category scores and notes: [evals/LEADERBOARD.md](evals/LEADERBOARD.md). See [evals/README.md](evals/README.md) for how scores are graded.
+Every case run three times per model (2026-10-24 to 2026-10-27). Full table, per-category scores and notes: [evals/LEADERBOARD.md](https://github.com/GravityID21/Bartmoss/blob/main/evals/LEADERBOARD.md). See [evals/README.md](https://github.com/GravityID21/Bartmoss/blob/main/evals/README.md) for how scores are graded.
 
 | Model | `/debug` (54) | `/tb` (10) | `/vplan` (3) | `/uvmplan` (2) | `/ask` (12) | Cost per debug + tb pass |
 |---|---|---|---|---|---|---|
@@ -98,4 +97,4 @@ python evals/validate.py    # prove every eval case is valid (no model calls)
 
 ## Licence
 
-[MIT](LICENSE). The eval cases include RTL from the author's own MIT-licensed RTL projects.
+[MIT](https://github.com/GravityID21/Bartmoss/blob/main/LICENSE). The eval cases include RTL from the author's own MIT-licensed RTL projects.

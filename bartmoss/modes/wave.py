@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
+from bartmoss import training
 from bartmoss.context import Context, context_blocks
 from bartmoss.extract import tag
 from bartmoss.files import WorkspaceError
@@ -121,6 +122,7 @@ def run_wave(ctx: Context, path: str | Path, signals=(), window: Optional[str] =
                                 cfg.get("max_retries", 1),
                                 lambda attempt, _: ui.dim("  asking model..." if attempt == 1 else
                                                           f"  attempt {attempt}: asking for the required format"))
+    training.record(ctx, "wave", message, loop)
     if loop.refused:
         ui.warn("The model declined this request. Try another model with --model.")
         return WaveResult("refused", summary, attempts=loop.attempts)

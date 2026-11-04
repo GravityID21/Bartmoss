@@ -1,0 +1,639 @@
+{
+  "format": 2,
+  "date": "2026-11-04",
+  "mode": "retrieval",
+  "model": "bm25+ollama:nomic-embed-text",
+  "simulator": null,
+  "repeat": 1,
+  "prompt": "lines40",
+  "mean_score": 0.893,
+  "run_means": [
+    0.893
+  ],
+  "cost_usd": 0.0,
+  "seconds": 1.5,
+  "usage": "no model calls",
+  "hit_at_1": 0.607,
+  "hit_at_k": 1.0,
+  "mrr": 0.771,
+  "mean_top_k_chars": 10019,
+  "cases": [
+    {
+      "case": "periph_soc/tx_parity",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 1548,
+          "top_k_chars": 10064,
+          "top": [
+            "rtl/uart_tx.sv:1-40",
+            "docs/spec.md:1-80",
+            "rtl/uart_rx.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/rx_framing",
+      "category": "hdl",
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 0.0,
+          "rank": 3,
+          "chars_to_hit": 6974,
+          "top_k_chars": 10527,
+          "top": [
+            "rtl/uart_rx.sv:1-40",
+            "rtl/uart_tx.sv:1-40",
+            "docs/spec.md:1-80"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/rx_sync",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 3,
+          "chars_to_hit": 3976,
+          "top_k_chars": 9335,
+          "top": [
+            "rtl/rst_sync.sv:1-20",
+            "rtl/spi_master.sv:1-40",
+            "rtl/uart_rx.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/reset_release",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 867,
+          "top_k_chars": 9673,
+          "top": [
+            "rtl/rst_sync.sv:1-20",
+            "docs/spec.md:81-133",
+            "rtl/watchdog.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/fifo_full",
+      "category": "hdl",
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 0.0,
+          "rank": 3,
+          "chars_to_hit": 7431,
+          "top_k_chars": 9735,
+          "top": [
+            "rtl/periph_regs.sv:161-200",
+            "docs/spec.md:1-80",
+            "rtl/sync_fifo.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/spi_polarity",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 1588,
+          "top_k_chars": 11514,
+          "top": [
+            "rtl/spi_master.sv:1-40",
+            "docs/spec.md:81-133",
+            "rtl/spi_master.sv:41-77"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/spi_cs_release",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 1290,
+          "top_k_chars": 11431,
+          "top": [
+            "rtl/spi_master.sv:41-77",
+            "docs/spec.md:81-133",
+            "rtl/spi_master.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/timer_reload",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 1454,
+          "top_k_chars": 9878,
+          "top": [
+            "rtl/timer.sv:1-40",
+            "docs/spec.md:81-133",
+            "rtl/periph_regs.sv:81-120"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/timer_prescale",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 1454,
+          "top_k_chars": 7742,
+          "top": [
+            "rtl/timer.sv:1-40",
+            "docs/spec.md:81-133",
+            "rtl/timer.sv:41-45"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/gpio_rising",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 2,
+          "chars_to_hit": 4132,
+          "top_k_chars": 10738,
+          "top": [
+            "docs/spec.md:81-133",
+            "rtl/gpio.sv:1-40",
+            "docs/spec.md:1-80"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/irq_priority",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 2878,
+          "top_k_chars": 7864,
+          "top": [
+            "docs/spec.md:81-133",
+            "rtl/irq_ctrl.sv:1-28",
+            "rtl/soc_top.sv:81-101"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/wdt_unlock",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 1583,
+          "top_k_chars": 7418,
+          "top": [
+            "rtl/watchdog.sv:1-40",
+            "docs/spec.md:81-133",
+            "rtl/watchdog.sv:41-53"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/wdt_countdown",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 2,
+          "chars_to_hit": 2023,
+          "top_k_chars": 10260,
+          "top": [
+            "rtl/watchdog.sv:1-40",
+            "rtl/watchdog.sv:41-53",
+            "docs/spec.md:81-133"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/apb_error",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 3,
+          "chars_to_hit": 4564,
+          "top_k_chars": 10239,
+          "top": [
+            "rtl/periph_regs.sv:41-80",
+            "rtl/periph_regs.sv:1-40",
+            "rtl/periph_regs.sv:81-120"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/sticky_clear",
+      "category": "hdl",
+      "score": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "full_passes": 0,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 0.0,
+          "rank": 4,
+          "chars_to_hit": 8865,
+          "top_k_chars": 11743,
+          "top": [
+            "docs/spec.md:1-80",
+            "rtl/uart_rx.sv:1-40",
+            "rtl/uart_tx.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/overrun_set",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 2064,
+          "top_k_chars": 11151,
+          "top": [
+            "rtl/periph_regs.sv:161-200",
+            "docs/spec.md:1-80",
+            "README.md:1-6"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/baud_wiring",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 2,
+          "chars_to_hit": 5758,
+          "top_k_chars": 10382,
+          "top": [
+            "docs/spec.md:1-80",
+            "rtl/soc_top.sv:41-80",
+            "rtl/uart_tx.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/rx_midbit",
+      "category": "hdl",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 1521,
+          "top_k_chars": 10016,
+          "top": [
+            "rtl/uart_rx.sv:1-40",
+            "rtl/spi_master.sv:1-40",
+            "rtl/uart_tx.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/baud_reset",
+      "category": "doc",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 3905,
+          "top_k_chars": 10597,
+          "top": [
+            "docs/spec.md:1-80",
+            "rtl/soc_top.sv:41-80",
+            "rtl/uart_tx.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/baud_formula",
+      "category": "doc",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 3905,
+          "top_k_chars": 10415,
+          "top": [
+            "docs/spec.md:1-80",
+            "rtl/uart_tx.sv:1-40",
+            "rtl/spi_master.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/timer_base",
+      "category": "doc",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 3905,
+          "top_k_chars": 8899,
+          "top": [
+            "docs/spec.md:1-80",
+            "rtl/timer.sv:1-40",
+            "docs/spec.md:81-133"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/spi_falling",
+      "category": "doc",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 2878,
+          "top_k_chars": 10915,
+          "top": [
+            "docs/spec.md:81-133",
+            "rtl/spi_master.sv:41-77",
+            "rtl/spi_master.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/wdt_service",
+      "category": "doc",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 2,
+          "chars_to_hit": 4461,
+          "top_k_chars": 9340,
+          "top": [
+            "rtl/watchdog.sv:1-40",
+            "docs/spec.md:81-133",
+            "docs/spec.md:1-80"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/two_stop",
+      "category": "doc",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 2,
+          "chars_to_hit": 5142,
+          "top_k_chars": 9501,
+          "top": [
+            "rtl/uart_tx.sv:41-80",
+            "docs/spec.md:1-80",
+            "rtl/uart_rx.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/timer_irq_number",
+      "category": "doc",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 2878,
+          "top_k_chars": 9583,
+          "top": [
+            "docs/spec.md:81-133",
+            "docs/spec.md:1-80",
+            "rtl/irq_ctrl.sv:1-28"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/gpio_latency",
+      "category": "doc",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 2878,
+          "top_k_chars": 10487,
+          "top": [
+            "docs/spec.md:81-133",
+            "docs/spec.md:1-80",
+            "rtl/gpio.sv:1-40"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/rx_available",
+      "category": "doc",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 1,
+          "chars_to_hit": 3905,
+          "top_k_chars": 11070,
+          "top": [
+            "docs/spec.md:1-80",
+            "docs/spec.md:81-133",
+            "rtl/irq_ctrl.sv:1-28"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "periph_soc/wdt_bad_kick",
+      "category": "doc",
+      "score": 1.0,
+      "min": 1.0,
+      "max": 1.0,
+      "full_passes": 1,
+      "repeat": 1,
+      "runs": [
+        {
+          "score": 1.0,
+          "rank": 2,
+          "chars_to_hit": 4461,
+          "top_k_chars": 10024,
+          "top": [
+            "rtl/watchdog.sv:1-40",
+            "docs/spec.md:81-133",
+            "docs/spec.md:1-80"
+          ]
+        }
+      ]
+    }
+  ],
+  "skipped": []
+}

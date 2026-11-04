@@ -13,6 +13,7 @@ from bartmoss.ui import UI
 from bartmoss.usage import Usage
 
 PROMPT_DIR = Path(__file__).parent / "prompts"
+PLUGIN_PROMPTS: dict = {}  # plugin mode name -> Plugin (P6.5), filled by plugins.register
 
 
 def context_blocks(files: list[tuple[Path, str]]) -> str:
@@ -24,10 +25,14 @@ def system_prompt(name: str) -> str:
     ("debug.v2" -> prompts/debug.v2.md); variants keep the base mode's MODE line.
     Kept byte-stable so it can be prompt-cached."""
     path = PROMPT_DIR / f"{name}.md"
-    if not path.is_file():
+    if path.is_file():
+        body = path.read_text().strip()
+    elif name in PLUGIN_PROMPTS:
+        body = PLUGIN_PROMPTS[name].prompt()
+    else:
         raise ValueError(f"unknown prompt {name!r}: no {path.name} in {PROMPT_DIR}")
     guard = (PROMPT_DIR / "guard.md").read_text()
-    return f"{guard.strip()}\n\nMODE: {name.split('.')[0]}\n\n{path.read_text().strip()}\n"
+    return f"{guard.strip()}\n\nMODE: {name.split('.')[0]}\n\n{body}\n"
 
 
 @dataclass
@@ -46,9 +51,13 @@ class Context:
     _project: Optional[object] = None
     _index: Optional[object] = None
     rag: bool = False  # /rag on|off; adds retrieved project excerpts to /ask questions
+    plugins: dict = field(default_factory=dict)  # user-defined modes (P6.5), name -> plugins.Plugin
 
     def model_spec(self, mode: str) -> str:
         return model_for_mode(self.config, mode, self.model_override)
+
+    def prompt_name(self, mode: str, prompt: Optional[str] = None) -> str:
+        return prompt or self.prompt_overrides.get(mode) or self.config["modes"].get(mode, {}).get("prompt") or mode
 
     def provider(self, name: str) -> Provider:
         if name not in self._providers:
@@ -64,7 +73,7 @@ class Context:
         spec = self.model_spec(mode)
         provider_name, model = parse_model_spec(spec)
         mode_cfg = self.config["modes"].get(mode, {})
-        name = prompt or self.prompt_overrides.get(mode) or mode_cfg.get("prompt") or mode
+        name = self.prompt_name(mode, prompt)
         result = self.provider(provider_name).chat(
             system_prompt(name),
             messages,

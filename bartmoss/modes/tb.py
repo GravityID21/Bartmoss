@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
+from bartmoss import training
 from bartmoss.context import Context, context_blocks
 from bartmoss.extract import hdl_block, tag, top_module
 from bartmoss.sim import hdl_ast
@@ -179,6 +180,7 @@ def run_tb(ctx: Context, path: str | Path, write: bool = True, context_files=(),
     cap = cfg.get("random_max_tokens") if random else None
     loop = generate_with_checks(lambda messages: ctx.ask_model("tb", messages, prompt=prompt, max_tokens=cap), message, check,
                                 ctx.config["modes"]["tb"].get("max_retries", 2), on_attempt)
+    training.record(ctx, "tb", message, loop, prompt)
     if loop.refused:
         ui.warn("The model declined this request. Try another model with --model.")
         return TbResult("refused", top=top, attempts=loop.attempts)

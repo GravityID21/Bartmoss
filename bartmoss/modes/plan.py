@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
+from bartmoss import training
 from bartmoss.context import Context, context_blocks
 from bartmoss.extract import tag
 from bartmoss.sim.loop import CheckOutcome, generate_with_checks, hit_token_limit
@@ -110,6 +111,7 @@ def run_plan(ctx: Context, mode: str, path: str | Path, write: bool = True, cont
     message = f'<file name="{src_path.name}">\n{source}</file>\n' + context_blocks(context) + excerpts
     loop = generate_with_checks(lambda messages: ctx.ask_model(mode, messages), message, check,
                                 ctx.config["modes"][mode].get("max_retries", 1), on_attempt)
+    training.record(ctx, mode, message, loop)
     if loop.refused:
         ui.warn("The model declined this request. Try another model with --model.")
         return PlanResult("refused", attempts=loop.attempts)

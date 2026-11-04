@@ -12,6 +12,7 @@ from bartmoss import __version__
 from bartmoss.config import load_config, parse_model_spec
 from bartmoss.context import Context
 from bartmoss.files import Workspace, WorkspaceError
+from bartmoss.plugins import discover, plugin_dir, register, run_plugin
 from bartmoss.providers import ProviderError
 from bartmoss.sim.tools import INSTALL_HINTS, available
 from bartmoss.ui import UI
@@ -50,6 +51,7 @@ HELP = """\
   /web [on|off]       allow Claude to search the web in /ask (off by default; billed per search)
   /model [p:model]    show or set the model for this session (e.g. anthropic:claude-haiku-5-5)
   /models             list configured providers and per-mode models
+  /plugins            list user-defined modes from ~/.config/bartmoss/modes/
   /doctor             check simulators and provider SDKs
   /usage              tokens and estimated cost so far
   /clear              forget the /ask conversation
@@ -58,7 +60,7 @@ HELP = """\
   /quit               exit"""
 
 
-def build_context(args: argparse.Namespace) -> Context:
+def build_context(args: argparse.Namespace, plugins: dict | None = None) -> Context:
     root = Path(args.root).resolve() if args.root else Path.cwd()
     config = load_config(root)
     if args.out:
@@ -70,6 +72,8 @@ def build_context(args: argparse.Namespace) -> Context:
     if args.model:
         parse_model_spec(args.model)  # validate early
     ui = UI(color=False if args.no_color else None)
+    plugins = plugins or {}
+    register(config, plugins)
     return Context(
         config=config,
         workspace=Workspace(root, config["output_dir"]),
@@ -77,6 +81,7 @@ def build_context(args: argparse.Namespace) -> Context:
         usage=Usage(prices=config.get("prices", {})),
         model_override=args.model,
         assume_yes=args.yes,
+        plugins=plugins,
     )
 
 
@@ -209,6 +214,53 @@ def cmd_doctor(ctx: Context) -> None:
             ui.dim(f'  {module:10} not installed · pip install -e ".[{extra}]"')
 
 
+def cmd_plugins(ctx: Context) -> None:
+    if not ctx.plugins:
+        ctx.ui.print(f"  no plugins in {plugin_dir()} (see docs/plugins.md)")
+        return
+    for name, plugin in ctx.plugins.items():
+        checks = [c for c, on in (("lint", plugin.lint), ("sections", plugin.sections),
+                                  ("check.py", plugin.checker)) if on]
+        ctx.ui.print(f"  {name:12} {plugin.description or '(no description)'} · input {plugin.input} · "
+                     f"checks {', '.join(checks) or 'none'} · model {ctx.model_spec(name)}")
+
+
+def plugin_from_args(ctx: Context, name: str, rest: str) -> dict:
+    plugin = ctx.plugins[name]
+    if plugin.input == "text":
+        if not rest:
+            raise ValueError(f"usage: /{name} <text>")
+        return run_plugin(ctx, plugin, rest)
+
+    def add(p):
+        p.add_argument("file")
+        p.add_argument("context", nargs="*")
+
+    args = repl_args(f"/{name}", rest, add)
+    return run_plugin(ctx, plugin, args.file, args.context)
+
+
+def cmd_export_training(ctx: Context, args: argparse.Namespace) -> int:
+    from bartmoss.training import export, log_path
+
+    logs = [ctx.workspace.resolve(p) for p in args.log] or [log_path(ctx)]
+    missing = [p for p in logs if not p.is_file()]
+    if missing:
+        ctx.ui.error(f"no training log at {', '.join(map(str, missing))}; set \"training\": {{\"log\": true}} "
+                     "in bartmoss.json and run some modes first")
+        return 1
+    out_dir = ctx.workspace.output_path(args.to)
+    modes = {m.strip() for m in args.modes.split(",") if m.strip()} if args.modes else None
+    counts = export(logs, out_dir, args.level, args.valid, modes)
+    by_mode = ", ".join(f"{m} {n}" for m, n in sorted(counts["by_mode"].items())) or "none"
+    skipped = ", ".join(f"{n} {why}" for why, n in counts["skipped"].items() if n)
+    ctx.ui.ok(f"{counts['train']} train + {counts['valid']} valid examples ({by_mode}) in "
+              f"{ctx.workspace.relative(out_dir)}")
+    if counts["duplicates"] or skipped:
+        ctx.ui.dim(f"  left out: {counts['duplicates']} duplicates" + (f", {skipped}" if skipped else ""))
+    return 0
+
+
 def cmd_models(ctx: Context) -> None:
     ui = ctx.ui
     ui.print(ui.style("Per-mode models", "bold"))
@@ -235,6 +287,8 @@ def dispatch(ctx: Context, line: str) -> bool:
         return False
     if command == "/help":
         ui.print(HELP)
+        for name, plugin in ctx.plugins.items():
+            ui.print(f"  /{name:<18} {plugin.description or 'user-defined mode'} (plugin)")
     elif command == "/ask":
         from bartmoss.modes.ask import run_ask
 
@@ -326,6 +380,10 @@ def dispatch(ctx: Context, line: str) -> bool:
         cmd_models(ctx)
     elif command == "/doctor":
         cmd_doctor(ctx)
+    elif command == "/plugins":
+        cmd_plugins(ctx)
+    elif command[1:] in ctx.plugins:
+        plugin_from_args(ctx, command[1:], rest)
     elif command == "/usage":
         ui.print("  " + ctx.usage.summary())
     elif command == "/save":
@@ -379,6 +437,7 @@ def repl(ctx: Context) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    plugins = discover(warn=lambda message: print(f"bartmoss: {message}", file=sys.stderr))
     parser = argparse.ArgumentParser(prog="bartmoss", description="AI assistant for RTL design and verification.")
     parser.add_argument("--version", action="version", version=f"bartmoss {__version__}")
     parser.add_argument("--model", help="provider:model for every mode, e.g. anthropic:claude-haiku-5-5 or mock:echo")
@@ -441,12 +500,32 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("index", help="show what the search index holds (files, chunks, embeddings)")
     p_proj = sub.add_parser("project", help="show the project index, or the files one file depends on")
     p_proj.add_argument("file", nargs="?", default="")
+    p_train = sub.add_parser("export-training",
+                             help="turn the training log (training.log in bartmoss.json) into train/valid JSONL")
+    p_train.add_argument("--log", action="append", default=[], metavar="FILE",
+                         help="training log to read; repeatable (default: <output dir>/training/log.jsonl)")
+    p_train.add_argument("--to", default="training", metavar="DIR",
+                         help="directory for train.jsonl and valid.jsonl, inside the output dir (default: training)")
+    p_train.add_argument("--level", choices=["sim", "lint", "structure"], default="sim",
+                         help="weakest check to keep: sim (simulator or solver confirmed, default), lint, structure")
+    p_train.add_argument("--modes", help="comma-separated modes to keep (default: all)")
+    p_train.add_argument("--valid", type=float, default=0.1, metavar="FRACTION",
+                         help="share of examples held out for validation (default 0.1)")
+    sub.add_parser("plugins", help="list user-defined modes (P6.5) from ~/.config/bartmoss/modes/")
+    for name, plugin in plugins.items():
+        p = sub.add_parser(name, help=(plugin.description or "user-defined mode") + " (plugin)")
+        if plugin.input == "text":
+            p.add_argument("text", nargs="+")
+        else:
+            p.add_argument("file")
+            p.add_argument("--with", dest="context", action="append", default=[], metavar="FILE",
+                           help="supporting file (package, interface, submodule); repeatable")
     sub.add_parser("doctor", help="check simulators and provider SDKs")
     sub.add_parser("models", help="show configured providers and models")
     args = parser.parse_args(argv)
 
     try:
-        ctx = build_context(args)
+        ctx = build_context(args, plugins)
     except ValueError as e:
         parser.error(str(e))
 
@@ -538,7 +617,18 @@ def main(argv: list[str] | None = None) -> int:
 
             ctx.ui = UI(color=False, out=sys.stderr)
             return serve(ctx)
-        if args.command == "project":
+        if args.command in plugins:
+            plugin = plugins[args.command]
+            if plugin.input == "text":
+                result = run_plugin(ctx, plugin, " ".join(args.text))
+            else:
+                result = run_plugin(ctx, plugin, args.file, args.context)
+            return 0 if result["status"] == "ok" else 1
+        if args.command == "export-training":
+            return cmd_export_training(ctx, args)
+        if args.command == "plugins":
+            cmd_plugins(ctx)
+        elif args.command == "project":
             cmd_project(ctx, args.file)
         elif args.command == "search":
             cmd_search(ctx, args)
@@ -555,7 +645,8 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         return 130
     finally:
-        if args.command in ("ask", "debug", "tb", "vplan", "uvmplan", "eval", "wave", "formal") and ctx.usage.calls:
+        if (args.command in ("ask", "debug", "tb", "vplan", "uvmplan", "eval", "wave", "formal") or
+                args.command in plugins) and ctx.usage.calls:
             ctx.ui.dim(ctx.usage.summary())
 
 
