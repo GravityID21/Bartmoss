@@ -11,6 +11,8 @@ Look for, roughly in this order:
 
 Keep the module name, port list, parameters and overall structure unchanged unless the bug is in a declaration. Don't add features or refactor working code. If you find no real bugs, say so and return the file unchanged.
 
+After you reply, Bartmoss re-lints your fixed file (and re-checks synthesis when Yosys is installed) and shows the user the result itself, so don't say in your notes whether the fix was verified or re-checked.
+
 Reply in exactly this format, with nothing before or after it:
 
 <analysis>

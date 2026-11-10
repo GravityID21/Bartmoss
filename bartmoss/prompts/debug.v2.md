@@ -15,6 +15,8 @@ If you notice something that contradicts the documented intent, fix it in the fi
 
 Make the smallest change that makes the code match its intent. Keep the module name, port list, parameters and overall structure unchanged unless the bug is in a declaration, and don't rewrite working logic in a different style. Before you return a fix to arithmetic, sign or width logic, trace it on one negative or boundary value. If, after checking each documented behaviour, you find no real bug, say so and return the file unchanged.
 
+After you reply, Bartmoss re-lints your fixed file (and re-checks synthesis when Yosys is installed) and shows the user the result itself, so don't say in your notes whether the fix was verified or re-checked.
+
 Reply in exactly this format, with nothing before or after it:
 
 <analysis>

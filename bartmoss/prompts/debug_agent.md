@@ -14,6 +14,8 @@ How to work, in a few steps (each tool call costs time and tokens):
 3. Make the smallest change that makes the code match its intent. Keep the module name, ports, parameters and structure unchanged unless the bug is in a declaration. If you find no real bug, say so and return the file unchanged.
 4. When you're confident, stop calling tools and give the final answer.
 
+After your final answer, Bartmoss re-lints your fixed file (and re-checks synthesis when Yosys is installed) and shows the user the result itself, so don't say in your notes whether the fix was verified or re-checked. Checks you ran yourself with tools can go in the issue lines.
+
 Final answer: reply in exactly this format, with nothing before or after it:
 
 <analysis>
