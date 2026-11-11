@@ -84,5 +84,11 @@ class UI:
             return True
         if not sys.stdin.isatty():
             return False
-        answer = input(self.style("? ", "magenta") + question + " [y/N] ").strip().lower()
-        return answer in ("y", "yes")
+        return self.ask(question, "[y/N]") in ("y", "yes")
+
+    def ask(self, question: str, choices: str) -> str:
+        """Print the question, then read the answer after a short, plain prompt. In the REPL,
+        readline (libedit on macOS) counts colour codes as visible characters and garbles a long
+        coloured prompt as soon as you type."""
+        self.print(self.style("? ", "magenta") + question)
+        return input(f"  {choices} ").strip().lower()

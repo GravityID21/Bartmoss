@@ -80,6 +80,25 @@ class TestHdlAst(unittest.TestCase):
         self.assertEqual(modules["p"].kind, "package")
 
     @unittest.skipUnless(HAS_AST, "Verilator --json-only not available")
+    def test_adding_a_localparam_keeps_the_interface(self):
+        # A /debug fix that names N-1 as a localparam was reported as "parameter LAST was added".
+        from bartmoss.sim import hdl_ast
+
+        root = Path(tempfile.mkdtemp())
+        head = "module c #(parameter int N = 10) (input logic clk, output logic [$clog2(N)-1:0] q);\n"
+        body = "  always_ff @(posedge clk) q <= (q == LAST) ? '0 : q + 1'b1;\nendmodule\n"
+        before, after = root / "before.sv", root / "after.sv"
+        before.write_text(head + "  localparam int unsigned LAST = N - 1;\n" + body)
+        after.write_text(head + "  localparam logic [$clog2(N)-1:0] LAST = N - 1;\n  localparam int EXTRA = 2;\n" + body)
+        old = hdl_ast.interface(hdl_ast.parse([before], "c")[0], "c")
+        new_modules = hdl_ast.parse([after], "c")[0]
+        self.assertEqual(old["params"], {"N"})
+        self.assertEqual(hdl_ast.interface_changes(old, hdl_ast.interface(new_modules, "c")), [])
+        self.assertIn("localparams: LAST=", hdl_ast.describe(new_modules, "c"))
+        self.assertEqual(hdl_ast.interface_changes(old, {"ports": old["ports"], "params": {"N", "M"}}),
+                         ["parameter M was added"])
+
+    @unittest.skipUnless(HAS_AST, "Verilator --json-only not available")
     def test_parse_failure_returns_none(self):
         from bartmoss.sim import hdl_ast
 

@@ -20,7 +20,7 @@ from bartmoss.sim.tools import RunResult, is_vhdl, verilator_json
 @dataclass
 class Signal:
     name: str
-    kind: str  # input | output | inout | param | var | wire
+    kind: str  # input | output | inout | param | localparam | var | wire
     type: str  # e.g. logic[7:0], int, byte_t
     line: int
     value: str = ""  # parameter default, as Verilator prints it
@@ -59,6 +59,7 @@ class Module:
 
     @property
     def params(self) -> list:
+        """Parameters an instance can override. Localparams are internal and aren't listed."""
         return [s for s in self.signals if s.kind == "param"]
 
 
@@ -91,13 +92,13 @@ def _type_text(var: dict, types: dict) -> str:
 def _signal(var: dict, types: dict) -> Signal:
     direction = var.get("direction", "NONE")
     if var.get("isParam"):
-        kind = "param"
+        kind = "localparam" if var.get("varType") == "LPARAM" else "param"
     elif direction in ("INPUT", "OUTPUT", "INOUT"):
         kind = direction.lower()
     else:
         kind = "wire" if var.get("varType") == "WIRE" else "var"
     value = ""
-    if kind == "param":
+    if kind in ("param", "localparam"):
         const = next((n for n in _walk(var.get("valuep") or []) if n.get("type") == "CONST"), None)
         value = const["name"] if const else ""
         number = re.fullmatch(r"\d+'s?h([0-9a-fA-F]+)", value)
@@ -165,6 +166,9 @@ def describe(modules: dict, only: Optional[str] = None, signal: Optional[str] = 
         lines.append(f"{mod.kind} {mod.name} ({mod.file}:{mod.line})")
         if mod.params:
             lines.append("  params: " + ", ".join(f"{p.name}={p.value or '?'}" for p in mod.params))
+        local = [s for s in mod.signals if s.kind == "localparam"]
+        if local:
+            lines.append("  localparams: " + ", ".join(f"{p.name}={p.value or '?'}" for p in local))
         for p in mod.ports:
             lines.append(f"  {p.kind:6} {p.type:16} {p.name}  (line {p.line})")
         internal = [s for s in mod.signals if s.kind in ("var", "wire")]

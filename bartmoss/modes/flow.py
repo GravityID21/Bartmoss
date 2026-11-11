@@ -246,7 +246,7 @@ def run_flow(ctx: Context, path, context_files=(), tb: Optional[str] = None, top
             return RunResult(False, stage, Path(cmd[0]).name, "declined", declined=True)
         if state["all"]:
             return None
-        answer = input(ui.style("? ", "magenta") + f"run `{_display(cmd, ctx.workspace.root)}`? [y/N/a] ").strip().lower()
+        answer = ui.ask(f"run `{_display(cmd, ctx.workspace.root)}`?", "[y/N/a]")
         if answer in ("a", "all"):
             state["all"] = True
             return None
